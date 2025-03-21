@@ -12,15 +12,16 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h1>Using POST Method to read form data</h1>
-
-        <ul>
-            <li><p><b>First Name: </b>
-                <%= request.getParameter("first_name") %>
-            </p></li>
-            <li><p><b>Last Name: </b>
-                <%= request.getParameter("last_name") %>
-            </p></li>
-        </ul>
+        <center>
+            <h1>Using POST Method to read form data</h1>
+            <ul>
+                <li><p><b>First Name: </b>
+                    <%= request.getParameter("first_name") %>
+                </p></li>
+                <li><p><b>Last Name: </b>
+                    <%= request.getParameter("last_name") %>
+                </p></li>
+            </ul>
+        </center>
     </body>
 </html>
