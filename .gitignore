@@ -1,1 +1,53 @@
+# NetBeans specific files
 nbproject/private/private.properties
+nbproject/private/private.xml
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# IDE files (for multi-device development)
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Java specific
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+target/
+bin/
+
+# Logs
+*.log
+logs/
+
+# OS specific
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
