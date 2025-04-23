@@ -11,7 +11,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Beranda | Aplikasi JSP</title>
         <!-- Panggil Bootstrap Lokal -->
-        <link href="css/bootstrap.min.css" rel=""stylesheet">
+        <link href="web/css/bootstrap-min.css" rel="stylesheet">
     </head>
     <body>
     <!-- Navbar -->
@@ -32,15 +32,17 @@
             </div>
         </div>
     </nav>
-</body>
-<!-- Konten-->
-<div class="container text-center py-5">
-    <h1 class="fw-bold">Selamat Datang</h1>
-    <p class="lead">Halaman utama aplikasi JSP dengan Bootstrap lokal.</p>
-    <a href="login.jsp" class="btn btn-success btn-lg">Login Sekarang</a>
-</div>
-<!-- Footer -->
-<footer class="bg-dark text-white text-center py-4 mt-5">
-    <p class="mb-0">© 2025 Aplikasi JSP - Semua Hak Dilindungi</p>
-</footer>   
+    
+    <!-- Konten-->
+    <div class="container text-center py-5">
+        <h1 class="fw-bold">Selamat Datang</h1>
+        <p class="lead">Halaman utama aplikasi JSP dengan Bootstrap lokal.</p>
+        <a href="login.jsp" class="btn btn-success btn-lg">Login Sekarang</a>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <p class="mb-0">© 2025 Aplikasi JSP - Semua Hak Dilindungi</p>
+    </footer>
+    </body>
 </html>
