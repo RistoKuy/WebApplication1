@@ -6,17 +6,18 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Beranda | Aplikasi JSP</title>
-        <!-- Panggil Bootstrap Lokal -->
-        <link href="web/css/bootstrap-min.css" rel="stylesheet">
-    </head>
-    <body>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Beranda | Aplikasi JSP</title>
+    <!-- Panggil Bootstrap lokal -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
     <!-- Navbar -->
-    <nav class="navbar navbar-default">
-        <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
             <a class="navbar-brand" href="#">Aplikasi JSP</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
@@ -44,5 +45,8 @@
     <footer class="bg-dark text-white text-center py-4 mt-5">
         <p class="mb-0">© 2025 Aplikasi JSP - Semua Hak Dilindungi</p>
     </footer>
-    </body>
+    
+    <!-- Panggil Bootstrap JS lokal -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
