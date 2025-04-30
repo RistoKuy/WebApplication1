@@ -9,7 +9,8 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #121212; /* Warna latar belakang gelap */
+            color: #e1e1e1; /* Warna teks terang */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -17,9 +18,9 @@
             padding: 20px;
         }
         .signup-container {
-            background: white;
+            background: #1e1e1e; /* Warna latar belakang container gelap */
             border-radius: 16px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
             padding: 40px;
             max-width: 1000px;
             width: 100%;
@@ -39,6 +40,7 @@
         .image-section img {
             max-width: 100%;
             height: auto;
+            filter: brightness(0.8); /* Mengurangi kecerahan gambar */
         }
         h1 {
             margin-bottom: 30px;
@@ -46,13 +48,21 @@
             font-size: 2.5rem;
         }
         .form-control {
+            background-color: #2d2d2d; /* Warna latar belakang input */
+            color: #e1e1e1; /* Warna teks input */
+            border: 1px solid #444; /* Warna border input */
             padding: 12px;
             margin-bottom: 20px;
             border-radius: 8px;
         }
+        .form-control:focus {
+            background-color: #333; /* Warna latar belakang input saat fokus */
+            border-color: #bb86fc; /* Warna border saat fokus */
+            outline: none;
+        }
         .btn-register {
-            background-color: #0d6efd;
-            color: white;
+            background-color: #bb86fc; /* Warna tombol */
+            color: #121212; /* Warna teks tombol */
             border: none;
             border-radius: 8px;
             padding: 12px 30px;
@@ -61,12 +71,17 @@
             transition: background-color 0.3s;
         }
         .btn-register:hover {
-            background-color: #0b5ed7;
+            background-color: #9a67ea; /* Warna tombol saat hover */
         }
         .login-link {
             margin-top: 15px;
             text-align: center;
             display: block;
+            color: #bb86fc; /* Warna link */
+            text-decoration: none;
+        }
+        .login-link:hover {
+            text-decoration: underline;
         }
         @media (max-width: 768px) {
             .signup-container {
@@ -104,7 +119,7 @@
             </form>
         </div>
         <div class="image-section">
-            <img src="https://source.unsplash.com/random/600x600/?colorful,abstract" alt="Registration illustration">
+            <img src="https://images.unsplash.com/photo-1745750747228-d7ae37cba3a5?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Registration illustration">
         </div>
     </div>
     
