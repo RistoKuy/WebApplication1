@@ -7,6 +7,8 @@
     <title>Register | Aplikasi JSP</title>
     <!-- Panggil Bootstrap lokal -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body {
             background-color: #121212; /* Warna latar belakang gelap */
@@ -26,6 +28,7 @@
             width: 100%;
             display: flex;
             overflow: hidden;
+            position: relative;
         }
         .form-section {
             flex: 1;
@@ -83,6 +86,31 @@
         .login-link:hover {
             text-decoration: underline;
         }
+        .back-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: transparent;
+            color: #bb86fc;
+            border: 1px solid #bb86fc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+        .back-button:hover {
+            background-color: #bb86fc;
+            color: #121212;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
+            opacity: 1;
+        }
         @media (max-width: 768px) {
             .signup-container {
                 flex-direction: column;
@@ -96,6 +124,9 @@
 </head>
 <body>
     <div class="signup-container">
+        <a href="index.jsp" class="back-button" title="Back to Home">
+            <i class="bi bi-arrow-right"></i>
+        </a>
         <div class="form-section">
             <h1>Sign up</h1>
             
