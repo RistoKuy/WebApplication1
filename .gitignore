@@ -26,7 +26,6 @@ out/
 
 # Java specific
 *.class
-*.jar
 *.war
 *.ear
 *.nar
