@@ -125,6 +125,9 @@
             <a href="index.jsp" class="btn-dashboard">
                 <i class="bi bi-house-door me-2"></i>Halaman Utama
             </a>
+            <a href="account_update.jsp" class="btn-dashboard" style="background-color: #03dac6;">
+                <i class="bi bi-person-gear me-2"></i>Edit Profil
+            </a>
             <a href="logout.jsp" class="btn-logout">
                 <i class="bi bi-box-arrow-right me-2"></i>Logout
             </a>
