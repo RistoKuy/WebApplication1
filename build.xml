@@ -10,6 +10,10 @@
 <project name="WebApplication1" default="default" basedir=".">
     <description>Builds, tests, and runs the project WebApplication1.</description>
     <import file="nbproject/build-impl.xml"/>
+    
+    <!-- Add custom build target to support command-line builds -->
+    <target name="build" depends="default" description="Alias for the default target to support command-line builds"/>
+    
     <!--
 
     There exist several targets which are by default empty and which can be 
