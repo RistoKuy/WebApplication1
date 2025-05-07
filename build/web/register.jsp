@@ -10,89 +10,133 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
+        :root {
+            --dark-bg: #121212;
+            --dark-card: #1e1e1e;
+            --dark-light: #2d2d2d;
+            --accent-purple: #bb86fc;
+            --accent-blue: #03dac6;
+            --accent-pink: #cf6679;
+            --text-primary: #e1e1e1;
+            --text-secondary: #b0b0b0;
+        }
+        
+        /* Hero background and overlay */
+        .hero-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1745750747228-d7ae37cba3a5?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -10;
+            filter: brightness(0.6);
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(18, 18, 18, 0.7), rgba(32, 10, 64, 0.8));
+            z-index: -5;
+        }
+        
         body {
-            background-color: #121212; /* Warna latar belakang gelap */
-            color: #e1e1e1; /* Warna teks terang */
+            background-color: transparent;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        
         .signup-container {
-            background: #1e1e1e; /* Warna latar belakang container gelap */
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(10px);
             border-radius: 16px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            max-width: 1000px;
+            max-width: 600px;
             width: 100%;
-            display: flex;
-            overflow: hidden;
             position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .form-section {
-            flex: 1;
-            padding-right: 20px;
+        
+        .signup-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(187, 134, 252, 0.2);
+            border-color: var(--accent-purple);
         }
-        .image-section {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .image-section img {
-            max-width: 100%;
-            height: auto;
-            filter: brightness(0.8); /* Mengurangi kecerahan gambar */
-        }
+        
         h1 {
             margin-bottom: 30px;
             font-weight: 700;
             font-size: 2.5rem;
+            color: var(--accent-purple);
+            text-shadow: 0 0 5px rgba(187, 134, 252, 0.5);
         }
+        
         .form-control {
-            background-color: #2d2d2d; /* Warna latar belakang input */
-            color: #e1e1e1; /* Warna teks input */
-            border: 1px solid #444; /* Warna border input */
+            background-color: rgba(45, 45, 45, 0.7);
+            color: var(--text-primary);
+            border: 1px solid rgba(68, 68, 68, 0.5);
             padding: 12px;
             margin-bottom: 20px;
             border-radius: 8px;
+            backdrop-filter: blur(5px);
         }
+        
         .form-control:focus {
-            background-color: #333; /* Warna latar belakang input saat fokus */
-            border-color: #bb86fc; /* Warna border saat fokus */
+            background-color: rgba(51, 51, 51, 0.8);
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 0.25rem rgba(187, 134, 252, 0.25);
             outline: none;
         }
+        
         .btn-register {
-            background-color: #bb86fc; /* Warna tombol */
-            color: #121212; /* Warna teks tombol */
+            background: linear-gradient(45deg, var(--accent-purple), #9a67ea);
+            color: #121212;
             border: none;
             border-radius: 8px;
             padding: 12px 30px;
             font-size: 1rem;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
         }
+        
         .btn-register:hover {
-            background-color: #9a67ea; /* Warna tombol saat hover */
+            background: linear-gradient(45deg, #9a67ea, var(--accent-purple));
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
         }
+        
         .login-link {
             margin-top: 15px;
             text-align: center;
             display: block;
-            color: #bb86fc; /* Warna link */
+            color: var(--accent-purple);
             text-decoration: none;
         }
+        
         .login-link:hover {
             text-decoration: underline;
         }
+        
         .back-button {
             position: absolute;
             bottom: 20px;
             right: 20px;
             background-color: transparent;
-            color: #bb86fc;
-            border: 1px solid #bb86fc;
+            color: var(--accent-purple);
+            border: 1px solid var(--accent-purple);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -104,54 +148,51 @@
             transition: all 0.3s ease;
             opacity: 0.7;
         }
+        
         .back-button:hover {
-            background-color: #bb86fc;
+            background-color: var(--accent-purple);
             color: #121212;
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
             opacity: 1;
         }
+        
         @media (max-width: 768px) {
             .signup-container {
-                flex-direction: column;
-            }
-            .form-section {
-                padding-right: 0;
-                padding-bottom: 20px;
+                padding: 30px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Background image and overlay -->
+    <div class="hero-background"></div>
+    <div class="overlay"></div>
+    
     <div class="signup-container">
         <a href="index.jsp" class="back-button" title="Back to Home">
             <i class="bi bi-arrow-right"></i>
         </a>
-        <div class="form-section">
-            <h1>Sign up</h1>
-            
-            <form action="register_output.jsp" method="post">
-                <div class="mb-3">
-                    <label for="nama" class="form-label">Your Name</label>
-                    <input type="text" class="form-control" id="nama" name="nama" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Your Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                </div>
-                <div class="mt-4">
-                    <button type="submit" class="btn-register">Register</button>
-                </div>
-                <a href="login.jsp" class="login-link">Already have an account? Log in</a>
-            </form>
-        </div>
-        <div class="image-section">
-            <img src="https://images.unsplash.com/photo-1745750747228-d7ae37cba3a5?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Registration illustration">
-        </div>
+        <h1>Register</h1>
+        
+        <form action="register_output.jsp" method="post">
+            <div class="mb-3">
+                <label for="nama" class="form-label">Your Name</label>
+                <input type="text" class="form-control" id="nama" name="nama" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Your Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn-register">Register</button>
+            </div>
+            <a href="login.jsp" class="login-link">Already have an account? Log in</a>
+        </form>
     </div>
     
     <!-- Panggil Bootstrap JS lokal -->

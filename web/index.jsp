@@ -265,9 +265,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active fw-semibold" href="#">Beranda</a></li>
+                    <!-- <li class="nav-item"><a class="nav-link active fw-semibold" href="#">Beranda</a></li>
                     <li class="nav-item"><a class="nav-link fw-semibold" href="#">Tentang</a></li>
-                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">Kontak</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">Kontak</a></li> -->
+                    <li class="nav-item ms-2"><a class="btn btn-light rounded-pill px-3" href="register.jsp">Register</a></li>
                     <li class="nav-item ms-2"><a class="btn btn-light rounded-pill px-3" href="login.jsp">Login</a></li>
                 </ul>
             </div>

@@ -3,6 +3,6 @@
     // Invalidate the current session
     session.invalidate();
     
-    // Redirect to login page
-    response.sendRedirect("login.jsp");
+    // Redirect to index page
+    response.sendRedirect("index.jsp");
 %>

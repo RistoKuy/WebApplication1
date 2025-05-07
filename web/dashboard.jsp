@@ -219,9 +219,44 @@
             return;
         }
         
-        // Get username from session
-        String userName = (String) session.getAttribute("userName");
-    %>
+        // Get user ID from session
+        String userID = (String) session.getAttribute("userID");
+        String userName = "";
+        
+        // Connect to database to get most up-to-date user information
+        java.sql.Connection conn = null;
+        java.sql.PreparedStatement pstmt = null;
+        java.sql.ResultSet rs = null;
+        
+        try {
+            // Get database connection (replace with your actual connection code)
+            conn = new com.mysql.jdbc.Driver().connect("jdbc:mysql://localhost:3306/web_enterprise", null);
+            // Or use your connection pool if available
+            // conn = yourConnectionPool.getConnection();
+            
+            // Query to get username from database
+            String query = "SELECT nama FROM user WHERE id = ?";
+            pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, userID);
+            rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                userName = rs.getString("nama");
+            }
+        } catch (Exception e) {
+            // Log the exception
+            e.printStackTrace();
+            
+            // Fallback to session username if database query fails
+            userName = (String) session.getAttribute("userName");
+            if (userName == null) userName = "User"; // Default name if all else fails
+        } finally {
+            // Close database resources
+            try { if (rs != null) rs.close(); } catch (Exception e) { }
+            try { if (pstmt != null) pstmt.close(); } catch (Exception e) { }
+            try { if (conn != null) conn.close(); } catch (Exception e) { }
+        }
+        %>
     <!-- Sidebar Navigation -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -230,6 +265,7 @@
         <ul class="sidebar-menu">
             <li class="active"><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
             <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User Management</a></li>
+            <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>
     

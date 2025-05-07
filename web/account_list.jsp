@@ -326,6 +326,7 @@
         <ul class="sidebar-menu">
             <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
             <li class="active"><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User Management</a></li>
+            <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>
     
