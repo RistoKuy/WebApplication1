@@ -88,7 +88,7 @@
                 session.setAttribute("loggedIn", true);
                 
                 // Redirect to success page
-                response.sendRedirect("login_success.jsp");
+                response.sendRedirect("dashboard.jsp");
             } else {
                 // Display error message for failed login
                 out.println("<h2>Login Gagal</h2>");

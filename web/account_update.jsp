@@ -143,7 +143,7 @@
                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" value="<%= userPassword %>" required>
                 </div>
                 <div class="mt-4 d-flex justify-content-between">
-                    <a href="login_success.jsp" class="btn-cancel">Cancel</a>
+                    <a href="dashboard.jsp" class="btn-cancel">Cancel</a>
                     <button type="submit" class="btn-update">Save Changes</button>
                 </div>
             </form>
