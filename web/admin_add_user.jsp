@@ -17,7 +17,7 @@
     // Validate input data
     if (nama == null || email == null || password == null || 
         nama.trim().isEmpty() || email.trim().isEmpty() || password.trim().isEmpty()) {
-        response.sendRedirect("admin_panel.jsp?error=All fields are required");
+        response.sendRedirect("account_list.jsp?error=All fields are required");
         return;
     }
     
@@ -44,7 +44,7 @@
         rs = pstmt.executeQuery();
         
         if (rs.next() && rs.getInt("count") > 0) {
-            response.sendRedirect("admin_panel.jsp?error=Email already exists");
+            response.sendRedirect("account_list.jsp?error=Email already exists");
             return;
         }
         
@@ -62,13 +62,13 @@
         
         if (rowsInserted > 0) {
             // Redirect with success message
-            response.sendRedirect("admin_panel.jsp?success=User added successfully");
+            response.sendRedirect("account_list.jsp?success=User added successfully");
         } else {
             // Redirect with error message
-            response.sendRedirect("admin_panel.jsp?error=Failed to add user");
+            response.sendRedirect("account_list.jsp?error=Failed to add user");
         }
     } catch(Exception e) {
-        response.sendRedirect("admin_panel.jsp?error=" + e.getMessage());
+        response.sendRedirect("account_list.jsp?error=" + e.getMessage());
     } finally {
         try {
             if(rs != null) rs.close();

@@ -14,7 +14,7 @@
     
     // Validate input data
     if (idStr == null || idStr.trim().isEmpty()) {
-        response.sendRedirect("admin_panel.jsp?error=User ID is required");
+        response.sendRedirect("account_list.jsp?error=User ID is required");
         return;
     }
     
@@ -22,7 +22,7 @@
     try {
         id = Integer.parseInt(idStr);
     } catch (NumberFormatException e) {
-        response.sendRedirect("admin_panel.jsp?error=Invalid user ID");
+        response.sendRedirect("account_list.jsp?error=Invalid user ID");
         return;
     }
     
@@ -54,13 +54,13 @@
         
         if (rowsDeleted > 0) {
             // Redirect with success message
-            response.sendRedirect("admin_panel.jsp?success=User deleted successfully");
+            response.sendRedirect("account_list.jsp?success=User deleted successfully");
         } else {
             // Redirect with error message
-            response.sendRedirect("admin_panel.jsp?error=Failed to delete user. User ID may not exist.");
+            response.sendRedirect("account_list.jsp?error=Failed to delete user. User ID may not exist.");
         }
     } catch(Exception e) {
-        response.sendRedirect("admin_panel.jsp?error=" + e.getMessage());
+        response.sendRedirect("account_list.jsp?error=" + e.getMessage());
     } finally {
         try {
             if(pstmt != null) pstmt.close();

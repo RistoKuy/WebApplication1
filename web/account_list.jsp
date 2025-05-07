@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Data Register | Aplikasi JSP</title>
+    <title>User Management | Aplikasi JSP</title>
     <!-- Panggil Bootstrap lokal -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     
@@ -170,9 +170,87 @@
             padding: 6px 16px;
             font-size: 0.875rem;
             transition: all 0.3s ease;
+            margin-right: 5px;
         }
         
         .btn-edit:hover {
+            background-color: #9546fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
+        }
+        
+        .btn-delete {
+            background-color: transparent;
+            color: var(--accent-pink);
+            border: 1px solid var(--accent-pink);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-delete:hover {
+            background-color: var(--accent-pink);
+            color: #121212;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(207, 102, 121, 0.3);
+        }
+        
+        .btn-add {
+            background-color: var(--accent-blue);
+            color: #121212;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-add:hover {
+            background-color: #018786;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(3, 218, 198, 0.3);
+        }
+        
+        /* Modal styling */
+        .modal-content {
+            background-color: #1e1e1e;
+            color: #e1e1e1;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-control {
+            background-color: #2d2d2d;
+            color: #e1e1e1;
+            border: 1px solid #444;
+            border-radius: 8px;
+        }
+        
+        .form-control:focus {
+            background-color: #333;
+            border-color: var(--accent-purple);
+            color: #e1e1e1;
+            box-shadow: 0 0 0 0.25rem rgba(187, 134, 252, 0.25);
+        }
+        
+        .btn-save {
+            background-color: var(--accent-purple);
+            color: #121212;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-save:hover {
             background-color: #9546fa;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
@@ -221,12 +299,12 @@
         
         String userName = (String) session.getAttribute("userName");
         Connection conn = null;
-        Statement stmt = null;
+        PreparedStatement pstmt = null;
         ResultSet rs = null;
         
         try {
             // Load the database driver
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
             
             // Connect to the database
             String url = "jdbc:mysql://localhost:3306/web_enterprise";
@@ -234,12 +312,8 @@
             String dbPassword = "";
             conn = DriverManager.getConnection(url, dbUser, dbPassword);
             
-            // Create SQL statement
-            stmt = conn.createStatement();
-            String sql = "SELECT id, nama, email FROM user";
-            
-            // Execute the query
-            rs = stmt.executeQuery(sql);
+            // We'll use prepared statement instead of regular statement
+            // for better security and flexibility
         } catch (Exception e) {
             out.println("Error: " + e.getMessage());
         }
@@ -251,71 +325,223 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
-            <li class="active"><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>Account</a></li>
+            <li class="active"><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User Management</a></li>
         </ul>
     </div>
     
     <!-- Main Content -->
     <div class="main-content">
         <div class="data-table">
-            <h2 class="mb-4 neon-text">Account</h2>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0 neon-text">User Management</h2>
+                <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add New User
+                </button>
+            </div>
+            
+            <% if (request.getParameter("success") != null) { %>
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i><%= request.getParameter("success") %>
+                </div>
+            <% } %>
+            
+            <% if (request.getParameter("error") != null) { %>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= request.getParameter("error") %>
+                </div>
+            <% } %>
             
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Nama</th>
+                        <th>ID</th>
+                        <th>Name</th>
                         <th>Email</th>
-                        <th>Aksi</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% 
-                        int rowNum = 1;
                         try {
-                            while (rs != null && rs.next()) {
+                            String sql = "SELECT * FROM user ORDER BY id";
+                            pstmt = conn.prepareStatement(sql);
+                            rs = pstmt.executeQuery();
+                            
+                            while(rs.next()) {
                                 int id = rs.getInt("id");
                                 String nama = rs.getString("nama");
                                 String email = rs.getString("email");
+                                String password = rs.getString("password");
                     %>
                     <tr>
-                        <td><%= rowNum++ %></td>
+                        <td><%= id %></td>
                         <td><%= nama %></td>
                         <td><%= email %></td>
                         <td>
-                            <a href="admin_update_user.jsp?id=<%= id %>" class="btn btn-edit">
+                            <button class="btn btn-edit" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editUserModal"
+                                    data-id="<%= id %>"
+                                    data-nama="<%= nama %>"
+                                    data-email="<%= email %>"
+                                    data-password="<%= password %>">
                                 <i class="bi bi-pencil-square me-1"></i>Edit
-                            </a>
+                            </button>
+                            <button class="btn btn-delete" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteUserModal"
+                                    data-id="<%= id %>"
+                                    data-nama="<%= nama %>">
+                                <i class="bi bi-trash me-1"></i>Delete
+                            </button>
                         </td>
                     </tr>
                     <% 
                             }
+                            
+                            // If no records found, display message
+                            if (!rs.isBeforeFirst()) { // Check if ResultSet is empty
+                    %>
+                    <% 
+                            }
                         } catch (Exception e) {
                             out.println("<tr><td colspan='4' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
-                        } finally {
-                            // Close resources
-                            try {
-                                if (rs != null) rs.close();
-                                if (stmt != null) stmt.close();
-                                if (conn != null) conn.close();
-                            } catch (SQLException e) {
-                                out.println("<tr><td colspan='4' class='text-center'>Error closing resources: " + e.getMessage() + "</td></tr>");
-                            }
                         }
-                        
-                        // If no records found, display message
-                        if (rowNum == 1) {
                     %>
-                    <tr>
-                        <td colspan="4" class="text-center">No user data found.</td>
-                    </tr>
-                    <% } %>
                 </tbody>
             </table>
         </div>
     </div>
     
-    <!-- Panggil Bootstrap JS lokal -->
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="admin_add_user.jsp" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="add-nama" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="add-nama" name="nama" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="add-email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="add-password" name="password" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-save">Add User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="admin_update_user.jsp" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="edit-id" name="id">
+                        <div class="mb-3">
+                            <label for="edit-nama" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="edit-nama" name="nama" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="edit-email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="edit-password" name="password" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-save">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete User Modal -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="admin_delete_user.jsp" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="delete-id" name="id">
+                        <p>Are you sure you want to delete the user <strong><span id="delete-user-name"></span></strong>?</p>
+                        <p class="text-danger">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
     <script src="js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript for modals -->
+    <script>
+        // Edit user modal data
+        document.querySelectorAll('.btn-edit').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const nama = this.getAttribute('data-nama');
+                const email = this.getAttribute('data-email');
+                const password = this.getAttribute('data-password');
+                
+                document.getElementById('edit-id').value = id;
+                document.getElementById('edit-nama').value = nama;
+                document.getElementById('edit-email').value = email;
+                document.getElementById('edit-password').value = password;
+            });
+        });
+        
+        // Delete user modal data
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const nama = this.getAttribute('data-nama');
+                
+                document.getElementById('delete-id').value = id;
+                document.getElementById('delete-user-name').textContent = nama;
+            });
+        });
+    </script>
+    
+    <%
+        // Close the database resources
+        try {
+            if(rs != null) rs.close();
+            if(pstmt != null) pstmt.close();
+            if(conn != null) conn.close();
+        } catch(SQLException e) {
+            // Do nothing
+        }
+    %>
 </body>
 </html>
