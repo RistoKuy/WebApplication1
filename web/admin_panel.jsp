@@ -157,7 +157,7 @@
                     </li>
                 </ul>
                 <div>
-                    <a href="index.jsp" class="btn btn-outline-light me-2">
+                    <a href="dashboard.jsp" class="btn btn-outline-light me-2">
                         <i class="bi bi-house-door"></i> Home
                     </a>
                     <a href="logout.jsp" class="btn btn-danger">
