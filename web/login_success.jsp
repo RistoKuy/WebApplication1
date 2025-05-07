@@ -122,9 +122,6 @@
         </div>
         
         <div class="mt-4">
-            <a href="index.jsp" class="btn-dashboard">
-                <i class="bi bi-house-door me-2"></i>Halaman Utama
-            </a>
             <a href="dashboard.jsp" class="btn-dashboard" style="background-color: #3f51b5;">
                 <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </a>
