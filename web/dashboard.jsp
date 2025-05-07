@@ -102,7 +102,7 @@
         </div>
         <ul class="sidebar-menu">
             <li class="active"><a href="dashboard.jsp">Home</a></li>
-            <li><a href="#">Data Register</a></li>
+            <li><a href="account_list.jsp">Account</a></li>
         </ul>
     </div>
     
