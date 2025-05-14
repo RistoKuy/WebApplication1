@@ -14,6 +14,17 @@
     <!-- Add custom build target to support command-line builds -->
     <target name="build" depends="default" description="Alias for the default target to support command-line builds"/>
     
+    <!-- Add custom build-and-open target -->
+    <target name="run" depends="clean,build" description="Build and open the application in browser">
+        <property name="app.url" value="http://localhost:8080/WebApplication1/"/>
+        <echo message="Opening browser to ${app.url}"/>
+        <exec executable="cmd" osfamily="windows">
+            <arg value="/c"/>
+            <arg value="start"/>
+            <arg value="${app.url}"/>
+        </exec>
+    </target>
+    
     <!--
 
     There exist several targets which are by default empty and which can be 
