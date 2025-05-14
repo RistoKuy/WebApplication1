@@ -1,5 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
+<%@page import="java.io.*"%>
+<%@page import="java.util.*"%>
+<%@page import="jakarta.servlet.http.*"%>
+<%@page import="jakarta.servlet.ServletException"%>
+<%@ page import="java.nio.file.*" %>
 <%
     // Check if user is logged in
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
@@ -15,8 +20,8 @@
     // Database connection variables
     Connection conn = null;
     PreparedStatement pstmt = null;
-    
-    try {
+    ResultSet rs = null;
+      try {
         // Load the database driver
         Class.forName("com.mysql.cj.jdbc.Driver");
         
@@ -26,13 +31,38 @@
         String dbPassword = "";
         conn = DriverManager.getConnection(url, dbUser, dbPassword);
         
-        // SQL query to delete item
+        // First get the image file name associated with this item
+        String getImageSql = "SELECT gambar_brg FROM item WHERE id_brg = ?";
+        pstmt = conn.prepareStatement(getImageSql);
+        pstmt.setString(1, id_brg);
+        rs = pstmt.executeQuery();
+        
+        String gambar_brg = null;
+        if (rs.next()) {
+            gambar_brg = rs.getString("gambar_brg");
+        }
+        
+        // Close the result set
+        if (rs != null) {
+            rs.close();
+        }
+        
+        // Delete the item record
         String sql = "DELETE FROM item WHERE id_brg = ?";
         pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, id_brg);
         
         // Execute the query and check the result
         int rowsAffected = pstmt.executeUpdate();
+        
+        // If deletion was successful and there is an associated image, delete the file
+        if (rowsAffected > 0 && gambar_brg != null && !gambar_brg.isEmpty()) {
+            String uploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
+            File imageFile = new File(uploadPath + File.separator + gambar_brg);
+            if (imageFile.exists()) {
+                imageFile.delete();
+            }
+        }
         
         // Redirect with success or error message
         if (rowsAffected > 0) {
@@ -44,10 +74,10 @@
     } catch (Exception e) {
         // Redirect with error message
         response.sendRedirect("item_list.jsp?error=Error: " + e.getMessage());
-        
-    } finally {
+          } finally {
         // Close resources
         try {
+            if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
             if (conn != null) conn.close();
         } catch (SQLException e) {

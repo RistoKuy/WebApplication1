@@ -40,7 +40,9 @@ CREATE TABLE `item` (
   `id_brg` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `nama_brg` varchar(100) NOT NULL,
   `deskripsi` varchar(255) NOT NULL,
-  `harga` varchar(30) NOT NULL
+  `harga` varchar(30) NOT NULL,
+  `gambar_brg` varchar(100) NOT NULL,
+  `stok` int(10) NOT NULL
 );
 
 --

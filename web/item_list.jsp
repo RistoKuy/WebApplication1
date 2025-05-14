@@ -1,5 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
+<%@page import="java.io.*"%>
+<%@page import="java.util.*"%>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -359,13 +361,14 @@
                 </div>
             <% } %>
             
-            <table class="table table-striped">
-                <thead>
+            <table class="table table-striped">                <thead>
                     <tr>
                         <th>ID</th>
                         <th>Item Name</th>
                         <th>Description</th>
                         <th>Price</th>
+                        <th>Stock</th>
+                        <th>Image</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -375,18 +378,27 @@
                             String sql = "SELECT * FROM item ORDER BY id_brg";
                             pstmt = conn.prepareStatement(sql);
                             rs = pstmt.executeQuery();
-                            
-                            while(rs.next()) {
+                              while(rs.next()) {
                                 int id = rs.getInt("id_brg");
                                 String nama_brg = rs.getString("nama_brg");
                                 String deskripsi = rs.getString("deskripsi");
                                 String harga = rs.getString("harga");
+                                int stok = rs.getInt("stok");
+                                String gambar_brg = rs.getString("gambar_brg");
                     %>
                     <tr>
                         <td><%= id %></td>
                         <td><%= nama_brg %></td>
                         <td><%= deskripsi %></td>
                         <td><%= harga %></td>
+                        <td><%= stok %></td>
+                        <td>
+                            <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
+                                <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" height="60">
+                            <% } else { %>
+                                <span class="text-muted">No image</span>
+                            <% } %>
+                        </td>
                         <td>
                             <button class="btn btn-edit" 
                                     data-bs-toggle="modal" 
@@ -394,7 +406,9 @@
                                     data-id="<%= id %>"
                                     data-nama="<%= nama_brg %>"
                                     data-deskripsi="<%= deskripsi %>"
-                                    data-harga="<%= harga %>">
+                                    data-harga="<%= harga %>"
+                                    data-stok="<%= stok %>"
+                                    data-gambar="<%= gambar_brg %>">
                                 <i class="bi bi-pencil-square me-1"></i>Edit
                             </button>
                             <button class="btn btn-delete" 
@@ -411,14 +425,13 @@
                             
                             // If no records found, display message
                             if (!rs.isBeforeFirst()) { // Check if ResultSet is empty
-                    %>
-                    <tr>
-                        <td colspan="5" class="text-center">No items found</td>
+                    %>                    <tr>
+                        <td colspan="7" class="text-center">No items found</td>
                     </tr>
                     <% 
                             }
                         } catch (Exception e) {
-                            out.println("<tr><td colspan='5' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
+                            out.println("<tr><td colspan='7' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
                         }
                     %>
                 </tbody>
@@ -433,8 +446,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="addItemModalLabel">Add New Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="admin_add_item.jsp" method="post">
+                </div>                <form action="admin_add_item.jsp" method="post" enctype="multipart/form-data">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="add-nama" class="form-label">Item Name</label>
@@ -447,6 +459,15 @@
                         <div class="mb-3">
                             <label for="add-harga" class="form-label">Price</label>
                             <input type="text" class="form-control" id="add-harga" name="harga" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-stok" class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="add-stok" name="stok" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-gambar" class="form-label">Image</label>
+                            <input type="file" class="form-control" id="add-gambar" name="gambar_file" accept="image/*">
+                            <div class="form-text">Select an image file (JPG, PNG, GIF)</div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -465,10 +486,10 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="admin_update_item.jsp" method="post">
+                </div>                <form action="admin_update_item.jsp" method="post" enctype="multipart/form-data">
                     <div class="modal-body">
                         <input type="hidden" id="edit-id" name="id_brg">
+                        <input type="hidden" id="edit-current-gambar" name="current_gambar">
                         <div class="mb-3">
                             <label for="edit-nama" class="form-label">Item Name</label>
                             <input type="text" class="form-control" id="edit-nama" name="nama_brg" required>
@@ -480,6 +501,16 @@
                         <div class="mb-3">
                             <label for="edit-harga" class="form-label">Price</label>
                             <input type="text" class="form-control" id="edit-harga" name="harga" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-stok" class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="edit-stok" name="stok" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-gambar" class="form-label">Image</label>
+                            <div id="edit-current-image-container" class="mb-2"></div>
+                            <input type="file" class="form-control" id="edit-gambar" name="gambar_file" accept="image/*">
+                            <div class="form-text">Select a new image file or leave blank to keep current image</div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -526,11 +557,37 @@
                 const nama = this.getAttribute('data-nama');
                 const deskripsi = this.getAttribute('data-deskripsi');
                 const harga = this.getAttribute('data-harga');
+                const stok = this.getAttribute('data-stok');
+                const gambar = this.getAttribute('data-gambar');
                 
                 document.getElementById('edit-id').value = id;
                 document.getElementById('edit-nama').value = nama;
                 document.getElementById('edit-deskripsi').value = deskripsi;
                 document.getElementById('edit-harga').value = harga;
+                document.getElementById('edit-stok').value = stok;
+                document.getElementById('edit-current-gambar').value = gambar;
+                
+                // Show current image preview if available
+                const imageContainer = document.getElementById('edit-current-image-container');
+                imageContainer.innerHTML = '';
+                if (gambar && gambar.trim() !== '') {
+                    const img = document.createElement('img');
+                    img.src = 'assets/img/' + gambar;
+                    img.alt = nama;
+                    img.style.maxHeight = '100px';
+                    img.style.marginBottom = '10px';
+                    imageContainer.appendChild(img);
+                    imageContainer.appendChild(document.createElement('br'));
+                    const label = document.createElement('span');
+                    label.textContent = 'Current image: ' + gambar;
+                    label.classList.add('text-muted');
+                    imageContainer.appendChild(label);
+                } else {
+                    const label = document.createElement('span');
+                    label.textContent = 'No current image';
+                    label.classList.add('text-muted');
+                    imageContainer.appendChild(label);
+                }
             });
         });
         
@@ -543,6 +600,58 @@
                 document.getElementById('delete-id').value = id;
                 document.getElementById('delete-item-name').textContent = nama;
             });
+        });
+        
+        // Image Preview for Add Item form
+        document.getElementById('add-gambar').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Create image preview element if it doesn't exist
+                    let previewContainer = document.getElementById('add-image-preview');
+                    if (!previewContainer) {
+                        previewContainer = document.createElement('div');
+                        previewContainer.id = 'add-image-preview';
+                        previewContainer.className = 'mt-2';
+                        e.target.parentNode.appendChild(previewContainer);
+                    }
+                    
+                    // Set the preview
+                    previewContainer.innerHTML = `
+                        <p>Preview:</p>
+                        <img src="${event.target.result}" alt="Image Preview" style="max-height: 150px; max-width: 100%;" class="mt-2 mb-2 border rounded">
+                        <p class="text-muted small">Filename: ${file.name}</p>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Image Preview for Edit Item form
+        document.getElementById('edit-gambar').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Create image preview element if it doesn't exist
+                    let previewContainer = document.getElementById('edit-image-preview');
+                    if (!previewContainer) {
+                        previewContainer = document.createElement('div');
+                        previewContainer.id = 'edit-image-preview';
+                        previewContainer.className = 'mt-2';
+                        e.target.parentNode.appendChild(previewContainer);
+                    }
+                    
+                    // Set the preview
+                    previewContainer.innerHTML = `
+                        <p>New image preview:</p>
+                        <img src="${event.target.result}" alt="Image Preview" style="max-height: 150px; max-width: 100%;" class="mt-2 mb-2 border rounded">
+                        <p class="text-muted small">Filename: ${file.name}</p>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
         });
     </script>
     

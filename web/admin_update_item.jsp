@@ -1,5 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
+<%@page import="java.io.*"%>
+<%@page import="java.util.*"%>
+<%@page import="jakarta.servlet.http.*"%>
+<%@page import="jakarta.servlet.ServletException"%>
+<%@ page import="java.nio.file.*" %>
 <%
     // Check if user is logged in
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
@@ -14,6 +19,58 @@
     String nama_brg = request.getParameter("nama_brg");
     String deskripsi = request.getParameter("deskripsi");
     String harga = request.getParameter("harga");
+    String stokStr = request.getParameter("stok");
+    String current_gambar = request.getParameter("current_gambar");
+    int stok = 0;
+    
+    try {
+        stok = Integer.parseInt(stokStr);
+    } catch (NumberFormatException e) {
+        stok = 0; // Default to 0 if parsing fails
+    }
+    
+    // Handle image file upload
+    String gambar_brg = current_gambar; // Keep current image by default
+    Part filePart = null;
+    
+    try {
+        filePart = request.getPart("gambar_file");
+    } catch (Exception e) {
+        // If there's an error getting the file part, continue with current image
+        System.out.println("Error getting file part: " + e.getMessage());
+    }
+    
+    if (filePart != null && filePart.getSize() > 0) {
+        String fileName = filePart.getSubmittedFileName();
+        if (fileName != null && !fileName.isEmpty()) {
+            // Generate a unique filename to prevent overwriting
+            String fileExtension = fileName.substring(fileName.lastIndexOf("."));
+            String uniqueFileName = "item_" + System.currentTimeMillis() + fileExtension;
+            gambar_brg = uniqueFileName;
+            
+            // Get the absolute path to the img directory
+            String uploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            
+            // Save the file to the server
+            filePart.write(uploadPath + File.separator + uniqueFileName);
+            
+            // If this is a new image and there was an old one, delete the old one (optional)
+            if (current_gambar != null && !current_gambar.isEmpty()) {
+                try {
+                    File oldFile = new File(uploadPath + File.separator + current_gambar);
+                    if (oldFile.exists()) {
+                        oldFile.delete();
+                    }
+                } catch (Exception e) {
+                    // Ignore if can't delete old file
+                }
+            }
+        }
+    }
     
     // Database connection variables
     Connection conn = null;
@@ -30,12 +87,14 @@
         conn = DriverManager.getConnection(url, dbUser, dbPassword);
         
         // SQL query to update item
-        String sql = "UPDATE item SET nama_brg = ?, deskripsi = ?, harga = ? WHERE id_brg = ?";
+        String sql = "UPDATE item SET nama_brg = ?, deskripsi = ?, harga = ?, stok = ?, gambar_brg = ? WHERE id_brg = ?";
         pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, nama_brg);
         pstmt.setString(2, deskripsi);
         pstmt.setString(3, harga);
-        pstmt.setString(4, id_brg);
+        pstmt.setInt(4, stok);
+        pstmt.setString(5, gambar_brg);
+        pstmt.setString(6, id_brg);
         
         // Execute the query and check the result
         int rowsAffected = pstmt.executeUpdate();
