@@ -36,6 +36,13 @@ CREATE TABLE `user` (
   `password` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `item` (
+  `id_brg` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `nama_brg` varchar(100) NOT NULL,
+  `deskripsi` varchar(255) NOT NULL,
+  `harga` varchar(30) NOT NULL
+);
+
 --
 -- Dumping data for table `user`
 --
