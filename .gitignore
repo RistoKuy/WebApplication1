@@ -52,5 +52,4 @@ Desktop.ini
 .directory
 
 nbproject/private/private.xml
-/*
-!/img/
+web/assets/img
