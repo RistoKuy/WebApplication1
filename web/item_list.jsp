@@ -408,6 +408,7 @@
                             pstmt = conn.prepareStatement(sql);
                             rs = pstmt.executeQuery();
                               while(rs.next()) {
+                                int id_brg = rs.getInt("id_brg");
                                 String nama_brg = rs.getString("nama_brg");
                                 String deskripsi = rs.getString("deskripsi");
                                 String harga = rs.getString("harga");
@@ -434,6 +435,7 @@
                             <button class="btn btn-edit" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#editItemModal"
+                                    data-id="<%= id_brg %>"
                                     data-nama="<%= nama_brg %>"
                                     data-deskripsi="<%= deskripsi %>"
                                     data-harga="<%= harga %>"
@@ -444,6 +446,7 @@
                             <button class="btn btn-delete" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#deleteItemModal"
+                                    data-id="<%= id_brg %>"
                                     data-nama="<%= nama_brg %>">
                                 <i class="bi bi-trash me-1"></i>Delete
                             </button>
@@ -612,7 +615,6 @@
                 const harga = this.getAttribute('data-harga');
                 const stok = this.getAttribute('data-stok');
                 const gambar = this.getAttribute('data-gambar');
-                
                 document.getElementById('edit-id').value = id;
                 document.getElementById('edit-nama').value = nama;
                 document.getElementById('edit-deskripsi').value = deskripsi;
@@ -649,7 +651,6 @@
             button.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
                 const nama = this.getAttribute('data-nama');
-                
                 document.getElementById('delete-id').value = id;
                 document.getElementById('delete-item-name').textContent = nama;
             });
