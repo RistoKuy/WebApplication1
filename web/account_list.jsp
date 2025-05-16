@@ -296,8 +296,8 @@
             response.sendRedirect("login.jsp");
             return;
         }
-        
-        String userName = (String) session.getAttribute("userName");
+          String userName = (String) session.getAttribute("userName");
+        String userEmail = (String) session.getAttribute("userEmail");
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -346,12 +346,15 @@
                     <i class="bi bi-check-circle-fill me-2"></i><%= request.getParameter("success") %>
                 </div>
             <% } %>
-            
-            <% if (request.getParameter("error") != null) { %>
+              <% if (request.getParameter("error") != null) { %>
                 <div class="alert alert-danger">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i><%= request.getParameter("error") %>
                 </div>
             <% } %>
+            
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle-fill me-2"></i>Your own account (<strong><%= userEmail %></strong>) is not shown in this list.
+            </div>
             
             <table class="table table-striped">
                 <thead>
@@ -362,11 +365,11 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <% 
+                <tbody>                    <% 
                         try {
-                            String sql = "SELECT * FROM user ORDER BY id";
+                            String sql = "SELECT * FROM user WHERE email != ? ORDER BY id";
                             pstmt = conn.prepareStatement(sql);
+                            pstmt.setString(1, userEmail);
                             rs = pstmt.executeQuery();
                             
                             while(rs.next()) {
@@ -400,10 +403,12 @@
                     </tr>
                     <% 
                             }
-                            
-                            // If no records found, display message
+                              // If no records found, display message
                             if (!rs.isBeforeFirst()) { // Check if ResultSet is empty
                     %>
+                    <tr>
+                        <td colspan="4" class="text-center">No other users found.</td>
+                    </tr>
                     <% 
                             }
                         } catch (Exception e) {
