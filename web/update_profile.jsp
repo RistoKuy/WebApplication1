@@ -47,13 +47,20 @@
         
         // Execute the update
         rowsUpdated = pstmt.executeUpdate();
-        
-        if (rowsUpdated > 0) {
+          if (rowsUpdated > 0) {
             // Update session data
             session.setAttribute("userName", nama);
             
-            // Redirect with success message
-            response.sendRedirect("account_update.jsp?success=true");
+            // Get user role
+            Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
+            boolean isAdminUser = (isAdmin != null && isAdmin);
+            
+            // Redirect with success message to appropriate page
+            if (isAdminUser) {
+                response.sendRedirect("dashboard.jsp?success=true");
+            } else {
+                response.sendRedirect("main.jsp?success=true");
+            }
         } else {
             // Redirect with error message
             response.sendRedirect("account_update.jsp?error=Failed to update profile");

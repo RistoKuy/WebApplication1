@@ -45,10 +45,11 @@
 </head>
 <body>
     <div class="result-container">
-    <%
-        // Get form parameters
+    <%        // Get form parameters
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        String isAdminParam = request.getParameter("isAdmin");
+        boolean isAdminLogin = (isAdminParam != null && isAdminParam.equals("1"));
         
         // Database connection variables
         Connection conn = null;
@@ -76,19 +77,34 @@
             
             // Execute the query
             rs = pstmt.executeQuery();
-            
-            // Check if user exists with correct credentials
+              // Check if user exists with correct credentials
             if (rs.next()) {
-                // Get user's name
+                // Get user's name and admin status
                 String nama = rs.getString("nama");
+                boolean isAdminInDB = rs.getInt("is_admin") == 1;
                 
-                // Set user session
-                session.setAttribute("userEmail", email);
-                session.setAttribute("userName", nama);
-                session.setAttribute("loggedIn", true);
-                
-                // Redirect to success page
-                response.sendRedirect("dashboard.jsp");
+                // Check if admin login matches database
+                if (isAdminLogin && !isAdminInDB) {
+                    // User tried to login as admin but isn't one
+                    out.println("<h2>Login Gagal</h2>");
+                    out.println("<p>Anda tidak memiliki hak akses sebagai Admin.</p>");
+                    out.println("<a href='login.jsp' class='btn-return'>Kembali ke Halaman Login</a>");
+                } else {
+                    // Set user session
+                    session.setAttribute("userEmail", email);
+                    session.setAttribute("userName", nama);
+                    session.setAttribute("isAdmin", isAdminInDB);
+                    session.setAttribute("loggedIn", true);
+                    
+                    // Redirect based on user type
+                    if (isAdminInDB) {
+                        // Admin users go to dashboard
+                        response.sendRedirect("dashboard.jsp");
+                    } else {
+                        // Regular users go to main page
+                        response.sendRedirect("main.jsp");
+                    }
+                }
             } else {
                 // Display error message for failed login
                 out.println("<h2>Login Gagal</h2>");

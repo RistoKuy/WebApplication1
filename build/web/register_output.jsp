@@ -57,10 +57,11 @@
 </head>
 <body>
     <div class="result-container">
-    <%
-        String nama = request.getParameter("nama");
+    <%        String nama = request.getParameter("nama");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        String isAdminParam = request.getParameter("isAdmin");
+        boolean isAdmin = (isAdminParam != null && isAdminParam.equals("1"));
         
         // Check if email already exists using the utility function
         boolean emailExists = TestUtil.isEmailExists(email);
@@ -92,15 +93,15 @@
                 String dbPassword = "";
                 
                 conn = DriverManager.getConnection(url, user, dbPassword);
-                
-                // SQL query to insert new user
-                String sql = "INSERT INTO user (nama, email, password) VALUES (?, ?, ?)";
+                  // SQL query to insert new user
+                String sql = "INSERT INTO user (nama, email, password, is_admin) VALUES (?, ?, ?, ?)";
                 
                 // Create prepared statement
                 pstmt = conn.prepareStatement(sql);
                 pstmt.setString(1, nama);
                 pstmt.setString(2, email);
                 pstmt.setString(3, password);
+                pstmt.setInt(4, isAdmin ? 1 : 0);
                 
                 // Execute the query
                 int rowsAffected = pstmt.executeUpdate();

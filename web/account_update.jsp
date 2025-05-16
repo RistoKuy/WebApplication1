@@ -141,9 +141,8 @@
                 <div class="mb-3">
                     <label for="confirm_password" class="form-label">Confirm Password</label>
                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" value="<%= userPassword %>" required>
-                </div>
-                <div class="mt-4 d-flex justify-content-between">
-                    <a href="dashboard.jsp" class="btn-cancel">Cancel</a>
+                </div>                <div class="mt-4 d-flex justify-content-between">
+                    <a href="<%= (Boolean)session.getAttribute("isAdmin") ? "dashboard.jsp" : "main.jsp" %>" class="btn-cancel">Cancel</a>
                     <button type="submit" class="btn-update">Save Changes</button>
                 </div>
             </form>
