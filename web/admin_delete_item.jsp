@@ -54,13 +54,29 @@
         
         // Execute the query and check the result
         int rowsAffected = pstmt.executeUpdate();
-        
-        // If deletion was successful and there is an associated image, delete the file
+          // If deletion was successful and there is an associated image, delete the file from both locations
         if (rowsAffected > 0 && gambar_brg != null && !gambar_brg.isEmpty()) {
-            String uploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
-            File imageFile = new File(uploadPath + File.separator + gambar_brg);
-            if (imageFile.exists()) {
-                imageFile.delete();
+            // Delete from build directory
+            String buildUploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
+            File buildImageFile = new File(buildUploadPath + File.separator + gambar_brg);
+            if (buildImageFile.exists()) {
+                buildImageFile.delete();
+            }
+            
+            // Delete from web directory
+            try {
+                String webDirPath = request.getServletContext().getRealPath("/");
+                File webDir = new File(webDirPath);
+                String projectRoot = webDir.getParent(); // Go up from build to project root
+                String webAssetsPath = projectRoot + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                
+                File webImageFile = new File(webAssetsPath + File.separator + gambar_brg);
+                if (webImageFile.exists()) {
+                    webImageFile.delete();
+                }
+            } catch(Exception e) {
+                System.out.println("Error deleting file from web directory: " + e.getMessage());
+                // Continue execution even if deletion from web directory fails
             }
         }
         

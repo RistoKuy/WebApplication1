@@ -56,23 +56,52 @@
         // If there's an error getting the file part, continue without image
         System.out.println("Error getting file part: " + e.getMessage());
     }
-    
-    if (filePart != null && filePart.getSize() > 0) {
+      if (filePart != null && filePart.getSize() > 0) {
         String fileName = filePart.getSubmittedFileName();
         if (fileName != null && !fileName.isEmpty()) {
-            // We will use the original file name instead of generating a unique one
-            gambar_brg = fileName;
+            // Generate a unique filename to prevent overwriting
+            String fileExtension = fileName.substring(fileName.lastIndexOf("."));
+            String uniqueFileName = "item_" + System.currentTimeMillis() + fileExtension;
+            gambar_brg = uniqueFileName;
             
-            // Get the absolute path to the img directory
-            String uploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
+            // Get the absolute path to the build directory img folder
+            String buildUploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
+            File buildUploadDir = new File(buildUploadPath);
+            if (!buildUploadDir.exists()) {
+                buildUploadDir.mkdirs();
             }
             
-            // Save the file to the server using the original file name
-            // If a file with the same name exists, it will be overwritten
-            filePart.write(uploadPath + File.separator + fileName);
+            // Save the file to the build directory
+            filePart.write(buildUploadPath + File.separator + uniqueFileName);
+            
+            // Now also copy to the web directory structure for persistence
+            try {
+                // Get the project's web directory
+                String webDirPath = request.getServletContext().getRealPath("/");
+                File webDir = new File(webDirPath);
+                String projectRoot = webDir.getParent(); // Go up from build to project root
+                
+                // Source file
+                File sourceFile = new File(buildUploadPath + File.separator + uniqueFileName);
+                
+                // Define the web assets directory
+                String webAssetsPath = projectRoot + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                File webAssetsDir = new File(webAssetsPath);
+                if (!webAssetsDir.exists()) {
+                    webAssetsDir.mkdirs();
+                }
+                
+                // Destination file
+                File destinationFile = new File(webAssetsPath + File.separator + uniqueFileName);
+                
+                // Copy file using NIO for better performance
+                Files.copy(sourceFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                
+                System.out.println("Image saved to both build and web directories");
+            } catch(Exception e) {
+                System.out.println("Error copying file to web directory: " + e.getMessage());
+                // Continue execution even if copy to web directory fails
+            }
         }
     }
     
