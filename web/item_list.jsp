@@ -114,9 +114,40 @@
         .sidebar-menu li:hover, .sidebar-menu li.active {
             background-color: rgba(187, 134, 252, 0.2);
         }
-        
-        .sidebar-menu li.active a {
+          .sidebar-menu li.active a {
             color: var(--accent-purple);
+        }
+          /* Image preview styling */
+        .item-image-preview {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 4px;
+            border: 2px solid transparent;
+        }
+        
+        .item-image-preview:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(187, 134, 252, 0.6);
+            border-color: var(--accent-purple);
+        }
+        
+        #imageContainer {
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #fullSizeImage {
+            transform-origin: center;
+            cursor: move;
+        }
+        
+        .image-controls {
+            transition: opacity 0.3s ease;
+            opacity: 0.7;
+            z-index: 1050;
+        }
+        
+        .image-controls:hover {
+            opacity: 1;
         }
         
         /* Main content styling */
@@ -391,10 +422,12 @@
                         <td><%= nama_brg %></td>
                         <td><%= deskripsi %></td>
                         <td><%= harga %></td>
-                        <td><%= stok %></td>
-                        <td>
+                        <td><%= stok %></td>                        <td>
                             <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
-                                <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" height="60">
+                                <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" height="60" 
+                                    class="item-image-preview" data-bs-toggle="modal" data-bs-target="#imagePreviewModal"
+                                    data-img-src="assets/img/<%= gambar_brg %>" data-img-name="<%= nama_brg %>"
+                                    style="cursor: pointer;">
                             <% } else { %>
                                 <span class="text-muted">No image</span>
                             <% } %>
@@ -542,6 +575,30 @@
                     </div>
                 </form>
             </div>
+        </div>    </div>
+      <!-- Image Preview Modal -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title" id="imagePreviewModalLabel">Image Preview</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-0 position-relative" style="overflow: hidden; max-height: 80vh;">
+                    <div id="imageContainer" class="d-flex justify-content-center align-items-center p-3" style="min-height: 300px;">
+                        <img id="fullSizeImage" src="" alt="" class="img-fluid" style="max-width: 100%; max-height: 70vh; transition: transform 0.3s ease;">
+                    </div>
+                    <div class="image-controls position-absolute bottom-0 start-50 translate-middle-x pb-2 pt-2 px-3 bg-dark bg-opacity-75 rounded-pill">
+                        <button id="zoomIn" class="btn btn-sm btn-outline-light rounded-circle"><i class="bi bi-zoom-in"></i></button>
+                        <button id="zoomOut" class="btn btn-sm btn-outline-light rounded-circle mx-2"><i class="bi bi-zoom-out"></i></button>
+                        <button id="resetZoom" class="btn btn-sm btn-outline-light rounded-circle"><i class="bi bi-arrows-fullscreen"></i></button>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <span class="me-auto text-light small" id="imageInfo"></span>
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -651,7 +708,109 @@
                     `;
                 };
                 reader.readAsDataURL(file);
+            }        });
+          // Image Preview Modal
+        let currentZoom = 1;
+        const zoomStep = 0.25;
+        
+        document.querySelectorAll('.item-image-preview').forEach(image => {
+            image.addEventListener('click', function() {
+                const imgSrc = this.getAttribute('data-img-src');
+                const imgName = this.getAttribute('data-img-name');
+                const fullSizeImage = document.getElementById('fullSizeImage');
+                
+                // Reset zoom for new image
+                currentZoom = 1;
+                fullSizeImage.style.transform = `scale(${currentZoom})`;
+                
+                // Set the image source and update modal title
+                fullSizeImage.src = imgSrc;
+                fullSizeImage.alt = imgName;
+                document.getElementById('imagePreviewModalLabel').textContent = 'Image Preview: ' + imgName;
+                  // Show loading state and handle image load
+                fullSizeImage.style.opacity = '0.5';
+                fullSizeImage.onload = function() {
+                    fullSizeImage.style.opacity = '1';
+                    document.getElementById('imageInfo').textContent = imgName + ' (' + this.naturalWidth + ' × ' + this.naturalHeight + 'px)';
+                };
+            });
+        });
+        
+        // Image zoom controls
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            if (currentZoom < 3) {
+                currentZoom += zoomStep;
+                document.getElementById('fullSizeImage').style.transform = `scale(${currentZoom})`;
             }
+        });
+        
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            if (currentZoom > 0.5) {
+                currentZoom -= zoomStep;
+                document.getElementById('fullSizeImage').style.transform = `scale(${currentZoom})`;
+            }
+        });
+        
+        document.getElementById('resetZoom').addEventListener('click', function() {
+            currentZoom = 1;
+            document.getElementById('fullSizeImage').style.transform = 'scale(1)';
+        });
+          // Add keyboard controls
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('imagePreviewModal');
+            if (modal.classList.contains('show')) {
+                if (e.key === '+' || e.key === '=') {
+                    document.getElementById('zoomIn').click();
+                } else if (e.key === '-' || e.key === '_') {
+                    document.getElementById('zoomOut').click();
+                } else if (e.key === '0') {
+                    document.getElementById('resetZoom').click();
+                } else if (e.key === 'Escape') {
+                    modal.querySelector('.btn-close').click();
+                }
+            }
+        });
+        
+        // Image dragging functionality when zoomed
+        const fullSizeImage = document.getElementById('fullSizeImage');
+        let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
+        
+        fullSizeImage.addEventListener('mousedown', function(e) {
+            if (currentZoom > 1) {
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                this.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging && currentZoom > 1) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                fullSizeImage.style.transform = `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`;
+            }
+        });
+        
+        document.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                fullSizeImage.style.cursor = 'move';
+            }
+        });
+        
+        // Reset position when zoom is reset
+        document.getElementById('resetZoom').addEventListener('click', function() {
+            translateX = 0;
+            translateY = 0;
+        });
+        
+        // Reset position on new image
+        document.getElementById('imagePreviewModal').addEventListener('hidden.bs.modal', function() {
+            translateX = 0;
+            translateY = 0;
         });
     </script>
     
