@@ -32,18 +32,35 @@
     String stokStr = request.getParameter("stok");
     int stok = 0;
     
-    try {
-        stok = Integer.parseInt(stokStr);
-    } catch (NumberFormatException e) {
-        stok = 0; // Default to 0 if parsing fails
-    }
-    
     // Validate required form fields
     if (nama_brg == null || nama_brg.trim().isEmpty()) {
         response.sendRedirect("item_list.jsp?error=Item name cannot be empty");
         return;
     }
-      // Handle image file upload
+    // Validate harga is a valid number (integer or decimal)
+    try {
+        Double.parseDouble(harga);
+    } catch (NumberFormatException e) {
+        response.sendRedirect("item_list.jsp?error=Harga harus berupa angka!");
+        return;
+    }
+    // Validate stok is a valid integer and non-negative
+    if (stokStr == null || stokStr.trim().isEmpty()) {
+        response.sendRedirect("item_list.jsp?error=Stok tidak boleh kosong!");
+        return;
+    }
+    try {
+        stok = Integer.parseInt(stokStr);
+        if (stok < 0) {
+            response.sendRedirect("item_list.jsp?error=Stok tidak boleh negatif!");
+            return;
+        }
+    } catch (NumberFormatException e) {
+        response.sendRedirect("item_list.jsp?error=Stok harus berupa angka bulat!");
+        return;
+    }
+    
+    // Handle image file upload
     String gambar_brg = "";
     Part filePart = null;
     
