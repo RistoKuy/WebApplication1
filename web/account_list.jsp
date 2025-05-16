@@ -359,7 +359,6 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
                         <th>Actions</th>
@@ -379,7 +378,6 @@
                                 String password = rs.getString("password");
                     %>
                     <tr>
-                        <td><%= id %></td>
                         <td><%= nama %></td>
                         <td><%= email %></td>
                         <td>
@@ -407,12 +405,12 @@
                             if (!rs.isBeforeFirst()) { // Check if ResultSet is empty
                     %>
                     <tr>
-                        <td colspan="4" class="text-center">No other users found.</td>
+                        <td colspan="3" class="text-center">No other users found.</td>
                     </tr>
                     <% 
                             }
                         } catch (Exception e) {
-                            out.println("<tr><td colspan='4' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
+                            out.println("<tr><td colspan='3' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
                         }
                     %>
                 </tbody>

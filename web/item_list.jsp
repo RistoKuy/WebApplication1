@@ -394,11 +394,9 @@
             
             <table class="table table-striped">                <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Item Name</th>
-                        <th>Description</th>
-                        <th>Price</th>
+                        <th>Name</th>
                         <th>Stock</th>
+                        <th>Price</th>
                         <th>Image</th>
                         <th>Actions</th>
                     </tr>
@@ -410,7 +408,6 @@
                             pstmt = conn.prepareStatement(sql);
                             rs = pstmt.executeQuery();
                               while(rs.next()) {
-                                int id = rs.getInt("id_brg");
                                 String nama_brg = rs.getString("nama_brg");
                                 String deskripsi = rs.getString("deskripsi");
                                 String harga = rs.getString("harga");
@@ -418,11 +415,10 @@
                                 String gambar_brg = rs.getString("gambar_brg");
                     %>
                     <tr>
-                        <td><%= id %></td>
                         <td><%= nama_brg %></td>
-                        <td><%= deskripsi %></td>
+                        <td><%= stok %></td>
                         <td><%= harga %></td>
-                        <td><%= stok %></td>                        <td>
+                        <td>
                             <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
                                 <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" height="60" 
                                     class="item-image-preview" data-bs-toggle="modal" data-bs-target="#imagePreviewModal"
@@ -436,7 +432,6 @@
                             <button class="btn btn-edit" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#editItemModal"
-                                    data-id="<%= id %>"
                                     data-nama="<%= nama_brg %>"
                                     data-deskripsi="<%= deskripsi %>"
                                     data-harga="<%= harga %>"
@@ -447,7 +442,6 @@
                             <button class="btn btn-delete" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#deleteItemModal"
-                                    data-id="<%= id %>"
                                     data-nama="<%= nama_brg %>">
                                 <i class="bi bi-trash me-1"></i>Delete
                             </button>
@@ -459,12 +453,12 @@
                             // If no records found, display message
                             if (!rs.isBeforeFirst()) { // Check if ResultSet is empty
                     %>                    <tr>
-                        <td colspan="7" class="text-center">No items found</td>
+                        <td colspan="5" class="text-center">No items found</td>
                     </tr>
                     <% 
                             }
                         } catch (Exception e) {
-                            out.println("<tr><td colspan='7' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
+                            out.println("<tr><td colspan='5' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
                         }
                     %>
                 </tbody>
@@ -826,3 +820,4 @@
     %>
 </body>
 </html>
+``` 
