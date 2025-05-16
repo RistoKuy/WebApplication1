@@ -413,11 +413,13 @@
                                 String harga = rs.getString("harga");
                                 int stok = rs.getInt("stok");
                                 String gambar_brg = rs.getString("gambar_brg");
+                                // Format harga ke format "Rp 100.000"
+                                String hargaFormatted = "Rp " + String.format("%,d", Integer.parseInt(harga)).replace(',', '.');
                     %>
                     <tr>
                         <td><%= nama_brg %></td>
                         <td><%= stok %></td>
-                        <td><%= harga %></td>
+                        <td><%= hargaFormatted %></td>
                         <td>
                             <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
                                 <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" height="60" 
@@ -820,4 +822,3 @@
     %>
 </body>
 </html>
-``` 

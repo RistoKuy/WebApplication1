@@ -275,6 +275,8 @@
                     String harga = rs.getString("harga");
                     int stok = rs.getInt("stok");
                     String gambar_brg = rs.getString("gambar_brg");
+                    // Format harga ke format "Rp 100.000"
+                    String hargaFormatted = "Rp " + String.format("%,d", Integer.parseInt(harga)).replace(',', '.');
             %>
             <div class="col-md-4">
                 <div class="card border-0 shadow h-100">
@@ -289,10 +291,10 @@
                         <h5 class="card-title fw-bold"><%= nama_brg %></h5>
                         <p class="card-text text-white small"><%= deskripsi %></p>
                         <div class="mb-2">
-                            <span class="badge bg-success">Stok: <%= stok %></span>
+                            <span class="fw-bold text-white">Harga: <%= hargaFormatted %></span>
                         </div>
-                        <div class="mb-3">
-                            <span class="fw-bold text-warning">Rp <%= harga %></span>
+                        <div class="mb-2">
+                            <span class="badge bg-success">Stok: <%= stok %></span>
                         </div>
                         <a href="#" class="btn btn-primary rounded-pill px-4 disabled"><i class="bi bi-cart"></i> Beli</a>
                     </div>
