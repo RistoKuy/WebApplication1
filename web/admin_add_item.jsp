@@ -32,18 +32,35 @@
     String stokStr = request.getParameter("stok");
     int stok = 0;
     
-    try {
-        stok = Integer.parseInt(stokStr);
-    } catch (NumberFormatException e) {
-        stok = 0; // Default to 0 if parsing fails
-    }
-    
     // Validate required form fields
     if (nama_brg == null || nama_brg.trim().isEmpty()) {
         response.sendRedirect("item_list.jsp?error=Item name cannot be empty");
         return;
     }
-      // Handle image file upload
+    // Validate harga is a valid number (integer or decimal)
+    try {
+        Double.parseDouble(harga);
+    } catch (NumberFormatException e) {
+        response.sendRedirect("item_list.jsp?error=Harga harus berupa angka!");
+        return;
+    }
+    // Validate stok is a valid integer and non-negative
+    if (stokStr == null || stokStr.trim().isEmpty()) {
+        response.sendRedirect("item_list.jsp?error=Stok tidak boleh kosong!");
+        return;
+    }
+    try {
+        stok = Integer.parseInt(stokStr);
+        if (stok < 0) {
+            response.sendRedirect("item_list.jsp?error=Stok tidak boleh negatif!");
+            return;
+        }
+    } catch (NumberFormatException e) {
+        response.sendRedirect("item_list.jsp?error=Stok harus berupa angka bulat!");
+        return;
+    }
+    
+    // Handle image file upload
     String gambar_brg = "";
     Part filePart = null;
     
@@ -56,23 +73,51 @@
         // If there's an error getting the file part, continue without image
         System.out.println("Error getting file part: " + e.getMessage());
     }
-    
-    if (filePart != null && filePart.getSize() > 0) {
+      if (filePart != null && filePart.getSize() > 0) {
         String fileName = filePart.getSubmittedFileName();
         if (fileName != null && !fileName.isEmpty()) {
-            // We will use the original file name instead of generating a unique one
-            gambar_brg = fileName;
+            // Generate a unique filename to prevent overwriting
+            String fileExtension = fileName.substring(fileName.lastIndexOf("."));
+            String uniqueFileName = "item_" + System.currentTimeMillis() + fileExtension;
+            gambar_brg = uniqueFileName;
             
-            // Get the absolute path to the img directory
-            String uploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
+            // Get the absolute path to the build directory img folder
+            String buildUploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
+            File buildUploadDir = new File(buildUploadPath);
+            if (!buildUploadDir.exists()) {
+                buildUploadDir.mkdirs();
             }
             
-            // Save the file to the server using the original file name
-            // If a file with the same name exists, it will be overwritten
-            filePart.write(uploadPath + File.separator + fileName);
+            // Save the file to the build directory
+            filePart.write(buildUploadPath + File.separator + uniqueFileName);
+
+            // Define the source file for copying (must be after filePart.write)
+            File sourceFile = new File(buildUploadPath + File.separator + uniqueFileName);
+            // Now also copy to the persistent web/assets/img directory
+            try {
+                // Get the build directory (build/web)
+                String buildDirPath = getServletContext().getRealPath("");
+                File buildDir = new File(buildDirPath);
+                // Go up two levels to get the project root
+                String projectRoot = buildDir.getParentFile().getParent();
+                String persistentAssetsPath = projectRoot + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                File persistentAssetsDir = new File(persistentAssetsPath);
+                if (!persistentAssetsDir.exists()) {
+                    boolean created = persistentAssetsDir.mkdirs();
+                    if (!created) {
+                        System.out.println("Failed to create persistent web assets directory: " + persistentAssetsPath);
+                    }
+                }
+                File persistentDestFile = new File(persistentAssetsPath + File.separator + uniqueFileName);
+                try {
+                    Files.copy(sourceFile.toPath(), persistentDestFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("Image saved to both build and persistent web/assets/img directories");
+                } catch(Exception e) {
+                    System.out.println("Error copying file to persistent web/assets/img: " + e.getMessage());
+                }
+            } catch(Exception e) {
+                System.out.println("Error preparing persistent web/assets/img directory: " + e.getMessage());
+            }
         }
     }
     

@@ -9,6 +9,9 @@
         return;
     }
     
+    // Get currently logged-in user's email
+    String userEmail = (String) session.getAttribute("userEmail");
+    
     // Get user ID to delete
     String idStr = request.getParameter("id");
     
@@ -40,7 +43,21 @@
         String dbUser = "root";
         String dbPassword = "";
         
-        conn = DriverManager.getConnection(url, dbUser, dbPassword);
+        conn = DriverManager.getConnection(url, dbUser, dbPassword);        // First, check if the user is trying to delete their own account
+        String checkSql = "SELECT email FROM user WHERE id = ?";
+        pstmt = conn.prepareStatement(checkSql);
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+        
+        if (rs.next() && rs.getString("email").equals(userEmail)) {
+            // Trying to delete own account
+            if (rs != null) rs.close();
+            response.sendRedirect("account_list.jsp?error=You cannot delete your own account");
+            return;
+        }
+        
+        // Close the result set after check
+        if (rs != null) rs.close();
         
         // Create SQL DELETE statement
         String sql = "DELETE FROM user WHERE id = ?";
@@ -60,9 +77,9 @@
             response.sendRedirect("account_list.jsp?error=Failed to delete user. User ID may not exist.");
         }
     } catch(Exception e) {
-        response.sendRedirect("account_list.jsp?error=" + e.getMessage());
-    } finally {
+        response.sendRedirect("account_list.jsp?error=" + e.getMessage());    } finally {
         try {
+            // We already closed the result set after our check, but just to be safe
             if(pstmt != null) pstmt.close();
             if(conn != null) conn.close();
         } catch(SQLException se) {

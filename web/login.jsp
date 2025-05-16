@@ -184,10 +184,15 @@
                 <div class="mb-3">
                     <label for="email" class="form-label">Your Email</label>
                     <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <div class="mb-3">
+                </div>                <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="isAdmin" name="isAdmin" value="1">
+                        <label class="form-check-label" for="isAdmin">Login as Admin</label>
+                    </div>
                 </div>
                 <div class="mt-4">
                     <button type="submit" class="btn-register">Login</button>

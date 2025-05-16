@@ -9,15 +9,23 @@
         return;
     }
     
+    // Get currently logged-in user's email
+    String userEmail = (String) session.getAttribute("userEmail");
+    
     // Get form data
     String nama = request.getParameter("nama");
     String email = request.getParameter("email");
     String password = request.getParameter("password");
     
-    // Validate input data
-    if (nama == null || email == null || password == null || 
+    // Validate input data    if (nama == null || email == null || password == null || 
         nama.trim().isEmpty() || email.trim().isEmpty() || password.trim().isEmpty()) {
         response.sendRedirect("account_list.jsp?error=All fields are required");
+        return;
+    }
+    
+    // Check if trying to create a user with the same email as the logged-in user
+    if (email.equals(userEmail)) {
+        response.sendRedirect("account_list.jsp?error=Cannot create a new user with your email address");
         return;
     }
     

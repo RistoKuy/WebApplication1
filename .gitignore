@@ -50,4 +50,6 @@ Desktop.ini
 # Linux
 *~
 .directory
+
 nbproject/private/private.xml
+web/assets/img

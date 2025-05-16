@@ -296,8 +296,8 @@
             response.sendRedirect("login.jsp");
             return;
         }
-        
-        String userName = (String) session.getAttribute("userName");
+          String userName = (String) session.getAttribute("userName");
+        String userEmail = (String) session.getAttribute("userEmail");
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -346,27 +346,30 @@
                     <i class="bi bi-check-circle-fill me-2"></i><%= request.getParameter("success") %>
                 </div>
             <% } %>
-            
-            <% if (request.getParameter("error") != null) { %>
+              <% if (request.getParameter("error") != null) { %>
                 <div class="alert alert-danger">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i><%= request.getParameter("error") %>
                 </div>
             <% } %>
             
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle-fill me-2"></i>Your own account (<strong><%= userEmail %></strong>) is not shown in this list.
+            </div>
+            
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <% 
+                <tbody>                    <% 
                         try {
-                            String sql = "SELECT * FROM user ORDER BY id";
+                            String sql = "SELECT * FROM user WHERE email != ? ORDER BY id";
                             pstmt = conn.prepareStatement(sql);
+                            pstmt.setString(1, userEmail);
                             rs = pstmt.executeQuery();
                             
                             while(rs.next()) {
@@ -374,11 +377,20 @@
                                 String nama = rs.getString("nama");
                                 String email = rs.getString("email");
                                 String password = rs.getString("password");
+                                int isAdmin = rs.getInt("is_admin");
                     %>
                     <tr>
-                        <td><%= id %></td>
                         <td><%= nama %></td>
                         <td><%= email %></td>
+                        <td>
+                            <form action="admin_update_role.jsp" method="post" style="display:inline-block; margin-right:10px;">
+                                <input type="hidden" name="id" value="<%= id %>">
+                                <select name="is_admin" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                                    <option value="0" <%= isAdmin == 0 ? "selected" : "" %>>User</option>
+                                    <option value="1" <%= isAdmin == 1 ? "selected" : "" %>>Admin</option>
+                                </select>
+                            </form>
+                        </td>
                         <td>
                             <button class="btn btn-edit" 
                                     data-bs-toggle="modal" 
@@ -400,10 +412,12 @@
                     </tr>
                     <% 
                             }
-                            
-                            // If no records found, display message
+                              // If no records found, display message
                             if (!rs.isBeforeFirst()) { // Check if ResultSet is empty
                     %>
+                    <tr>
+                        <td colspan="4" class="text-center">No other users found.</td>
+                    </tr>
                     <% 
                             }
                         } catch (Exception e) {

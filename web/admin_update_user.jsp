@@ -9,6 +9,9 @@
         return;
     }
     
+    // Get currently logged-in user's email
+    String userEmail = (String) session.getAttribute("userEmail");
+    
     // Get form data
     String idStr = request.getParameter("id");
     String nama = request.getParameter("nama");
@@ -43,8 +46,27 @@
         String url = "jdbc:mysql://localhost:3306/web_enterprise";
         String dbUser = "root";
         String dbPassword = "";
+          conn = DriverManager.getConnection(url, dbUser, dbPassword);
+          // First check if trying to update currently logged in user
+        String checkSql = "SELECT email FROM user WHERE id = ?";
+        pstmt = conn.prepareStatement(checkSql);
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+          if (rs.next() && rs.getString("email").equals(userEmail)) {
+            // Trying to update own account from admin page
+            if (rs != null) rs.close();
+            response.sendRedirect("account_list.jsp?error=Please use your profile page to update your own account");
+            return;
+        }
         
-        conn = DriverManager.getConnection(url, dbUser, dbPassword);
+        // Close the result set after check
+        if (rs != null) rs.close();
+        
+        // Check if email is being changed to the logged-in user's email
+        if (email.equals(userEmail)) {
+            response.sendRedirect("account_list.jsp?error=Cannot use your email for another account");
+            return;
+        }
         
         // Create SQL UPDATE statement
         String sql = "UPDATE user SET nama = ?, email = ?, password = ? WHERE id = ?";
@@ -68,8 +90,8 @@
         }
     } catch(Exception e) {
         response.sendRedirect("account_list.jsp?error=" + e.getMessage());
-    } finally {
-        try {
+    } finally {        try {
+            // We already closed the result set after our check, but just to be safe
             if(pstmt != null) pstmt.close();
             if(conn != null) conn.close();
         } catch(SQLException se) {

@@ -1,4 +1,19 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%
+    // Check if user is logged in and is an admin
+    Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
+    Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
+    
+    if (isLoggedIn == null || !isLoggedIn || isAdmin == null || !isAdmin) {
+        // Not logged in or not an admin, redirect to login
+        response.sendRedirect("login.jsp");
+        return;
+    }
+    
+    // Get admin information from session
+    String adminName = (String) session.getAttribute("userName");
+    String adminEmail = (String) session.getAttribute("userEmail");
+%>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -211,14 +226,6 @@
     <div class="overlay"></div>
     
     <%
-        // Check if user is logged in
-        Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
-        if (isLoggedIn == null || !isLoggedIn) {
-            // Redirect to login page if not logged in
-            response.sendRedirect("login.jsp");
-            return;
-        }
-        
         // Get user ID from session
         String userID = (String) session.getAttribute("userID");
         String userName = "";
@@ -272,7 +279,7 @@
     
     <!-- Main Content -->
     <div class="main-content">
-        <h1 class="neon-text">Selamat Datang, <%= userName %></h1>
+        <h1 class="neon-text">Selamat Datang, <%= adminName %> (Admin)</h1>
         
         <div class="row">
             <div class="col-md-6 mb-4">
