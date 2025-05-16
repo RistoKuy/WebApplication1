@@ -361,6 +361,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -376,10 +377,20 @@
                                 String nama = rs.getString("nama");
                                 String email = rs.getString("email");
                                 String password = rs.getString("password");
+                                int isAdmin = rs.getInt("is_admin");
                     %>
                     <tr>
                         <td><%= nama %></td>
                         <td><%= email %></td>
+                        <td>
+                            <form action="admin_update_role.jsp" method="post" style="display:inline-block; margin-right:10px;">
+                                <input type="hidden" name="id" value="<%= id %>">
+                                <select name="is_admin" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                                    <option value="0" <%= isAdmin == 0 ? "selected" : "" %>>User</option>
+                                    <option value="1" <%= isAdmin == 1 ? "selected" : "" %>>Admin</option>
+                                </select>
+                            </form>
+                        </td>
                         <td>
                             <button class="btn btn-edit" 
                                     data-bs-toggle="modal" 
@@ -405,12 +416,12 @@
                             if (!rs.isBeforeFirst()) { // Check if ResultSet is empty
                     %>
                     <tr>
-                        <td colspan="3" class="text-center">No other users found.</td>
+                        <td colspan="4" class="text-center">No other users found.</td>
                     </tr>
                     <% 
                             }
                         } catch (Exception e) {
-                            out.println("<tr><td colspan='3' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
+                            out.println("<tr><td colspan='4' class='text-center'>Error displaying data: " + e.getMessage() + "</td></tr>");
                         }
                     %>
                 </tbody>
