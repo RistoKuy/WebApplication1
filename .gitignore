@@ -50,4 +50,7 @@ Desktop.ini
 # Linux
 *~
 .directory
+
 nbproject/private/private.xml
+/*
+!/img/
