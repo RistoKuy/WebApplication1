@@ -7,9 +7,16 @@
 <%@ page import="java.nio.file.*" %>
 <%
     // Check if user is logged in
-    Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
-    if (isLoggedIn == null || !isLoggedIn) {
-        // Just check if the user is logged in without redirecting
+    Object isLoggedInObj = session.getAttribute("loggedIn");
+    boolean isLoggedIn = false;
+    if (isLoggedInObj != null) {
+        if (isLoggedInObj instanceof Boolean) {
+            isLoggedIn = (Boolean) isLoggedInObj;
+        } else if (isLoggedInObj instanceof String) {
+            isLoggedIn = Boolean.parseBoolean((String) isLoggedInObj);
+        }
+    }
+    if (!isLoggedIn) {
         out.println("User is not logged in");
         return; // Stop processing if not logged in
     }
@@ -18,13 +25,12 @@
     if (!"POST".equalsIgnoreCase(request.getMethod())) {
         out.println("This page processes form submissions only.");
         return;
-    }
-    
-    // Get parameters from form
+    }    // Get parameters from form
     String nama_brg = request.getParameter("nama_brg");
     String deskripsi = request.getParameter("deskripsi");
     String harga = request.getParameter("harga");
-    String stokStr = request.getParameter("stok");    int stok = 0;
+    String stokStr = request.getParameter("stok");
+    int stok = 0;
     
     try {
         stok = Integer.parseInt(stokStr);
@@ -54,10 +60,8 @@
     if (filePart != null && filePart.getSize() > 0) {
         String fileName = filePart.getSubmittedFileName();
         if (fileName != null && !fileName.isEmpty()) {
-            // Generate a unique filename to prevent overwriting
-            String fileExtension = fileName.substring(fileName.lastIndexOf("."));
-            String uniqueFileName = "item_" + System.currentTimeMillis() + fileExtension;
-            gambar_brg = uniqueFileName;
+            // We will use the original file name instead of generating a unique one
+            gambar_brg = fileName;
             
             // Get the absolute path to the img directory
             String uploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
@@ -66,8 +70,9 @@
                 uploadDir.mkdirs();
             }
             
-            // Save the file to the server
-            filePart.write(uploadPath + File.separator + uniqueFileName);
+            // Save the file to the server using the original file name
+            // If a file with the same name exists, it will be overwritten
+            filePart.write(uploadPath + File.separator + fileName);
         }
     }
     

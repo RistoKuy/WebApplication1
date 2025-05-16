@@ -446,7 +446,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="addItemModalLabel">Add New Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>                <form action="admin_add_item.jsp" method="post">
+                </div>                <form action="admin_add_item.jsp" method="post" enctype="multipart/form-data">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="add-nama" class="form-label">Item Name</label>
