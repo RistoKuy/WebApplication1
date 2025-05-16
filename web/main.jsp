@@ -1,21 +1,13 @@
-<%-- 
-    Document   : home
-    Created on : 23 Apr 2025, 11.31.51
-    Author     : Aristo Baadi
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="java.sql.*"%>
+<%-- Shop Page: Show Item List --%>
 <%
     // Check if user is logged in
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
-    
     if (isLoggedIn == null || !isLoggedIn) {
-        // Not logged in, redirect to login
         response.sendRedirect("login.jsp");
         return;
     }
-    
-    // Get user information from session
     String userName = (String) session.getAttribute("userName");
 %>
 <!DOCTYPE html>
@@ -23,14 +15,9 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Beranda | Aplikasi JSP</title>
-    <!-- Panggil Bootstrap lokal -->
+    <title>Toko Online | Aplikasi JSP</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Adding Bootstrap Icons CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    
-    <!-- Custom styles inside head -->
     <style>
         :root {
             --dark-bg: #121212;
@@ -43,14 +30,12 @@
             --text-secondary: #b0b0b0;
         }
         
-        /* Hero section enhancements */
         .bg-gradient {
             position: relative;
             overflow: hidden;
             background: none !important;
         }
         
-        /* Add the hero background image overlay */
         .hero-background {
             position: fixed;
             top: 0;
@@ -65,7 +50,6 @@
             filter: brightness(0.6);
         }
         
-        /* Page overlay to darken the background image slightly */
         .overlay {
             position: fixed;
             top: 0;
@@ -142,7 +126,6 @@
             opacity: 0.9;
         }
         
-        /* Card styling */
         .card-title {
             font-size: 1.5rem;
             color: rgba(255, 255, 255);
@@ -161,45 +144,10 @@
             border-color: var(--accent-purple);
         }
         
-        /* Feature icon styling */
-        .feature-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 70px;
-            height: 70px;
-            font-size: 1.8rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
-            border-radius: 50%;
-        }
-        
-        .icon-security {
-            background: linear-gradient(135deg, #bb86fc, #9546fa);
-        }
-        
-        .icon-performance {
-            background: linear-gradient(135deg, #03dac6, #018786);
-        }
-        
-        .icon-responsive {
-            background: linear-gradient(135deg, #cf6679, #b4354e);
-        }
-        
         .text-muted {
             color: var(--text-secondary) !important;
         }
         
-        /* CTA section */
-        .cta-container {
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            background: rgba(24, 24, 24, 0.6);
-            backdrop-filter: blur(15px);
-        }
-        
-        /* Footer styling */
         footer {
             background-color: rgba(10, 10, 10, 0.8) !important;
             backdrop-filter: blur(15px);
@@ -233,7 +181,6 @@
             color: #000 !important;
         }
         
-        /* Smooth scroll behavior */
         html {
             scroll-behavior: smooth;
             scrollbar-color: var(--accent-purple) var(--dark-bg);
@@ -252,7 +199,6 @@
             border-radius: 5px;
         }
         
-        /* Neon text effect */
         .neon-text {
             color: var(--text-primary);
             text-shadow: 0 0 5px rgba(187, 134, 252, 0.5),
@@ -261,24 +207,22 @@
     </style>
 </head>
 <body>
-    <!-- Background image and overlay -->
     <div class="hero-background"></div>
     <div class="overlay"></div>
-    
-    <!-- Enhanced Navbar with shadow and custom styling -->
     <nav class="navbar navbar-expand-lg shadow fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">
-                <i class="bi bi-code-square me-2"></i>Aplikasi JSP
+                <i class="bi bi-shop me-2"></i>Toko JSP
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
                 aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">                <ul class="navbar-nav ms-auto">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item ms-2">
-                        <span class="nav-link fw-semibold">Selamat Datang, <%= userName %> (User)</span>
+                        <span class="nav-link fw-semibold">Selamat Datang, <%= userName %></span>
                     </li>
                     <li class="nav-item ms-2">
                         <a class="nav-link fw-semibold" href="update_profile.jsp">
@@ -294,88 +238,90 @@
             </div>
         </div>
     </nav>
-      <!-- Hero Section with Gradient Background -->
+    <!-- Hero Section -->
     <div class="py-5 bg-gradient" style="padding-top: 8rem !important;">
-        <div class="container text-center py-5 glow-effect">
-            <h1 class="display-4 fw-bold text-white mb-3 neon-text">Selamat Datang, <%= userName %></h1>
-            <p class="lead text-white opacity-90 mb-4">Halaman utama aplikasi JSP untuk pengguna reguler.</p>
-            <div class="mt-4">
-                <a href="#features" class="btn btn-light btn-lg rounded-pill shadow px-5 py-3 fw-semibold">
-                    <i class="bi bi-arrow-down-circle me-2"></i>Fitur Kami
-                </a>
-            </div>
+        <div class="container text-center py-5">
+            <h1 class="display-4 fw-bold text-white mb-3 neon-text">Toko Online JSP</h1>
+            <p class="lead text-white opacity-90 mb-4">Temukan berbagai produk menarik di toko kami!</p>
         </div>
     </div>
-    
-    <!-- Features Section -->
+    <!-- Item List Section -->
     <div class="container py-5">
         <div class="row text-center mb-5">
             <div class="col-lg-8 mx-auto">
-                <h2 class="fw-bold neon-text">Fitur Unggulan</h2>
-                <p class="lead text-white">Aplikasi JSP ini dilengkapi berbagai fitur untuk memudahkan pengguna.</p>
+                <h2 class="fw-bold neon-text">Daftar Produk</h2>
+                <p class="lead text-white">Belanja produk terbaik dengan harga terjangkau.</p>
             </div>
         </div>
         <div class="row g-4">
+            <% 
+            Connection conn = null;
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                String url = "jdbc:mysql://localhost:3306/web_enterprise";
+                String dbUser = "root";
+                String dbPassword = "";
+                conn = DriverManager.getConnection(url, dbUser, dbPassword);
+                String sql = "SELECT * FROM item ORDER BY id_brg DESC";
+                pstmt = conn.prepareStatement(sql);
+                rs = pstmt.executeQuery();
+                boolean hasItem = false;
+                while(rs.next()) {
+                    hasItem = true;
+                    String nama_brg = rs.getString("nama_brg");
+                    String deskripsi = rs.getString("deskripsi");
+                    String harga = rs.getString("harga");
+                    int stok = rs.getInt("stok");
+                    String gambar_brg = rs.getString("gambar_brg");
+            %>
             <div class="col-md-4">
                 <div class="card border-0 shadow h-100">
                     <div class="card-body text-center p-4">
-                        <div class="feature-icon icon-security text-white rounded-circle mb-4">
-                            <i class="bi bi-shield-check"></i>
+                        <div class="mb-3">
+                            <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
+                                <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" class="img-fluid rounded" style="max-height: 180px; object-fit: contain; background: #222;">
+                            <% } else { %>
+                                <span class="text-muted">No image</span>
+                            <% } %>
                         </div>
-                        <h5 class="card-title fw-bold">Keamanan Terjamin</h5>
-                        <p class="card-text text-white">Sistem keamanan berlapis dengan enkripsi data yang kuat untuk melindungi informasi.</p>
+                        <h5 class="card-title fw-bold"><%= nama_brg %></h5>
+                        <p class="card-text text-white small"><%= deskripsi %></p>
+                        <div class="mb-2">
+                            <span class="badge bg-success">Stok: <%= stok %></span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="fw-bold text-warning">Rp <%= harga %></span>
+                        </div>
+                        <a href="#" class="btn btn-primary rounded-pill px-4 disabled"><i class="bi bi-cart"></i> Beli</a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon icon-performance text-white rounded-circle mb-4">
-                            <i class="bi bi-speedometer2"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Performa Tinggi</h5>
-                        <p class="card-text text-white">Aplikasi dioptimalkan untuk memberikan pengalaman pengguna yang cepat dan responsif.</p>
-                    </div>
+            <% }
+                if (!hasItem) { %>
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">Belum ada produk tersedia.</div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow h-100">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon icon-responsive text-white rounded-circle mb-4">
-                            <i class="bi bi-phone"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Responsif</h5>
-                        <p class="card-text text-white">Tampilan yang adaptif pada berbagai perangkat dari desktop hingga mobile.</p>
-                    </div>
+            <% }
+            } catch(Exception e) { %>
+                <div class="col-12 text-center">
+                    <div class="alert alert-danger">Gagal menampilkan produk: <%= e.getMessage() %></div>
                 </div>
-            </div>
+            <% } finally {
+                try { if(rs != null) rs.close(); } catch(Exception e) {}
+                try { if(pstmt != null) pstmt.close(); } catch(Exception e) {}
+                try { if(conn != null) conn.close(); } catch(Exception e) {}
+            } %>
         </div>
     </div>
-    
-    <!-- CTA Section -->
-    <div class="py-5">
-        <div class="container py-4">
-            <div class="row align-items-center cta-container p-4">
-                <div class="col-lg-8">
-                    <h2 class="fw-bold neon-text">Siap untuk memulai?</h2>
-                    <p class="lead mb-0">Daftar sekarang dan nikmati semua fitur yang tersedia.</p>
-                </div>
-                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                    <a href="register.jsp" class="btn btn-primary btn-lg px-4 rounded-pill shadow">
-                        <i class="bi bi-person-plus me-2"></i>Daftar
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <!-- Footer -->
     <footer class="py-4">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5 class="mb-3 text-white">Aplikasi JSP</h5>
-                    <p class="text-muted">Aplikasi web berbasis Java Server Pages dengan Bootstrap untuk tampilan yang menarik.</p>
+                    <h5 class="mb-3 text-white">Toko JSP</h5>
+                    <p class="text-muted">Aplikasi web toko online berbasis Java Server Pages dengan Bootstrap.</p>
                 </div>
                 <div class="col-md-3">
                     <h5 class="mb-3 text-white">Menu</h5>
@@ -388,7 +334,7 @@
                 <div class="col-md-3">
                     <h5 class="mb-3 text-white">Kontak</h5>
                     <ul class="list-unstyled">
-                        <li><i class="bi bi-envelope me-2"></i>info@aplikasijsp.com</li>
+                        <li><i class="bi bi-envelope me-2"></i>info@tokojsp.com</li>
                         <li><i class="bi bi-phone me-2"></i>+62 123 4567 890</li>
                     </ul>
                 </div>
@@ -396,7 +342,7 @@
             <hr class="my-4" style="border-color: rgba(255, 255, 255, 0.1);">
             <div class="row align-items-center">
                 <div class="col-md-6 text-md-start">
-                    <p class="small mb-0 text-muted">© 2025 Aplikasi JSP. Hak Cipta Dilindungi.</p>
+                    <p class="small mb-0 text-muted">© 2025 Toko JSP. Hak Cipta Dilindungi.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <a href="#" class="social-icon text-decoration-none link-light"><i class="bi bi-facebook"></i></a>
@@ -407,8 +353,6 @@
             </div>
         </div>
     </footer>
-    
-    <!-- Panggil Bootstrap JS lokal -->
     <script src="js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
