@@ -9,8 +9,14 @@
     // Check if user is logged in
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
     if (isLoggedIn == null || !isLoggedIn) {
-        // Redirect to login page if not logged in
-        response.sendRedirect("login.jsp");
+        // Just check if the user is logged in without redirecting
+        out.println("User is not logged in");
+        return; // Stop processing if not logged in
+    }
+    
+    // Check if this is a form submission by checking if the request method is POST
+    if (!"POST".equalsIgnoreCase(request.getMethod())) {
+        out.println("This page processes form submissions only.");
         return;
     }
     
@@ -18,8 +24,7 @@
     String nama_brg = request.getParameter("nama_brg");
     String deskripsi = request.getParameter("deskripsi");
     String harga = request.getParameter("harga");
-    String stokStr = request.getParameter("stok");
-    int stok = 0;
+    String stokStr = request.getParameter("stok");    int stok = 0;
     
     try {
         stok = Integer.parseInt(stokStr);
@@ -27,12 +32,20 @@
         stok = 0; // Default to 0 if parsing fails
     }
     
-    // Handle image file upload
+    // Validate required form fields
+    if (nama_brg == null || nama_brg.trim().isEmpty()) {
+        response.sendRedirect("item_list.jsp?error=Item name cannot be empty");
+        return;
+    }
+      // Handle image file upload
     String gambar_brg = "";
     Part filePart = null;
     
     try {
-        filePart = request.getPart("gambar_file");
+        // Check if the request is multipart content
+        if (request.getContentType() != null && request.getContentType().toLowerCase().contains("multipart/form-data")) {
+            filePart = request.getPart("gambar_file");
+        }
     } catch (Exception e) {
         // If there's an error getting the file part, continue without image
         System.out.println("Error getting file part: " + e.getMessage());

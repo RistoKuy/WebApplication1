@@ -446,7 +446,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="addItemModalLabel">Add New Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>                <form action="admin_add_item.jsp" method="post" enctype="multipart/form-data">
+                </div>                <form action="admin_add_item.jsp" method="post">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="add-nama" class="form-label">Item Name</label>
@@ -467,7 +467,7 @@
                         <div class="mb-3">
                             <label for="add-gambar" class="form-label">Image</label>
                             <input type="file" class="form-control" id="add-gambar" name="gambar_file" accept="image/*">
-                            <div class="form-text">Select an image file (JPG, PNG, GIF)</div>
+                            <div class="form-text">Select an image file (JPG, JPEG, PNG, GIF)</div>
                         </div>
                     </div>
                     <div class="modal-footer">
