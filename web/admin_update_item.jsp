@@ -56,34 +56,33 @@
             
             // Save the file to the build directory
             filePart.write(buildUploadPath + File.separator + uniqueFileName);
-            
-            // Get the project's web directory for persistence
-            String webDirPath = request.getServletContext().getRealPath("/");
-            File webDir = new File(webDirPath);
-            String projectRoot = webDir.getParent(); // Go up from build to project root
-            String webAssetsPath = projectRoot + File.separator + "web" + File.separator + "assets" + File.separator + "img";
-            
-            // Now also copy to the web directory structure for persistence
+
+            // Define the source file for copying (must be after filePart.write)
+            File sourceFile = new File(buildUploadPath + File.separator + uniqueFileName);
+            // Now also copy to the persistent web/assets/img directory
             try {
-                // Source file
-                File sourceFile = new File(buildUploadPath + File.separator + uniqueFileName);
-                
-                // Define the web assets directory
-                File webAssetsDir = new File(webAssetsPath);
-                if (!webAssetsDir.exists()) {
-                    webAssetsDir.mkdirs();
+                // Get the build directory (build/web)
+                String buildDirPath = getServletContext().getRealPath("");
+                File buildDir = new File(buildDirPath);
+                // Go up two levels to get the project root
+                String projectRoot = buildDir.getParentFile().getParent();
+                String persistentAssetsPath = projectRoot + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                File persistentAssetsDir = new File(persistentAssetsPath);
+                if (!persistentAssetsDir.exists()) {
+                    boolean created = persistentAssetsDir.mkdirs();
+                    if (!created) {
+                        System.out.println("Failed to create persistent web assets directory: " + persistentAssetsPath);
+                    }
                 }
-                
-                // Destination file
-                File destinationFile = new File(webAssetsPath + File.separator + uniqueFileName);
-                
-                // Copy file using NIO for better performance
-                Files.copy(sourceFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                
-                System.out.println("Image saved to both build and web directories");
+                File persistentDestFile = new File(persistentAssetsPath + File.separator + uniqueFileName);
+                try {
+                    Files.copy(sourceFile.toPath(), persistentDestFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("Image saved to both build and persistent web/assets/img directories");
+                } catch(Exception e) {
+                    System.out.println("Error copying file to persistent web/assets/img: " + e.getMessage());
+                }
             } catch(Exception e) {
-                System.out.println("Error copying file to web directory: " + e.getMessage());
-                // Continue execution even if copy to web directory fails
+                System.out.println("Error preparing persistent web/assets/img directory: " + e.getMessage());
             }
             
             // If this is a new image and there was an old one, delete the old ones (from both directories)
@@ -94,9 +93,15 @@
                     if (oldBuildFile.exists()) {
                         oldBuildFile.delete();
                     }
-                    
-                    // Delete from web directory
-                    File oldWebFile = new File(webAssetsPath + File.separator + current_gambar);
+
+                    // Delete from persistent web/assets/img directory
+                    // Get the build directory (build/web)
+                    String buildDirPathDel = getServletContext().getRealPath("");
+                    File buildDirDel = new File(buildDirPathDel);
+                    // Go up two levels to get the project root
+                    String projectRootDel = buildDirDel.getParentFile().getParent();
+                    String persistentAssetsPathDel = projectRootDel + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                    File oldWebFile = new File(persistentAssetsPathDel + File.separator + current_gambar);
                     if (oldWebFile.exists()) {
                         oldWebFile.delete();
                     }

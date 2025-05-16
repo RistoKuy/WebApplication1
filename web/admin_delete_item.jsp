@@ -78,6 +78,23 @@
                 System.out.println("Error deleting file from web directory: " + e.getMessage());
                 // Continue execution even if deletion from web directory fails
             }
+
+            // Delete from persistent web/assets/img directory
+            try {
+                // Get the build directory (build/web)
+                String buildDirPathDel = getServletContext().getRealPath("");
+                File buildDirDel = new File(buildDirPathDel);
+                // Go up two levels to get the project root
+                String projectRootDel = buildDirDel.getParentFile().getParent();
+                String persistentAssetsPathDel = projectRootDel + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                File webImageFile = new File(persistentAssetsPathDel + File.separator + gambar_brg);
+                if (webImageFile.exists()) {
+                    webImageFile.delete();
+                }
+            } catch(Exception e) {
+                System.out.println("Error deleting file from persistent web/assets/img: " + e.getMessage());
+                // Continue execution even if deletion from persistent directory fails
+            }
         }
         
         // Redirect with success or error message
