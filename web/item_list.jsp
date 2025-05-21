@@ -490,7 +490,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="add-harga" class="form-label">Price</label>
-                            <input type="text" class="form-control" id="add-harga" name="harga" required>
+                            <input type="number" class="form-control" id="add-harga" name="harga" required>
                         </div>
                         <div class="mb-3">
                             <label for="add-stok" class="form-label">Stock</label>
@@ -532,7 +532,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="edit-harga" class="form-label">Price</label>
-                            <input type="text" class="form-control" id="edit-harga" name="harga" required>
+                            <input type="number" class="form-control" id="edit-harga" name="harga" required>
                         </div>
                         <div class="mb-3">
                             <label for="edit-stok" class="form-label">Stock</label>
