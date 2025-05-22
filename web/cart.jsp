@@ -12,7 +12,7 @@
     }
 
     // Handle add-to-cart POST
-    if (request.getMethod().equalsIgnoreCase("POST")) {
+    if (request.getMethod().equalsIgnoreCase("POST") && request.getParameter("action") == null) {
         String id_brg = request.getParameter("id_brg");
         String nama_brg = request.getParameter("nama_brg");
         String harga = request.getParameter("harga");
@@ -48,6 +48,37 @@
         response.sendRedirect("cart.jsp");
         return;
     }
+
+    // Handle update quantity or delete item
+    if (request.getMethod().equalsIgnoreCase("POST") && request.getParameter("action") != null) {
+        String action = request.getParameter("action");
+        String id_brg = request.getParameter("id_brg");
+        if (action.equals("update")) {
+            int newQty = Integer.parseInt(request.getParameter("new_qty"));
+            for (Iterator<Map<String, Object>> it = cart.iterator(); it.hasNext();) {
+                Map<String, Object> item = it.next();
+                if (item.get("id_brg").equals(id_brg)) {
+                    if (newQty > 0) {
+                        item.put("jumlah", newQty);
+                    } else {
+                        it.remove();
+                    }
+                    break;
+                }
+            }
+        } else if (action.equals("delete")) {
+            for (Iterator<Map<String, Object>> it = cart.iterator(); it.hasNext();) {
+                Map<String, Object> item = it.next();
+                if (item.get("id_brg").equals(id_brg)) {
+                    it.remove();
+                    break;
+                }
+            }
+        }
+        sess.setAttribute("cart", cart);
+        response.sendRedirect("cart.jsp");
+        return;
+    }
 %>
 <!DOCTYPE html>
 <html lang="id">
@@ -71,6 +102,7 @@
                     <th>Harga</th>
                     <th>Jumlah</th>
                     <th>Total</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -87,8 +119,21 @@
                     <td><img src="assets/img/<%= gambar %>" alt="<%= nama %>" style="max-width:60px;max-height:60px;object-fit:contain;background:#222;"></td>
                     <td><%= nama %></td>
                     <td>Rp <%= String.format("%,d", harga).replace(',', '.') %></td>
-                    <td><%= jumlah %></td>
+                    <td>
+                        <form method="post" action="cart.jsp" class="d-inline-flex align-items-center">
+                            <input type="hidden" name="action" value="update" />
+                            <input type="hidden" name="id_brg" value="<%= item.get("id_brg") %>" />
+                            <input type="number" name="new_qty" value="<%= jumlah %>" min="1" max="<%= item.get("stok") %>" class="form-control form-control-sm me-2 cart-qty-input" style="width:70px;" data-id="<%= item.get("id_brg") %>" />
+                        </form>
+                    </td>
                     <td>Rp <%= String.format("%,d", total).replace(',', '.') %></td>
+                    <td>
+                        <form method="post" action="cart.jsp" style="display:inline;">
+                            <input type="hidden" name="action" value="delete" />
+                            <input type="hidden" name="id_brg" value="<%= item.get("id_brg") %>" />
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Hapus <%= nama %> dari keranjang?')"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
                 </tr>
                 <% } %>
             </tbody>
@@ -103,5 +148,16 @@
         <% } %>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Auto-submit quantity change
+    const qtyInputs = document.querySelectorAll('.cart-qty-input');
+    qtyInputs.forEach(function(input) {
+        input.addEventListener('change', function() {
+            if (parseInt(this.value) > 0) {
+                this.form.submit();
+            }
+        });
+    });
+    </script>
 </body>
 </html>
