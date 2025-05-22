@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
+<%@page import="java.util.*"%>
 <%-- Shop Page: Show Item List --%>
 <%
     // Check if user is logged in
@@ -230,8 +231,22 @@
                         </a>
                     </li>
                     <li class="nav-item ms-2">
-                        <a class="nav-link fw-semibold" href="cart.jsp">
+                        <%-- Show cart quantity badge --%>
+                        <a class="nav-link fw-semibold position-relative" href="cart.jsp">
                             <i class="bi bi-cart4 me-1"></i> Keranjang
+                            <% 
+                            List<Map<String, Object>> cart = (List<Map<String, Object>>) session.getAttribute("cart");
+                            int cartQty = 0;
+                            if (cart != null) {
+                                for (Map<String, Object> item : cart) {
+                                    cartQty += (int) item.get("jumlah");
+                                }
+                            }
+                            if (cartQty > 0) { %>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.8rem;">
+                                <%= cartQty %>
+                            </span>
+                            <% } %>
                         </a>
                     </li>
                     <li class="nav-item ms-2">
@@ -243,6 +258,20 @@
             </div>
         </div>
     </nav>
+    <% 
+    String cartSuccess = (String) session.getAttribute("cartSuccess");
+    if (cartSuccess != null) {
+    %>
+    <div class="container mt-3" style="padding-top: 80px;">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= cartSuccess %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    <%
+        session.removeAttribute("cartSuccess");
+    }
+    %>
     <!-- Hero Section -->
     <div class="py-5 bg-gradient" style="padding-top: 8rem !important;">
         <div class="container text-center py-5">
@@ -308,6 +337,7 @@
                             <input type="hidden" name="harga" value="<%= harga %>" />
                             <input type="hidden" name="gambar_brg" value="<%= gambar_brg %>" />
                             <input type="hidden" name="stok" value="<%= stok %>" />
+                            <input type="hidden" name="from" value="main.jsp" />
                             <button type="submit" class="btn btn-primary rounded-pill px-4" <%= (stok > 0 ? "" : "disabled") %>>
                                 <i class="bi bi-cart"></i> Beli
                             </button>

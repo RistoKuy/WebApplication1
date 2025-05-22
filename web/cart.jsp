@@ -38,6 +38,13 @@
             cart.add(newItem);
         }
         sess.setAttribute("cart", cart);
+        // Show success message and redirect back to main.jsp if coming from there
+        String from = request.getParameter("from");
+        if (from != null && from.equals("main.jsp")) {
+            session.setAttribute("cartSuccess", "Berhasil menambahkan <b>" + nama_brg + "</b> ke keranjang!");
+            response.sendRedirect("main.jsp");
+            return;
+        }
         response.sendRedirect("cart.jsp");
         return;
     }
