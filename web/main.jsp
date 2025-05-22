@@ -230,6 +230,11 @@
                         </a>
                     </li>
                     <li class="nav-item ms-2">
+                        <a class="nav-link fw-semibold" href="cart.jsp">
+                            <i class="bi bi-cart4 me-1"></i> Keranjang
+                        </a>
+                    </li>
+                    <li class="nav-item ms-2">
                         <a class="btn btn-light rounded-pill px-3" href="logout.jsp">
                             <i class="bi bi-box-arrow-right me-1"></i> Logout
                         </a>
@@ -270,6 +275,7 @@
                 boolean hasItem = false;
                 while(rs.next()) {
                     hasItem = true;
+                    int id_brg = rs.getInt("id_brg");
                     String nama_brg = rs.getString("nama_brg");
                     String deskripsi = rs.getString("deskripsi");
                     String harga = rs.getString("harga");
@@ -296,7 +302,16 @@
                         <div class="mb-2">
                             <span class="badge bg-success">Stok: <%= stok %></span>
                         </div>
-                        <a href="#" class="btn btn-primary rounded-pill px-4 disabled"><i class="bi bi-cart"></i> Beli</a>
+                        <form method="post" action="cart.jsp" style="display:inline;">
+                            <input type="hidden" name="id_brg" value="<%= id_brg %>" />
+                            <input type="hidden" name="nama_brg" value="<%= nama_brg %>" />
+                            <input type="hidden" name="harga" value="<%= harga %>" />
+                            <input type="hidden" name="gambar_brg" value="<%= gambar_brg %>" />
+                            <input type="hidden" name="stok" value="<%= stok %>" />
+                            <button type="submit" class="btn btn-primary rounded-pill px-4" <%= (stok > 0 ? "" : "disabled") %>>
+                                <i class="bi bi-cart"></i> Beli
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

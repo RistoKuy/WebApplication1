@@ -18,3 +18,12 @@ CREATE TABLE `item` (
   `stok` int(10) NOT NULL
 );
 
+CREATE TABLE `order` (
+  `id_order` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `id_user` int(10) NOT NULL,
+  `id_brg` int(10) NOT NULL,
+  `jumlah` int(10) NOT NULL,
+  `tanggal` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`id_user`) REFERENCES `user`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`id_brg`) REFERENCES `item`(`id_brg`) ON DELETE CASCADE
+);
