@@ -174,11 +174,10 @@
             <i class="bi bi-arrow-right"></i>
         </a>
         <h1>Register</h1>
-        
-        <form id="registerForm" action="register_output.jsp" method="post">
-            <div class="mb-3">
+          <form id="registerForm" action="register_output.jsp" method="post">
+            <div class="mb-3" id="namaField" style="display: none;">
                 <label for="nama" class="form-label">Your Name</label>
-                <input type="text" class="form-control" id="nama" name="nama" required>
+                <input type="text" class="form-control" id="nama" name="nama">
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Your Email</label>
@@ -204,9 +203,22 @@
     <script src="js/bootstrap.bundle.min.js"></script>
     
     <!-- Include Firebase Configuration -->
-    <%@ include file="firebase_config.jsp" %>
-
-    <script type="module">
+    <%@ include file="firebase_config.jsp" %>    <script type="module">
+      // Toggle name field visibility based on admin checkbox
+      document.getElementById('isAdmin').addEventListener('change', function() {
+        const namaField = document.getElementById('namaField');
+        const namaInput = document.getElementById('nama');
+        
+        if (this.checked) {
+          namaField.style.display = 'block';
+          namaInput.required = true;
+        } else {
+          namaField.style.display = 'none';
+          namaInput.required = false;
+          namaInput.value = ''; // Clear the field when hidden
+        }
+      });
+      
       document.getElementById('registerForm').addEventListener('submit', async function(e) {
         const isAdmin = document.getElementById('isAdmin').checked;
         if (isAdmin) {
@@ -218,7 +230,7 @@
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const nama = document.getElementById('nama').value;
+        const nama = ''; // No name for regular users
         
         const result = await window.FirebaseUtils.register(email, password, nama);
         if (result.success) {
