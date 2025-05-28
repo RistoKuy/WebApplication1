@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Item Management | Aplikasi JSP</title>
+    <title>Item | Aplikasi JSP</title>
     <!-- Panggil Bootstrap lokal -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     
@@ -364,8 +364,9 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
-            <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User Management</a></li>
-            <li class="active"><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item Management</a></li>
+            <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>
+            <li class="active"><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
+            <li><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Order</a></li>
             <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>

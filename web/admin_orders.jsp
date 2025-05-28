@@ -14,66 +14,427 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Manajemen Pesanan</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Order Management | Aplikasi JSP</title>
+    <!-- Panggil Bootstrap lokal -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Adding Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom styles inside head -->
+    <style>
+        :root {
+            --dark-bg: #121212;
+            --dark-card: #1e1e1e;
+            --dark-light: #2d2d2d;
+            --accent-purple: #bb86fc;
+            --accent-blue: #03dac6;
+            --accent-pink: #cf6679;
+            --text-primary: #e1e1e1;
+            --text-secondary: #b0b0b0;
+        }
+        
+        /* Hero section enhancements */
+        .bg-gradient {
+            position: relative;
+            overflow: hidden;
+            background: none !important;
+        }
+        
+        /* Add the hero background image overlay */
+        .hero-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1745750747228-d7ae37cba3a5?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -10;
+            filter: brightness(0.6);
+        }
+        
+        /* Page overlay to darken the background image slightly */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(18, 18, 18, 0.7), rgba(32, 10, 64, 0.8));
+            z-index: -5;
+        }
+        
+        body {
+            background-color: transparent;
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar styling */
+        .sidebar {
+            width: 200px;
+            background-color: rgba(18, 18, 18, 0.6);
+            backdrop-filter: blur(15px);
+            color: var(--text-primary);
+            padding: 20px 0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-header h5 {
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+          .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            padding: 10px 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-menu li a {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: block;
+        }
+        
+        .sidebar-menu li:hover, .sidebar-menu li.active {
+            background-color: rgba(187, 134, 252, 0.2);
+        }
+        
+        .sidebar-menu li.active a {
+            color: var(--accent-purple);
+        }
+        
+        /* Main content styling */
+        .main-content {
+            margin-left: 200px;
+            flex: 1;
+            padding: 30px;
+        }
+        
+        .data-table {
+            background-color: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .data-table:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(187, 134, 252, 0.2);
+        }
+          .table {
+            color: var(--text-primary);
+        }
+        
+        .table th {
+            background-color: rgba(45, 45, 45, 0.5);
+            color: var(--accent-purple);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .table td {
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: rgba(45, 45, 45, 0.3);
+        }
+          .btn-edit {
+            background-color: var(--accent-purple);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+        }
+        
+        .btn-edit:hover {
+            background-color: #9546fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
+        }
+        
+        .btn-delete {
+            background-color: transparent;
+            color: var(--accent-pink);
+            border: 1px solid var(--accent-pink);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-delete:hover {
+            background-color: var(--accent-pink);
+            color: #121212;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(207, 102, 121, 0.3);
+        }
+          .status-select {
+            min-width: 120px;
+            background-color: var(--dark-light);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+        }
+        
+        .status-select:focus {
+            background-color: var(--dark-light);
+            color: var(--text-primary);
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px rgba(187, 134, 252, 0.3);
+        }
+          /* Neon text effect */
+        .neon-text {
+            color: var(--text-primary);
+            text-shadow: 0 0 5px rgba(187, 134, 252, 0.5),
+                         0 0 10px rgba(187, 134, 252, 0.3);
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+            scrollbar-color: var(--accent-purple) var(--dark-bg);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 4px;
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
-<body class="bg-dark text-white">
-    <div class="container py-5">
-        <h2 class="mb-4">Manajemen Pesanan</h2>
-        <table class="table table-dark table-striped">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Nama Pembeli</th>
-                    <th>Nama Barang</th>
-                    <th>Jumlah</th>
-                    <th>Harga</th>
-                    <th>Metode</th>
-                    <th>Status</th>
-                    <th>Alamat</th>
-                    <th>No. Telp</th>
-                </tr>
-            </thead>
-            <tbody>
-                <%
-                try {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    String url = "jdbc:mysql://localhost:3306/web_enterprise";
-                    String dbUser = "root";
-                    String dbPassword = "";
-                    Connection conn = DriverManager.getConnection(url, dbUser, dbPassword);
-                    String sql = "SELECT * FROM `order` ORDER BY tgl_order DESC";
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
-                    ResultSet rs = pstmt.executeQuery();
-                    boolean hasOrder = false;
-                    while (rs.next()) {
-                        hasOrder = true;
-                %>
-                <tr>
-                    <td><%= rs.getTimestamp("tgl_order") %></td>
-                    <td><%= rs.getString("nama_penerima") %></td>
-                    <td><%= rs.getString("nama_brg") %></td>
-                    <td><%= rs.getInt("jumlah") %></td>
-                    <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("harga"))).replace(',', '.') %></td>
-                    <td><%= rs.getString("metode_pembayaran") %></td>
-                    <td><%= rs.getString("status_pembayaran") %></td>
-                    <td><%= rs.getString("alamat") %></td>
-                    <td><%= rs.getString("no_telp") %></td>
-                </tr>
-                <% }
-                    if (!hasOrder) { %>
-                    <tr><td colspan="9" class="text-center">Belum ada pesanan.</td></tr>
-                <% }
-                    rs.close();
-                    pstmt.close();
-                    conn.close();
-                } catch(Exception e) { %>
-                    <tr><td colspan="9" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
-                <% } %>
-            </tbody>
-        </table>
-        <a href="dashboard.jsp" class="btn btn-primary">Kembali ke Dashboard</a>
+
+<body>
+    <!-- Background image and overlay -->
+    <div class="hero-background"></div>
+    <div class="overlay"></div>
+      <%
+        // isLoggedIn is already declared at the top of the file
+        String userName = (String) session.getAttribute("userName");
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
+        try {
+            // Connect to database for better security and flexibility
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            String url = "jdbc:mysql://localhost:3306/web_enterprise";
+            String dbUser = "root";
+            String dbPassword = "";
+            conn = DriverManager.getConnection(url, dbUser, dbPassword);
+        } catch (Exception e) {
+            out.println("Database connection error: " + e.getMessage());
+        }
+    %>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h5><i class="bi bi-code-square me-2"></i>Dashboard</h5>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
+            <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>
+            <li><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
+            <li class="active"><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Order</a></li>
+            <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="data-table">
+            <h1 class="neon-text">Manajemen Pesanan</h1>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Nama Pembeli</th>
+                        <th>Nama Barang</th>
+                        <th>Jumlah</th>
+                        <th>Harga</th>
+                        <th>Metode</th>
+                        <th>Status</th>
+                        <th>Alamat</th>
+                        <th>No. Telp</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+                    try {
+                        String sql = "SELECT * FROM `order` ORDER BY tgl_order DESC";
+                        pstmt = conn.prepareStatement(sql);
+                        rs = pstmt.executeQuery();
+                        boolean hasOrder = false;
+                        while (rs.next()) {
+                            hasOrder = true;
+                            int orderId = rs.getInt("id_order");
+                            String currentStatus = rs.getString("status_pembayaran");
+                    %>
+                    <tr id="order-row-<%= orderId %>">
+                        <td><%= rs.getTimestamp("tgl_order") %></td>
+                        <td><%= rs.getString("nama_penerima") %></td>
+                        <td><%= rs.getString("nama_brg") %></td>
+                        <td><%= rs.getInt("jumlah") %></td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("harga"))).replace(',', '.') %></td>
+                        <td><%= rs.getString("metode_pembayaran") %></td>
+                        <td>
+                            <select class="form-select form-select-sm status-select" data-order-id="<%= orderId %>">
+                                <option value="Pending" <% if("Pending".equals(currentStatus)) { %>selected<% } %>>Pending</option>
+                                <option value="Completed" <% if("Completed".equals(currentStatus)) { %>selected<% } %>>Completed</option>
+                            </select>
+                        </td>
+                        <td><%= rs.getString("alamat") %></td>
+                        <td><%= rs.getString("no_telp") %></td>
+                        <td>
+                            <button class="btn btn-delete btn-sm delete-btn" data-order-id="<%= orderId %>" title="Hapus Pesanan">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    <% }
+                        if (!hasOrder) { %>
+                        <tr><td colspan="10" class="text-center">Belum ada pesanan.</td></tr>
+                    <% }
+                        rs.close();
+                        pstmt.close();
+                    } catch(Exception e) { %>
+                        <tr><td colspan="10" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Event listeners for status change and delete actions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle status change
+            document.querySelectorAll('.status-select').forEach(function(select) {
+                select.addEventListener('change', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    const newStatus = this.value;
+                    updateOrderStatus(orderId, newStatus);
+                });
+            });
+            
+            // Handle delete action
+            document.querySelectorAll('.delete-btn').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    deleteOrder(orderId);
+                });
+            });
+        });
+
+        function updateOrderStatus(orderId, newStatus) {
+            if (confirm('Apakah Anda yakin ingin mengubah status pesanan ini?')) {
+                fetch('admin_order_actions.jsp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=update_status&order_id=' + orderId + '&status=' + newStatus
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim() === 'success') {
+                        alert('Status pesanan berhasil diperbarui!');
+                    } else {
+                        alert('Gagal memperbarui status pesanan: ' + data);
+                        location.reload(); // Reload to restore original value
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat memperbarui status');
+                    location.reload();
+                });
+            } else {
+                // User cancelled, reload to restore original value
+                location.reload();
+            }
+        }
+
+        function deleteOrder(orderId) {
+            if (confirm('Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan!')) {
+                fetch('admin_order_actions.jsp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=delete_order&order_id=' + orderId
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim() === 'success') {
+                        // Remove the row from the table
+                        document.getElementById('order-row-' + orderId).remove();
+                        alert('Pesanan berhasil dihapus!');
+                        
+                        // Check if there are no more orders
+                        const tbody = document.querySelector('tbody');
+                        if (tbody.children.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="10" class="text-center">Belum ada pesanan.</td></tr>';
+                        }
+                    } else {
+                        alert('Gagal menghapus pesanan: ' + data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat menghapus pesanan');
+                });
+            }
+        }    </script>
+    
+    <%
+        // Close the database resources
+        try {
+            if(conn != null) conn.close();
+        } catch(SQLException e) {
+            out.println("Error closing database connection: " + e.getMessage());
+        }
+    %>
 </body>
 </html>
