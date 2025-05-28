@@ -175,7 +175,7 @@
         </a>
         <h1>Register</h1>
         
-        <form action="register_output.jsp" method="post">
+        <form id="registerForm" action="register_output.jsp" method="post">
             <div class="mb-3">
                 <label for="nama" class="form-label">Your Name</label>
                 <input type="text" class="form-control" id="nama" name="nama" required>
@@ -183,7 +183,8 @@
             <div class="mb-3">
                 <label for="email" class="form-label">Your Email</label>
                 <input type="email" class="form-control" id="email" name="email" required>
-            </div>            <div class="mb-3">
+            </div>
+            <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
@@ -204,38 +205,49 @@
     <script src="js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
-      // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
       import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+      import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
-      // Your web app's Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyCfYaFJQsmu4Qt4YthfsCYpkAE6iyyGhBg",
         authDomain: "webapplication1-4bebd.firebaseapp.com",
         projectId: "webapplication1-4bebd",
+        databaseURL: "https://webapplication1-4bebd-default-rtdb.asia-southeast1.firebasedatabase.app",
         storageBucket: "webapplication1-4bebd.firebasestorage.app",
         messagingSenderId: "561789365143",
         appId: "1:561789365143:web:f1add524dc4b8859fd32d2",
         measurementId: "G-27LM5PPDNJ"
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
       const auth = getAuth(app);
+      const db = getDatabase(app);
 
-      // Register form handler
-      document.querySelector('form').addEventListener('submit', function(e) {
+      document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const isAdmin = document.getElementById('isAdmin').checked;
+        if (isAdmin) {
+          // Admin registration: submit to server (local DB)
+          return;
+        }
+        // User registration: use Firebase
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const nama = document.getElementById('nama').value;
-        // Optionally, handle isAdmin checkbox
         createUserWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
-            // Registration successful, submit form to server for DB registration
-            e.target.submit();
+            // Save user data to Firebase Database
+            const user = userCredential.user;
+            set(ref(db, 'users/' + user.uid), {
+              nama: nama,
+              email: email
+            }).then(() => {
+              alert('Registration successful! You can now login.');
+              window.location.href = 'login.jsp';
+            });
           })
           .catch((error) => {
             alert('Firebase registration failed: ' + error.message);

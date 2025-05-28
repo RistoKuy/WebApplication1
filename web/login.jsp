@@ -180,11 +180,12 @@
         <div class="form-section">
             <h1>Login</h1>
             
-            <form action="login_output.jsp" method="post">
+            <form id="loginForm" action="login_output.jsp" method="post">
                 <div class="mb-3">
                     <label for="email" class="form-label">Your Email</label>
                     <input type="email" class="form-control" id="email" name="email" required>
-                </div>                <div class="mb-3">
+                </div>
+                <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
@@ -210,7 +211,6 @@
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
       import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
-      // Your web app's Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyCfYaFJQsmu4Qt4YthfsCYpkAE6iyyGhBg",
         authDomain: "webapplication1-4bebd.firebaseapp.com",
@@ -221,20 +221,31 @@
         measurementId: "G-27LM5PPDNJ"
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
       const auth = getAuth(app);
 
-      // Login form handler
-      document.querySelector('form').addEventListener('submit', function(e) {
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const isAdmin = document.getElementById('isAdmin').checked;
+        if (isAdmin) {
+          // Admin login: submit to server (local DB)
+          return;
+        }
+        // User login: use Firebase
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         signInWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
-            // Login successful, submit form to server for DB session
-            e.target.submit();
+            // Set session on server for user
+            fetch('firebase_session.jsp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: 'email=' + encodeURIComponent(email)
+            })
+            .then(() => {
+              window.location.href = 'main.jsp';
+            });
           })
           .catch((error) => {
             alert('Firebase login failed: ' + error.message);

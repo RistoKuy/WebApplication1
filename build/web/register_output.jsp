@@ -62,86 +62,97 @@
         String password = request.getParameter("password");
         String isAdminParam = request.getParameter("isAdmin");
         boolean isAdmin = (isAdminParam != null && isAdminParam.equals("1"));
-        
-        // Check if email already exists using the utility function
-        boolean emailExists = TestUtil.isEmailExists(email);
-        
-        if (emailExists) {
-            // Email already exists, show error message
+
+        if (!isAdmin) {
     %>
             <i class="bi bi-exclamation-triangle-fill error-icon"></i>
             <h2>Registration Failed</h2>
-            <p>The email address <strong><%= email %></strong> is already registered.</p>
-            <p>Please use a different email address or try to login with the existing account.</p>
+            <p>Only admin registration is allowed here. Please register as a user from the registration page.</p>
             <div>
                 <a href="register.jsp" class="btn-return">Back to Registration</a>
             </div>
     <%
         } else {
-            // Email doesn't exist, proceed with registration
-            Connection conn = null;
-            PreparedStatement pstmt = null;
-            boolean success = false;
+            // Check if email already exists using the utility function
+            boolean emailExists = TestUtil.isEmailExists(email);
             
-            try {
-                // Register JDBC driver
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                
-                // Open a connection
-                String url = "jdbc:mysql://localhost:3306/web_enterprise";
-                String user = "root";
-                String dbPassword = "";
-                
-                conn = DriverManager.getConnection(url, user, dbPassword);
-                  // SQL query to insert new user
-                String sql = "INSERT INTO user (nama, email, password, is_admin) VALUES (?, ?, ?, ?)";
-                
-                // Create prepared statement
-                pstmt = conn.prepareStatement(sql);
-                pstmt.setString(1, nama);
-                pstmt.setString(2, email);
-                pstmt.setString(3, password);
-                pstmt.setInt(4, isAdmin ? 1 : 0);
-                
-                // Execute the query
-                int rowsAffected = pstmt.executeUpdate();
-                success = (rowsAffected > 0);
-                
-                if (success) {
-    %>
-                    <i class="bi bi-check-circle-fill success-icon"></i>
-                    <h2>Registration Successful</h2>
-                    <p>Welcome, <strong><%= nama %></strong>! Your account has been created successfully.</p>
-                    <p>You can now login using your email and password.</p>
-                    <div>
-                        <a href="login.jsp" class="btn-return">Proceed to Login</a>
-                    </div>
-    <%
-                } else {
-    %>
-                    <i class="bi bi-exclamation-triangle-fill error-icon"></i>
-                    <h2>Registration Failed</h2>
-                    <p>We couldn't create your account at this time. Please try again later.</p>
-                    <div>
-                        <a href="register.jsp" class="btn-return">Back to Registration</a>
-                    </div>
-    <%
-                }
-            } catch(Exception e) {
-    %>
+            if (emailExists) {
+                // Email already exists, show error message
+        %>
                 <i class="bi bi-exclamation-triangle-fill error-icon"></i>
-                <h2>Error</h2>
-                <p><%= e.getMessage() %></p>
+                <h2>Registration Failed</h2>
+                <p>The email address <strong><%= email %></strong> is already registered.</p>
+                <p>Please use a different email address or try to login with the existing account.</p>
                 <div>
                     <a href="register.jsp" class="btn-return">Back to Registration</a>
                 </div>
-    <%
-            } finally {
+        <%
+            } else {
+                // Email doesn't exist, proceed with registration
+                Connection conn = null;
+                PreparedStatement pstmt = null;
+                boolean success = false;
+                
                 try {
-                    if(pstmt != null) pstmt.close();
-                    if(conn != null) conn.close();
-                } catch(SQLException se) {
-                    out.println("<p>Error closing resources: " + se.getMessage() + "</p>");
+                    // Register JDBC driver
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    
+                    // Open a connection
+                    String url = "jdbc:mysql://localhost:3306/web_enterprise";
+                    String user = "root";
+                    String dbPassword = "";
+                    
+                    conn = DriverManager.getConnection(url, user, dbPassword);
+                      // SQL query to insert new user
+                    String sql = "INSERT INTO user (nama, email, password, is_admin) VALUES (?, ?, ?, ?)";
+                    
+                    // Create prepared statement
+                    pstmt = conn.prepareStatement(sql);
+                    pstmt.setString(1, nama);
+                    pstmt.setString(2, email);
+                    pstmt.setString(3, password);
+                    pstmt.setInt(4, isAdmin ? 1 : 0);
+                    
+                    // Execute the query
+                    int rowsAffected = pstmt.executeUpdate();
+                    success = (rowsAffected > 0);
+                    
+                    if (success) {
+        %>
+                        <i class="bi bi-check-circle-fill success-icon"></i>
+                        <h2>Registration Successful</h2>
+                        <p>Welcome, <strong><%= nama %></strong>! Your account has been created successfully.</p>
+                        <p>You can now login using your email and password.</p>
+                        <div>
+                            <a href="login.jsp" class="btn-return">Proceed to Login</a>
+                        </div>
+        <%
+                    } else {
+        %>
+                        <i class="bi bi-exclamation-triangle-fill error-icon"></i>
+                        <h2>Registration Failed</h2>
+                        <p>We couldn't create your account at this time. Please try again later.</p>
+                        <div>
+                            <a href="register.jsp" class="btn-return">Back to Registration</a>
+                        </div>
+        <%
+                    }
+                } catch(Exception e) {
+        %>
+                    <i class="bi bi-exclamation-triangle-fill error-icon"></i>
+                    <h2>Error</h2>
+                    <p><%= e.getMessage() %></p>
+                    <div>
+                        <a href="register.jsp" class="btn-return">Back to Registration</a>
+                    </div>
+        <%
+                } finally {
+                    try {
+                        if(pstmt != null) pstmt.close();
+                        if(conn != null) conn.close();
+                    } catch(SQLException se) {
+                        out.println("<p>Error closing resources: " + se.getMessage() + "</p>");
+                    }
                 }
             }
         }
