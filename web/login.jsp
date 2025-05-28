@@ -204,5 +204,42 @@
     
     <!-- Panggil Bootstrap JS lokal -->
     <script src="js/bootstrap.bundle.min.js"></script>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+      import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCfYaFJQsmu4Qt4YthfsCYpkAE6iyyGhBg",
+        authDomain: "webapplication1-4bebd.firebaseapp.com",
+        projectId: "webapplication1-4bebd",
+        storageBucket: "webapplication1-4bebd.firebasestorage.app",
+        messagingSenderId: "561789365143",
+        appId: "1:561789365143:web:f1add524dc4b8859fd32d2",
+        measurementId: "G-27LM5PPDNJ"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const auth = getAuth(app);
+
+      // Login form handler
+      document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            // Login successful, submit form to server for DB session
+            e.target.submit();
+          })
+          .catch((error) => {
+            alert('Firebase login failed: ' + error.message);
+          });
+      });
+    </script>
 </body>
 </html>
