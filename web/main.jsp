@@ -316,9 +316,8 @@
             <div class="col-md-4">
                 <div class="card border-0 shadow h-100">
                     <div class="card-body text-center p-4">
-                        <div class="mb-3">
-                            <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
-                                <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" class="img-fluid rounded" style="max-height: 180px; object-fit: contain; background: #222;">
+                        <div class="mb-3">                            <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
+                                <img src="uploads/<%= gambar_brg %>" alt="<%= nama_brg %>" class="img-fluid rounded" style="max-height: 180px; object-fit: contain; background: #222;">
                             <% } else { %>
                                 <span class="text-muted">No image</span>
                             <% } %>

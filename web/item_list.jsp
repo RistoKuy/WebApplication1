@@ -421,11 +421,10 @@
                         <td><%= nama_brg %></td>
                         <td><%= stok %></td>
                         <td><%= hargaFormatted %></td>
-                        <td>
-                            <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
-                                <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" height="60" 
+                        <td>                            <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
+                                <img src="uploads/<%= gambar_brg %>" alt="<%= nama_brg %>" height="60" 
                                     class="item-image-preview" data-bs-toggle="modal" data-bs-target="#imagePreviewModal"
-                                    data-img-src="assets/img/<%= gambar_brg %>" data-img-name="<%= nama_brg %>"
+                                    data-img-src="uploads/<%= gambar_brg %>" data-img-name="<%= nama_brg %>"
                                     style="cursor: pointer;">
                             <% } else { %>
                                 <span class="text-muted">No image</span>
@@ -624,10 +623,9 @@
                 
                 // Show current image preview if available
                 const imageContainer = document.getElementById('edit-current-image-container');
-                imageContainer.innerHTML = '';
-                if (gambar && gambar.trim() !== '') {
+                imageContainer.innerHTML = '';                if (gambar && gambar.trim() !== '') {
                     const img = document.createElement('img');
-                    img.src = 'assets/img/' + gambar;
+                    img.src = 'uploads/' + gambar;
                     img.alt = nama;
                     img.style.maxHeight = '100px';
                     img.style.marginBottom = '10px';
@@ -697,10 +695,9 @@
         // When opening edit modal, show current image if exists
         function showEditCurrentImage(gambar) {
             const container = document.getElementById('edit-current-image-container');
-            container.innerHTML = '';
-            if (gambar && gambar.trim() !== '') {
+            container.innerHTML = '';            if (gambar && gambar.trim() !== '') {
                 const img = document.createElement('img');
-                img.src = 'assets/img/' + gambar;
+                img.src = 'uploads/' + gambar;
                 img.alt = 'Current Image';
                 img.className = 'img-fluid mt-2';
                 img.style.maxHeight = '100px';

@@ -1,6 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.*"%>
-<%@page import="javax.servlet.http.*"%>
+<%@page import="javax.servlet.                    <td><img src="uploads/<%= gambar %>" alt="<%= nama %>" style="max-width:60px;max-height:60px;object-fit:contain;background:#222;"></td>ttp.*"%>
 <%-- Cart Backend: Add item to cart and show cart contents --%>
 <%
     // Cart is stored as a List of Map<String, Object> in session
@@ -116,7 +116,7 @@
                        grandTotal += total;
                 %>
                 <tr>
-                    <td><img src="assets/img/<%= gambar %>" alt="<%= nama %>" style="max-width:60px;max-height:60px;object-fit:contain;background:#222;"></td>
+                    <td><img src="uploads/img/<%= gambar %>" alt="<%= nama %>" style="max-width:60px;max-height:60px;object-fit:contain;background:#222;"></td>
                     <td><%= nama %></td>
                     <td>Rp <%= String.format("%,d", harga).replace(',', '.') %></td>
                     <td>
