@@ -223,7 +223,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item ms-2">
-                        <span class="nav-link fw-semibold">Selamat Datang</span>
+                        <span class="nav-link fw-semibold">Selamat Datang, <%= (String) session.getAttribute("userEmail") %></span>
                     </li>
                     <!-- <li class="nav-item ms-2">
                         <a class="nav-link fw-semibold" href="update_profile.jsp">
