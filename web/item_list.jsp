@@ -481,25 +481,25 @@
                 </div>                <form action="admin_add_item.jsp" method="post" enctype="multipart/form-data">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="add-nama" class="form-label">Item Name</label>
+                            <label for="add-nama" class="form-label">Nama Barang</label>
                             <input type="text" class="form-control" id="add-nama" name="nama_brg" required>
                         </div>
                         <div class="mb-3">
-                            <label for="add-deskripsi" class="form-label">Description</label>
-                            <textarea class="form-control" id="add-deskripsi" name="deskripsi" rows="3" required></textarea>
+                            <label for="add-deskripsi" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="add-deskripsi" name="deskripsi" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="add-harga" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="add-harga" name="harga" required>
+                            <label for="add-harga" class="form-label">Harga</label>
+                            <input type="number" class="form-control" id="add-harga" name="harga" step="0.01" required>
                         </div>
                         <div class="mb-3">
-                            <label for="add-stok" class="form-label">Stock</label>
+                            <label for="add-stok" class="form-label">Stok</label>
                             <input type="number" class="form-control" id="add-stok" name="stok" min="0" required>
                         </div>
                         <div class="mb-3">
-                            <label for="add-gambar" class="form-label">Image</label>
-                            <input type="file" class="form-control" id="add-gambar" name="gambar_file" accept="image/*">
-                            <div class="form-text">Select an image file (JPG, JPEG, PNG, GIF)</div>
+                            <label for="add-gambar" class="form-label">Gambar</label>
+                            <input class="form-control" type="file" id="add-gambar" name="gambar_file" accept="image/*">
+                            <img id="add-preview-img" src="#" alt="Preview" class="img-fluid mt-2 d-none" style="max-height:150px;" />
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -523,26 +523,26 @@
                         <input type="hidden" id="edit-id" name="id_brg">
                         <input type="hidden" id="edit-current-gambar" name="current_gambar">
                         <div class="mb-3">
-                            <label for="edit-nama" class="form-label">Item Name</label>
+                            <label for="edit-nama" class="form-label">Nama Barang</label>
                             <input type="text" class="form-control" id="edit-nama" name="nama_brg" required>
                         </div>
                         <div class="mb-3">
-                            <label for="edit-deskripsi" class="form-label">Description</label>
-                            <textarea class="form-control" id="edit-deskripsi" name="deskripsi" rows="3" required></textarea>
+                            <label for="edit-deskripsi" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="edit-deskripsi" name="deskripsi" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="edit-harga" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="edit-harga" name="harga" required>
+                            <label for="edit-harga" class="form-label">Harga</label>
+                            <input type="number" class="form-control" id="edit-harga" name="harga" step="0.01" required>
                         </div>
                         <div class="mb-3">
-                            <label for="edit-stok" class="form-label">Stock</label>
+                            <label for="edit-stok" class="form-label">Stok</label>
                             <input type="number" class="form-control" id="edit-stok" name="stok" min="0" required>
                         </div>
                         <div class="mb-3">
-                            <label for="edit-gambar" class="form-label">Image</label>
-                            <div id="edit-current-image-container" class="mb-2"></div>
-                            <input type="file" class="form-control" id="edit-gambar" name="gambar_file" accept="image/*">
-                            <div class="form-text">Select a new image file or leave blank to keep current image</div>
+                            <label for="edit-gambar" class="form-label">Gambar</label>
+                            <input class="form-control" type="file" id="edit-gambar" name="gambar_file" accept="image/*">
+                            <img id="edit-preview-img" src="#" alt="Preview" class="img-fluid mt-2 d-none" style="max-height:150px;" />
+                            <div id="edit-current-image-container" class="mt-2"></div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -657,56 +657,68 @@
         });
         
         // Image Preview for Add Item form
-        document.getElementById('add-gambar').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    // Create image preview element if it doesn't exist
-                    let previewContainer = document.getElementById('add-image-preview');
-                    if (!previewContainer) {
-                        previewContainer = document.createElement('div');
-                        previewContainer.id = 'add-image-preview';
-                        previewContainer.className = 'mt-2';
-                        e.target.parentNode.appendChild(previewContainer);
-                    }
-                    
-                    // Set the preview
-                    previewContainer.innerHTML = `
-                        <p>Preview:</p>
-                        <img src="${event.target.result}" alt="Image Preview" style="max-height: 150px; max-width: 100%;" class="mt-2 mb-2 border rounded">
-                        <p class="text-muted small">Filename: ${file.name}</p>
-                    `;
-                };
-                reader.readAsDataURL(file);
+        const addGambarInput = document.getElementById('add-gambar');
+        const addPreviewImg = document.getElementById('add-preview-img');
+        if (addGambarInput) {
+            addGambarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        addPreviewImg.src = ev.target.result;
+                        addPreviewImg.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    addPreviewImg.src = '#';
+                    addPreviewImg.classList.add('d-none');
+                }
+            });
+        }
+        // Image Preview for Edit Item form
+        const editGambarInput = document.getElementById('edit-gambar');
+        const editPreviewImg = document.getElementById('edit-preview-img');
+        if (editGambarInput) {
+            editGambarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        editPreviewImg.src = ev.target.result;
+                        editPreviewImg.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    editPreviewImg.src = '#';
+                    editPreviewImg.classList.add('d-none');
+                }
+            });
+        }
+        // When opening edit modal, show current image if exists
+        function showEditCurrentImage(gambar) {
+            const container = document.getElementById('edit-current-image-container');
+            container.innerHTML = '';
+            if (gambar && gambar.trim() !== '') {
+                const img = document.createElement('img');
+                img.src = 'assets/img/' + gambar;
+                img.alt = 'Current Image';
+                img.className = 'img-fluid mt-2';
+                img.style.maxHeight = '100px';
+                container.appendChild(img);
             }
+        }
+        // Patch edit modal open logic to show current image
+        // (Assumes you have logic to set data-gambar on edit buttons)
+        document.querySelectorAll('.btn-edit').forEach(button => {
+            button.addEventListener('click', function() {
+                const gambar = this.getAttribute('data-gambar');
+                showEditCurrentImage(gambar);
+                editPreviewImg.src = '#';
+                editPreviewImg.classList.add('d-none');
+            });
         });
         
-        // Image Preview for Edit Item form
-        document.getElementById('edit-gambar').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    // Create image preview element if it doesn't exist
-                    let previewContainer = document.getElementById('edit-image-preview');
-                    if (!previewContainer) {
-                        previewContainer = document.createElement('div');
-                        previewContainer.id = 'edit-image-preview';
-                        previewContainer.className = 'mt-2';
-                        e.target.parentNode.appendChild(previewContainer);
-                    }
-                    
-                    // Set the preview
-                    previewContainer.innerHTML = `
-                        <p>New image preview:</p>
-                        <img src="${event.target.result}" alt="Image Preview" style="max-height: 150px; max-width: 100%;" class="mt-2 mb-2 border rounded">
-                        <p class="text-muted small">Filename: ${file.name}</p>
-                    `;
-                };
-                reader.readAsDataURL(file);
-            }        });
-          // Image Preview Modal
+        // Image Preview Modal
         let currentZoom = 1;
         const zoomStep = 0.25;
         
