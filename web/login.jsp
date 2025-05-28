@@ -202,54 +202,39 @@
             </form>
         </div>
     </div>
-    
-    <!-- Panggil Bootstrap JS lokal -->
+      <!-- Panggil Bootstrap JS lokal -->
     <script src="js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Include Firebase Configuration -->
+    <%@ include file="firebase_config.jsp" %>
 
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-      import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyCfYaFJQsmu4Qt4YthfsCYpkAE6iyyGhBg",
-        authDomain: "webapplication1-4bebd.firebaseapp.com",
-        projectId: "webapplication1-4bebd",
-        storageBucket: "webapplication1-4bebd.firebasestorage.app",
-        messagingSenderId: "561789365143",
-        appId: "1:561789365143:web:f1add524dc4b8859fd32d2",
-        measurementId: "G-27LM5PPDNJ"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const auth = getAuth(app);
-
-      document.getElementById('loginForm').addEventListener('submit', function(e) {
+      document.getElementById('loginForm').addEventListener('submit', async function(e) {
         const isAdmin = document.getElementById('isAdmin').checked;
         if (isAdmin) {
           // Admin login: submit to server (local DB)
           return;
         }
+        
         // User login: use Firebase
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            // Set session on server for user
-            fetch('firebase_session.jsp', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: 'email=' + encodeURIComponent(email)
-            })
-            .then(() => {
-              window.location.href = 'main.jsp';
-            });
-          })
-          .catch((error) => {
-            alert('Firebase login failed: ' + error.message);
-          });
+        
+        const result = await window.FirebaseUtils.login(email, password);
+        if (result.success) {
+          // Show success message before redirect
+          const formSection = document.querySelector('.form-section');
+          const successDiv = document.createElement('div');
+          successDiv.className = 'alert alert-success mt-3';
+          successDiv.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Login successful! Redirecting...';
+          formSection.appendChild(successDiv);
+          setTimeout(() => {
+            window.location.href = 'main.jsp';
+          }, 1200);
+        } else {
+          alert('Firebase login failed: ' + result.error);
+        }
       });
     </script>
 </body>

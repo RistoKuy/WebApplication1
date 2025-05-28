@@ -222,12 +222,22 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">
+                            <i class="bi bi-house-door me-1"></i>Beranda
+                        </a>
+                    </li> -->
                     <li class="nav-item ms-2">
                         <span class="nav-link fw-semibold">Selamat Datang</span>
                     </li>
-                    <li class="nav-item ms-2">
+                    <!-- <li class="nav-item ms-2">
                         <a class="nav-link fw-semibold" href="update_profile.jsp">
                             <i class="bi bi-person-circle me-1"></i> Profil
+                        </a>
+                    </li> -->
+                    <li class="nav-item ms-2">
+                        <a class="nav-link fw-semibold" href="change_password.jsp">
+                            <i class="bi bi-key me-1"></i> Change Password
                         </a>
                     </li>
                     <li class="nav-item ms-2">

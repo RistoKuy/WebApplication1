@@ -200,58 +200,33 @@
             <a href="login.jsp" class="login-link">Already have an account? Log in</a>
         </form>
     </div>
-    
-    <!-- Panggil Bootstrap JS lokal -->
+      <!-- Panggil Bootstrap JS lokal -->
     <script src="js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Include Firebase Configuration -->
+    <%@ include file="firebase_config.jsp" %>
 
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-      import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-      import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyCfYaFJQsmu4Qt4YthfsCYpkAE6iyyGhBg",
-        authDomain: "webapplication1-4bebd.firebaseapp.com",
-        projectId: "webapplication1-4bebd",
-        databaseURL: "https://webapplication1-4bebd-default-rtdb.asia-southeast1.firebasedatabase.app",
-        storageBucket: "webapplication1-4bebd.firebasestorage.app",
-        messagingSenderId: "561789365143",
-        appId: "1:561789365143:web:f1add524dc4b8859fd32d2",
-        measurementId: "G-27LM5PPDNJ"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const auth = getAuth(app);
-      const db = getDatabase(app);
-
-      document.getElementById('registerForm').addEventListener('submit', function(e) {
+      document.getElementById('registerForm').addEventListener('submit', async function(e) {
         const isAdmin = document.getElementById('isAdmin').checked;
         if (isAdmin) {
           // Admin registration: submit to server (local DB)
           return;
         }
+        
         // User registration: use Firebase
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const nama = document.getElementById('nama').value;
-        createUserWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            // Save user data to Firebase Database
-            const user = userCredential.user;
-            set(ref(db, 'users/' + user.uid), {
-              nama: nama,
-              email: email
-            }).then(() => {
-              alert('Registration successful! You can now login.');
-              window.location.href = 'login.jsp';
-            });
-          })
-          .catch((error) => {
-            alert('Firebase registration failed: ' + error.message);
-          });
+        
+        const result = await window.FirebaseUtils.register(email, password, nama);
+        if (result.success) {
+          alert('Registration successful! You can now login.');
+          window.location.href = 'login.jsp';
+        } else {
+          alert('Firebase registration failed: ' + result.error);
+        }
       });
     </script>
 </body>
