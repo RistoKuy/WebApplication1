@@ -31,8 +31,7 @@
   window.firebaseAnalytics = analytics;
 
   // Firebase utility functions
-  window.FirebaseUtils = {
-    // Login function
+  window.FirebaseUtils = {    // Login function
     async login(email, password) {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -40,7 +39,7 @@
         await fetch('firebase_session.jsp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'email=' + encodeURIComponent(email)
+          body: 'email=' + encodeURIComponent(email) + '&firebase_uid=' + encodeURIComponent(userCredential.user.uid)
         });
         return { success: true, user: userCredential.user };
       } catch (error) {

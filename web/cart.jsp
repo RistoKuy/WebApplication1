@@ -145,6 +145,7 @@
             </tfoot>
         </table>
         <a href="main.jsp" class="btn btn-primary"><i class="bi bi-arrow-left"></i> Lanjut Belanja</a>
+        <a href="checkout.jsp" class="btn btn-success ms-2"><i class="bi bi-credit-card"></i> Checkout</a>
         <% } %>
     </div>
     <!-- Image Preview Modal -->
