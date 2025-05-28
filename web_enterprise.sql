@@ -20,19 +20,17 @@ CREATE TABLE `item` (
 
 CREATE TABLE `order` (
   `id_order` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `id_invoice` int(10) NOT NULL,
   `id_brg` int(10) NOT NULL,
+  `firebase_uid` varchar(50) NOT NULL,
   `nama_brg` varchar(100) NOT NULL,
+  `tgl_order` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `jumlah` int(10) NOT NULL,
-  `harga` varchar(30) NOT NULL
-);
-
-CREATE TABLE `invoice` (
-  `id_invoice` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `tgl_pesan` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `harga` varchar(30) NOT NULL,
+  `metode_pembayaran` varchar(50) NOT NULL,
+  `status_pembayaran` varchar(20) NOT NULL DEFAULT 'pending',
   `nama_penerima` varchar(50) NOT NULL,
   `alamat` TEXT NOT NULL,
-  `status_pembayaran` TINYINT(1) NOT NULL DEFAULT 0
+  `no_telp` varchar(15) NOT NULL
 );
 
 DELIMITER //
