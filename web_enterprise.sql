@@ -20,10 +20,30 @@ CREATE TABLE `item` (
 
 CREATE TABLE `order` (
   `id_order` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `id_user` int(10) NOT NULL,
+  `id_invoice` int(10) NOT NULL,
   `id_brg` int(10) NOT NULL,
+  `nama_brg` varchar(100) NOT NULL,
   `jumlah` int(10) NOT NULL,
-  `tanggal` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`id_user`) REFERENCES `user`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`id_brg`) REFERENCES `item`(`id_brg`) ON DELETE CASCADE
+  `harga` varchar(30) NOT NULL,
 );
+
+CREATE TABLE `invoice` (
+  `id_invoice` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `tgl_pesan` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `nama_penerima` varchar(50) NOT NULL,
+  `alamat` TEXT NOT NULL,
+  `status_pembayaran` TINYINT(1) NOT NULL DEFAULT 0,
+);
+
+DELIMITER //
+
+CREATE TRIGGER pesanan_penjualan 
+AFTER INSERT ON item
+FOR EACH ROW 
+BEGIN 
+    UPDATE tb_barang 
+    SET stok = stok - NEW.stok 
+    WHERE id_brg = NEW.id_brg; 
+END; //
+
+DELIMITER ;
