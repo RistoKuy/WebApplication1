@@ -1,6 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.*"%>
-<%@page import="javax.servlet.                    <td><img src="uploads/<%= gambar %>" alt="<%= nama %>" style="max-width:60px;max-height:60px;object-fit:contain;background:#222;"></td>ttp.*"%>
+<%@page import="javax.servlet.http.*"%>
 <%-- Cart Backend: Add item to cart and show cart contents --%>
 <%
     // Cart is stored as a List of Map<String, Object> in session
@@ -116,7 +116,7 @@
                        grandTotal += total;
                 %>
                 <tr>
-                    <td><img src="uploads/img/<%= gambar %>" alt="<%= nama %>" style="max-width:60px;max-height:60px;object-fit:contain;background:#222;"></td>
+                    <td><img src="uploads/<%= gambar %>" alt="<%= nama %>" style="max-width:60px;max-height:60px;object-fit:contain;background:#222;cursor:pointer;" class="cart-image-preview" data-img="<%= gambar %>" data-nama="<%= nama %>"></td>
                     <td><%= nama %></td>
                     <td>Rp <%= String.format("%,d", harga).replace(',', '.') %></td>
                     <td>
@@ -147,6 +147,20 @@
         <a href="main.jsp" class="btn btn-primary"><i class="bi bi-arrow-left"></i> Lanjut Belanja</a>
         <% } %>
     </div>
+    <!-- Image Preview Modal -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white" id="imagePreviewModalLabel">Preview Gambar</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center align-items-center" style="min-height:400px;">
+                    <img id="fullSizeImage" src="" alt="Preview" style="max-width:90vw;max-height:70vh;border-radius:8px;box-shadow:0 4px 24px #000;transition:transform 0.2s;">
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script>
     // Auto-submit quantity change
@@ -156,6 +170,20 @@
             if (parseInt(this.value) > 0) {
                 this.form.submit();
             }
+        });
+    });
+
+    // Image preview logic (like item_list.jsp)
+    document.querySelectorAll('.cart-image-preview').forEach(img => {
+        img.addEventListener('click', function() {
+            const src = this.getAttribute('src');
+            const nama = this.getAttribute('data-nama') || '';
+            const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            const fullSizeImage = document.getElementById('fullSizeImage');
+            fullSizeImage.src = src;
+            fullSizeImage.alt = nama;
+            document.getElementById('imagePreviewModalLabel').textContent = nama;
+            modal.show();
         });
     });
     </script>
