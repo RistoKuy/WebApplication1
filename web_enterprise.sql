@@ -24,7 +24,7 @@ CREATE TABLE `order` (
   `id_brg` int(10) NOT NULL,
   `nama_brg` varchar(100) NOT NULL,
   `jumlah` int(10) NOT NULL,
-  `harga` varchar(30) NOT NULL,
+  `harga` varchar(30) NOT NULL
 );
 
 CREATE TABLE `invoice` (
@@ -32,7 +32,7 @@ CREATE TABLE `invoice` (
   `tgl_pesan` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `nama_penerima` varchar(50) NOT NULL,
   `alamat` TEXT NOT NULL,
-  `status_pembayaran` TINYINT(1) NOT NULL DEFAULT 0,
+  `status_pembayaran` TINYINT(1) NOT NULL DEFAULT 0
 );
 
 DELIMITER //
