@@ -85,9 +85,9 @@
         }
         
         .form-control {
-            background-color: rgba(45, 45, 45, 0.7);
+            background-color: rgb(255, 255, 255);
             color: var(--text-primary);
-            border: 1px solid rgba(68, 68, 68, 0.5);
+            border: 1px solid rgb(255, 255, 255);
             padding: 12px;
             margin-bottom: 20px;
             border-radius: 8px;
