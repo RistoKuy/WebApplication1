@@ -15,7 +15,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Order Management | Aplikasi JSP</title>
+    <title>Invoice Management | Aplikasi JSP</title>
     <!-- Panggil Bootstrap lokal -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     
@@ -275,25 +275,23 @@
             <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
             <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>
             <li><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
-            <li class="active"><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Order</a></li>
+            <li class="active"><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Invoice</a></li>
             <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>
     
     <!-- Main Content -->
     <div class="main-content">
-        <div class="data-table">
-            <h1 class="neon-text">Manajemen Pesanan</h1>
+        <div class="data-table">            <h1 class="neon-text">Manajemen Invoice</h1>
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th>ID Invoice</th>
                         <th>Tanggal</th>
-                        <th>Nama Pembeli</th>
-                        <th>Nama Barang</th>
-                        <th>Jumlah</th>
-                        <th>Harga</th>
-                        <th>Metode</th>
-                        <th>Status</th>
+                        <th>Nama Penerima</th>
+                        <th>Firebase UID</th>
+                        <th>Total Harga</th>
+                        <th>Status Pembayaran</th>
                         <th>Alamat</th>
                         <th>No. Telp</th>
                         <th>Actions</th>
@@ -302,86 +300,85 @@
                 <tbody>
                     <%
                     try {
-                        String sql = "SELECT * FROM `order` ORDER BY tgl_order DESC";
+                        String sql = "SELECT * FROM `invoice` ORDER BY tgl_invoice DESC";
                         pstmt = conn.prepareStatement(sql);
                         rs = pstmt.executeQuery();
-                        boolean hasOrder = false;
+                        boolean hasInvoice = false;
                         while (rs.next()) {
-                            hasOrder = true;
-                            int orderId = rs.getInt("id_order");
+                            hasInvoice = true;
+                            int invoiceId = rs.getInt("id_invoice");
                             String currentStatus = rs.getString("status_pembayaran");
                     %>
-                    <tr id="order-row-<%= orderId %>">
-                        <td><%= rs.getTimestamp("tgl_order") %></td>
+                    <tr id="invoice-row-<%= invoiceId %>">
+                        <td><%= invoiceId %></td>
+                        <td><%= rs.getTimestamp("tgl_invoice") %></td>
                         <td><%= rs.getString("nama_penerima") %></td>
-                        <td><%= rs.getString("nama_brg") %></td>
-                        <td><%= rs.getInt("jumlah") %></td>
-                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("harga"))).replace(',', '.') %></td>
-                        <td><%= rs.getString("metode_pembayaran") %></td>
+                        <td><%= rs.getString("firebase_uid") %></td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
                         <td>
-                            <select class="form-select form-select-sm status-select" data-order-id="<%= orderId %>">
-                                <option value="Pending" <% if("Pending".equals(currentStatus)) { %>selected<% } %>>Pending</option>
-                                <option value="Completed" <% if("Completed".equals(currentStatus)) { %>selected<% } %>>Completed</option>
+                            <select class="form-select form-select-sm status-select" data-invoice-id="<%= invoiceId %>">
+                                <option value="pending" <% if("pending".equals(currentStatus)) { %>selected<% } %>>Pending</option>
+                                <option value="paid" <% if("paid".equals(currentStatus)) { %>selected<% } %>>Paid</option>
+                                <option value="cancelled" <% if("cancelled".equals(currentStatus)) { %>selected<% } %>>Cancelled</option>
                             </select>
                         </td>
                         <td><%= rs.getString("alamat") %></td>
                         <td><%= rs.getString("no_telp") %></td>
                         <td>
-                            <button class="btn btn-delete btn-sm delete-btn" data-order-id="<%= orderId %>" title="Hapus Pesanan">
+                            <button class="btn btn-delete btn-sm delete-btn" data-invoice-id="<%= invoiceId %>" title="Hapus Invoice">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
                         </td>
                     </tr>
                     <% }
-                        if (!hasOrder) { %>
-                        <tr><td colspan="10" class="text-center">Belum ada pesanan.</td></tr>
+                        if (!hasInvoice) { %>
+                        <tr><td colspan="9" class="text-center">Belum ada invoice.</td></tr>
                     <% }
                         rs.close();
                         pstmt.close();
                     } catch(Exception e) { %>
-                        <tr><td colspan="10" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
+                        <tr><td colspan="9" class="text-danger">Gagal mengambil data invoice: <%= e.getMessage() %></td></tr>
                     <% } %>
                 </tbody>
             </table>
         </div>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Event listeners for status change and delete actions
+    <script>        // Event listeners for status change and delete actions
         document.addEventListener('DOMContentLoaded', function() {
             // Handle status change
             document.querySelectorAll('.status-select').forEach(function(select) {
                 select.addEventListener('change', function() {
-                    const orderId = this.getAttribute('data-order-id');
+                    const invoiceId = this.getAttribute('data-invoice-id');
                     const newStatus = this.value;
-                    updateOrderStatus(orderId, newStatus);
+                    updateInvoiceStatus(invoiceId, newStatus);
                 });
             });
             
             // Handle delete action
             document.querySelectorAll('.delete-btn').forEach(function(button) {
                 button.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-order-id');
-                    deleteOrder(orderId);
+                    const invoiceId = this.getAttribute('data-invoice-id');
+                    deleteInvoice(invoiceId);
                 });
             });
         });
 
-        function updateOrderStatus(orderId, newStatus) {
-            if (confirm('Apakah Anda yakin ingin mengubah status pesanan ini?')) {
+        function updateInvoiceStatus(invoiceId, newStatus) {
+            if (confirm('Apakah Anda yakin ingin mengubah status pembayaran invoice ini?')) {
                 fetch('admin_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=update_status&order_id=' + orderId + '&status=' + newStatus
+                    body: 'action=update_invoice_status&invoice_id=' + invoiceId + '&status=' + newStatus
                 })
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'success') {
-                        alert('Status pesanan berhasil diperbarui!');
+                        alert('Status pembayaran berhasil diperbarui!');
                     } else {
-                        alert('Gagal memperbarui status pesanan: ' + data);
+                        alert('Gagal memperbarui status pembayaran: ' + data);
                         location.reload(); // Reload to restore original value
                     }
                 })
@@ -396,37 +393,37 @@
             }
         }
 
-        function deleteOrder(orderId) {
-            if (confirm('Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan!')) {
+        function deleteInvoice(invoiceId) {
+            if (confirm('Apakah Anda yakin ingin menghapus invoice ini? Tindakan ini tidak dapat dibatalkan!')) {
                 fetch('admin_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=delete_order&order_id=' + orderId
+                    body: 'action=delete_invoice&invoice_id=' + invoiceId
                 })
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'success') {
                         // Remove the row from the table
-                        document.getElementById('order-row-' + orderId).remove();
-                        alert('Pesanan berhasil dihapus!');
+                        document.getElementById('invoice-row-' + invoiceId).remove();
+                        alert('Invoice berhasil dihapus!');
                         
-                        // Check if there are no more orders
+                        // Check if there are no more invoices
                         const tbody = document.querySelector('tbody');
                         if (tbody.children.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="10" class="text-center">Belum ada pesanan.</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="9" class="text-center">Belum ada invoice.</td></tr>';
                         }
                     } else {
-                        alert('Gagal menghapus pesanan: ' + data);
+                        alert('Gagal menghapus invoice: ' + data);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan saat menghapus pesanan');
+                    alert('Terjadi kesalahan saat menghapus invoice');
                 });
             }
-        }    </script>
+        }</script>
     
     <%
         // Close the database resources
