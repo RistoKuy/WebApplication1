@@ -62,14 +62,22 @@
                     boolean hasOrder = false;
                     while (rs.next()) {
                         hasOrder = true;
-                %>
-                <tr>
+                %>                <tr>
                     <td><%= rs.getTimestamp("tgl_order") %></td>
                     <td><%= rs.getString("nama_brg") %></td>
                     <td><%= rs.getInt("jumlah") %></td>
                     <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("harga"))).replace(',', '.') %></td>
                     <td><%= rs.getString("metode_pembayaran") %></td>
-                    <td><%= rs.getString("status_pembayaran") %></td>
+                    <td>
+                        <% String orderStatus = rs.getString("status_order");
+                           if ("pending".equals(orderStatus)) { %>
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        <% } else if ("completed".equals(orderStatus)) { %>
+                            <span class="badge bg-success">Completed</span>
+                        <% } else { %>
+                            <span class="badge bg-secondary"><%= orderStatus %></span>
+                        <% } %>
+                    </td>
                 </tr>
                 <% }
                     if (!hasOrder) { %>

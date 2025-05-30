@@ -190,12 +190,29 @@
             font-size: 0.875rem;
             transition: all 0.3s ease;
         }
-        
-        .btn-delete:hover {
+          .btn-delete:hover {
             background-color: var(--accent-pink);
             color: #121212;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(207, 102, 121, 0.3);
+        }
+        
+        .btn-info {
+            background-color: transparent;
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-info:hover {
+            background-color: var(--accent-blue);
+            color: #121212;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(3, 218, 198, 0.3);
         }
           .status-select {
             min-width: 120px;
@@ -283,15 +300,13 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="data-table">            <h1 class="neon-text">Manajemen Invoice</h1>
-            <table class="table table-striped">
-                <thead>
+            <table class="table table-striped">                <thead>
                     <tr>
                         <th>ID Invoice</th>
                         <th>Tanggal</th>
                         <th>Nama Penerima</th>
-                        <th>Firebase UID</th>
                         <th>Total Harga</th>
-                        <th>Status Pembayaran</th>
+                        <th>Status Order</th>
                         <th>Alamat</th>
                         <th>No. Telp</th>
                         <th>Actions</th>
@@ -307,37 +322,36 @@
                         while (rs.next()) {
                             hasInvoice = true;
                             int invoiceId = rs.getInt("id_invoice");
-                            String currentStatus = rs.getString("status_pembayaran");
-                    %>
-                    <tr id="invoice-row-<%= invoiceId %>">
+                            int orderId = rs.getInt("id_order");
+                            String currentOrderStatus = rs.getString("status_order");
+                    %>                    <tr id="invoice-row-<%= invoiceId %>">
                         <td><%= invoiceId %></td>
                         <td><%= rs.getTimestamp("tgl_invoice") %></td>
                         <td><%= rs.getString("nama_penerima") %></td>
-                        <td><%= rs.getString("firebase_uid") %></td>
                         <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
                         <td>
-                            <select class="form-select form-select-sm status-select" data-invoice-id="<%= invoiceId %>">
-                                <option value="pending" <% if("pending".equals(currentStatus)) { %>selected<% } %>>Pending</option>
-                                <option value="paid" <% if("paid".equals(currentStatus)) { %>selected<% } %>>Paid</option>
-                                <option value="cancelled" <% if("cancelled".equals(currentStatus)) { %>selected<% } %>>Cancelled</option>
+                            <select class="form-select form-select-sm status-select" data-invoice-id="<%= invoiceId %>" data-order-id="<%= orderId %>">
+                                <option value="pending" <% if("pending".equals(currentOrderStatus)) { %>selected<% } %>>Pending</option>
+                                <option value="completed" <% if("completed".equals(currentOrderStatus)) { %>selected<% } %>>Completed</option>
                             </select>
-                        </td>
-                        <td><%= rs.getString("alamat") %></td>
+                        </td>                        <td><%= rs.getString("alamat") %></td>
                         <td><%= rs.getString("no_telp") %></td>
                         <td>
+                            <a href="admin_order_detail.jsp?invoice_id=<%= invoiceId %>&order_id=<%= orderId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
+                                <i class="bi bi-eye"></i> Detail
+                            </a>
                             <button class="btn btn-delete btn-sm delete-btn" data-invoice-id="<%= invoiceId %>" title="Hapus Invoice">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
                         </td>
                     </tr>
                     <% }
-                        if (!hasInvoice) { %>
-                        <tr><td colspan="9" class="text-center">Belum ada invoice.</td></tr>
+                        if (!hasInvoice) { %>                        <tr><td colspan="8" class="text-center">Belum ada invoice.</td></tr>
                     <% }
                         rs.close();
                         pstmt.close();
                     } catch(Exception e) { %>
-                        <tr><td colspan="9" class="text-danger">Gagal mengambil data invoice: <%= e.getMessage() %></td></tr>
+                        <tr><td colspan="8" class="text-danger">Gagal mengambil data invoice: <%= e.getMessage() %></td></tr>
                     <% } %>
                 </tbody>
             </table>
@@ -350,8 +364,9 @@
             document.querySelectorAll('.status-select').forEach(function(select) {
                 select.addEventListener('change', function() {
                     const invoiceId = this.getAttribute('data-invoice-id');
+                    const orderId = this.getAttribute('data-order-id');
                     const newStatus = this.value;
-                    updateInvoiceStatus(invoiceId, newStatus);
+                    updateOrderStatus(invoiceId, orderId, newStatus);
                 });
             });
             
@@ -364,21 +379,21 @@
             });
         });
 
-        function updateInvoiceStatus(invoiceId, newStatus) {
-            if (confirm('Apakah Anda yakin ingin mengubah status pembayaran invoice ini?')) {
+        function updateOrderStatus(invoiceId, orderId, newStatus) {
+            if (confirm('Apakah Anda yakin ingin mengubah status pesanan ini?')) {
                 fetch('admin_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=update_invoice_status&invoice_id=' + invoiceId + '&status=' + newStatus
+                    body: 'action=update_order_status&invoice_id=' + invoiceId + '&order_id=' + orderId + '&status=' + newStatus
                 })
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'success') {
-                        alert('Status pembayaran berhasil diperbarui!');
+                        alert('Status pesanan berhasil diperbarui!');
                     } else {
-                        alert('Gagal memperbarui status pembayaran: ' + data);
+                        alert('Gagal memperbarui status pesanan: ' + data);
                         location.reload(); // Reload to restore original value
                     }
                 })
@@ -408,11 +423,10 @@
                         // Remove the row from the table
                         document.getElementById('invoice-row-' + invoiceId).remove();
                         alert('Invoice berhasil dihapus!');
-                        
-                        // Check if there are no more invoices
+                          // Check if there are no more invoices
                         const tbody = document.querySelector('tbody');
                         if (tbody.children.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="9" class="text-center">Belum ada invoice.</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada invoice.</td></tr>';
                         }
                     } else {
                         alert('Gagal menghapus invoice: ' + data);

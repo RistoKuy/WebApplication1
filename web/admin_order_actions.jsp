@@ -24,7 +24,62 @@
         String dbPassword = "";
         Connection conn = DriverManager.getConnection(url, dbUser, dbPassword);
         
-        if ("update_invoice_status".equals(action)) {
+        if ("update_order_status".equals(action)) {
+            String invoiceIdStr = request.getParameter("invoice_id");
+            String orderIdStr = request.getParameter("order_id");
+            String newStatus = request.getParameter("status");
+            
+            if (invoiceIdStr == null || orderIdStr == null || newStatus == null) {
+                out.print("missing_parameters");
+                return;
+            }
+            
+            int invoiceId = Integer.parseInt(invoiceIdStr);
+            int orderId = Integer.parseInt(orderIdStr);
+            
+            if (!newStatus.equals("pending") && !newStatus.equals("completed")) {
+                out.print("invalid_status");
+                return;
+            }
+            
+            // Update both invoice and order tables
+            conn.setAutoCommit(false); // Start transaction
+            
+            try {
+                // Update invoice table
+                String sqlInvoice = "UPDATE `invoice` SET status_order = ? WHERE id_invoice = ?";
+                PreparedStatement pstmtInvoice = conn.prepareStatement(sqlInvoice);
+                pstmtInvoice.setString(1, newStatus);
+                pstmtInvoice.setInt(2, invoiceId);
+                
+                // Update order table
+                String sqlOrder = "UPDATE `order` SET status_order = ? WHERE id_order = ?";
+                PreparedStatement pstmtOrder = conn.prepareStatement(sqlOrder);
+                pstmtOrder.setString(1, newStatus);
+                pstmtOrder.setInt(2, orderId);
+                
+                int invoiceRowsAffected = pstmtInvoice.executeUpdate();
+                int orderRowsAffected = pstmtOrder.executeUpdate();
+                
+                if (invoiceRowsAffected > 0 && orderRowsAffected > 0) {
+                    conn.commit(); // Commit transaction
+                    out.print("success");
+                } else {
+                    conn.rollback(); // Rollback transaction
+                    out.print("record_not_found");
+                }
+                
+                pstmtInvoice.close();
+                pstmtOrder.close();
+                
+            } catch (Exception e) {
+                conn.rollback(); // Rollback on error
+                out.print("update_error: " + e.getMessage());
+            } finally {
+                conn.setAutoCommit(true); // Reset auto-commit
+            }
+            
+        } else if ("update_invoice_status".equals(action)) {
             String invoiceIdStr = request.getParameter("invoice_id");
             String newStatus = request.getParameter("status");
             

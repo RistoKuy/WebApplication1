@@ -28,6 +28,7 @@ CREATE TABLE `order` (
   `total_harga` varchar(30) NOT NULL,
   `metode_pengiriman` varchar(50) NOT NULL,
   `metode_pembayaran` varchar(50) NOT NULL,
+  `status_order` varchar(20) NOT NULL DEFAULT 'pending',
   `tgl_order` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -39,7 +40,7 @@ CREATE TABLE `invoice` (
   `alamat` TEXT NOT NULL,
   `no_telp` varchar(15) NOT NULL,
   `total_harga` varchar(30) NOT NULL,
-  `status_pembayaran` varchar(20) NOT NULL DEFAULT 'pending',
+  `status_order` varchar(20) NOT NULL DEFAULT 'pending',
   `tgl_invoice` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

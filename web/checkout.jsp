@@ -40,47 +40,100 @@
             } else {
                 error = "Gagal memproses pesanan: Tidak dapat menemukan identitas pengguna. Silakan login ulang.";
             }
-        }
-        
-        if (error == null) {
+        }        if (error == null) {
+            Connection conn = null;
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 String url = "jdbc:mysql://localhost:3306/web_enterprise";
                 String dbUser = "root";
                 String dbPassword = "";
-                Connection conn = DriverManager.getConnection(url, dbUser, dbPassword);
-                String sql = "INSERT INTO `order` (id_brg, firebase_uid, nama_brg, jumlah, harga, metode_pembayaran, nama_penerima, alamat, no_telp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";                PreparedStatement pstmt = conn.prepareStatement(sql);
+                conn = DriverManager.getConnection(url, dbUser, dbPassword);
+                
+                // Start transaction
+                conn.setAutoCommit(false);
+                
+                int totalAmount = 0;
+                List<Integer> orderIds = new ArrayList<>();
+                
+                // Calculate total amount
                 for (Map<String, Object> item : cart) {
+                    int jumlah = (int)item.get("jumlah");
+                    int harga = Integer.parseInt((String)item.get("harga"));
+                    totalAmount += jumlah * harga;
+                }
+                
+                // Insert orders with all required fields
+                String sql = "INSERT INTO `order` (id_brg, gambar_brg, nama_brg, jumlah, harga, total_harga, metode_pengiriman, metode_pembayaran, status_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                
+                for (Map<String, Object> item : cart) {
+                    int jumlah = (int)item.get("jumlah");
+                    int harga = Integer.parseInt((String)item.get("harga"));
+                    int itemTotal = jumlah * harga;
+                    
                     pstmt.setInt(1, Integer.parseInt((String)item.get("id_brg")));
-                    pstmt.setString(2, firebase_uid);
+                    pstmt.setString(2, (String)item.get("gambar_brg"));
                     pstmt.setString(3, (String)item.get("nama_brg"));
-                    pstmt.setInt(4, (int)item.get("jumlah"));
-                    pstmt.setString(5, (String)item.get("harga"));
-                    pstmt.setString(6, metode_pembayaran);
-                    pstmt.setString(7, nama_penerima);
-                    pstmt.setString(8, alamat);
-                    pstmt.setString(9, no_telp);
+                    pstmt.setInt(4, jumlah);
+                    pstmt.setString(5, String.valueOf(harga));
+                    pstmt.setString(6, String.valueOf(itemTotal));
+                    pstmt.setString(7, "Standard"); // Default shipping method
+                    pstmt.setString(8, metode_pembayaran);
+                    pstmt.setString(9, "pending"); // Default status
                     pstmt.executeUpdate();
+                    
+                    // Get generated order ID
+                    ResultSet generatedKeys = pstmt.getGeneratedKeys();
+                    if (generatedKeys.next()) {
+                        orderIds.add(generatedKeys.getInt(1));
+                    }
 
                     // Update stock in item table
                     String updateStockSql = "UPDATE item SET stok = stok - ? WHERE id_brg = ? AND stok >= ?";
                     try (PreparedStatement updateStockStmt = conn.prepareStatement(updateStockSql)) {
-                        updateStockStmt.setInt(1, (int)item.get("jumlah"));
+                        updateStockStmt.setInt(1, jumlah);
                         updateStockStmt.setInt(2, Integer.parseInt((String)item.get("id_brg")));
-                        updateStockStmt.setInt(3, (int)item.get("jumlah"));
+                        updateStockStmt.setInt(3, jumlah);
                         int affected = updateStockStmt.executeUpdate();
                         if (affected == 0) {
                             throw new Exception("Stok tidak cukup untuk barang: " + item.get("nama_brg"));
                         }
                     }
                 }
+                
+                // Create invoice for the order
+                if (!orderIds.isEmpty()) {
+                    String invoiceSql = "INSERT INTO `invoice` (id_order, firebase_uid, nama_penerima, alamat, no_telp, total_harga, status_order) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    PreparedStatement invoicePstmt = conn.prepareStatement(invoiceSql);
+                    
+                    // Create one invoice per order (for simplicity, using the first order ID)
+                    invoicePstmt.setInt(1, orderIds.get(0));
+                    invoicePstmt.setString(2, firebase_uid);
+                    invoicePstmt.setString(3, nama_penerima);
+                    invoicePstmt.setString(4, alamat);
+                    invoicePstmt.setString(5, no_telp);
+                    invoicePstmt.setString(6, String.valueOf(totalAmount));
+                    invoicePstmt.setString(7, "pending");
+                    invoicePstmt.executeUpdate();
+                    invoicePstmt.close();
+                }
+                
+                // Commit transaction
+                conn.commit();
                 pstmt.close();
                 conn.close();
                 sess.setAttribute("cart", new ArrayList<>()); // Clear cart
                 success = "Pesanan berhasil dibuat!";
-                response.sendRedirect("user_orders.jsp");
-                return;
+                response.sendRedirect("user_orders.jsp");                return;
             } catch(Exception e) {
+                try {
+                    if (conn != null) {
+                        conn.rollback();
+                        conn.close();
+                    }
+                } catch(SQLException se) {
+                    // Handle rollback exception
+                }
                 error = "Gagal memproses pesanan: " + e.getMessage();
             }
         }
