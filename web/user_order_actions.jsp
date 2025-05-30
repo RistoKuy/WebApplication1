@@ -16,18 +16,16 @@
         response.setStatus(400);
         out.print("User identification not found");
         return;
-    }
-
-    String action = request.getParameter("action");
-    String invoiceIdStr = request.getParameter("invoice_id");
+    }    String action = request.getParameter("action");
+    String orderIdStr = request.getParameter("order_id");
     
-    if (action == null || invoiceIdStr == null) {
+    if (action == null || orderIdStr == null) {
         response.setStatus(400);
         out.print("Missing required parameters");
         return;
     }
     
-    int invoiceId = Integer.parseInt(invoiceIdStr);
+    int orderId = Integer.parseInt(orderIdStr);
     
     Connection conn = null;
     PreparedStatement pstmt = null;
@@ -38,73 +36,35 @@
         String dbUser = "root";
         String dbPassword = "";
         conn = DriverManager.getConnection(url, dbUser, dbPassword);
-        
-        if ("cancel_order".equals(action)) {
+          if ("cancel_order".equals(action)) {
             // Start transaction
             conn.setAutoCommit(false);
             
-            // First verify that this invoice belongs to the current user and is still pending
-            String checkSql = "SELECT id_order, status_order FROM `invoice` WHERE id_invoice = ? AND firebase_uid = ? AND status_order = 'pending'";
+            // First verify that this order belongs to the current user and is still pending
+            String checkSql = "SELECT id_brg, jumlah, status_order FROM `order` WHERE id_order = ? AND firebase_uid = ? AND status_order = 'pending'";
             pstmt = conn.prepareStatement(checkSql);
-            pstmt.setInt(1, invoiceId);
+            pstmt.setInt(1, orderId);
             pstmt.setString(2, firebase_uid);
-            ResultSet rs = pstmt.executeQuery();            if (rs.next()) {
-                int orderId = rs.getInt("id_order");
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                int itemId = rs.getInt("id_brg");
+                int quantity = rs.getInt("jumlah");
                 
-                // Get the order details to find related orders in the same checkout session
-                String orderDetailsSql = "SELECT firebase_uid, metode_pengiriman, metode_pembayaran, tgl_order FROM `order` WHERE id_order = ? AND firebase_uid = ?";
-                PreparedStatement orderDetailsPstmt = conn.prepareStatement(orderDetailsSql);
-                orderDetailsPstmt.setInt(1, orderId);
-                orderDetailsPstmt.setString(2, firebase_uid);
-                ResultSet orderDetailsRs = orderDetailsPstmt.executeQuery();
+                // Restore stock for the item
+                String restoreStockSql = "UPDATE item SET stok = stok + ? WHERE id_brg = ?";
+                PreparedStatement stockPstmt = conn.prepareStatement(restoreStockSql);
+                stockPstmt.setInt(1, quantity);
+                stockPstmt.setInt(2, itemId);
+                stockPstmt.executeUpdate();
+                stockPstmt.close();
                 
-                if (orderDetailsRs.next()) {
-                    String metodePengiriman = orderDetailsRs.getString("metode_pengiriman");
-                    String metodePembayaran = orderDetailsRs.getString("metode_pembayaran");
-                    java.sql.Timestamp orderTime = orderDetailsRs.getTimestamp("tgl_order");
-                    
-                    // Find ALL orders from the same checkout session and restore their stock
-                    String relatedOrdersSql = "SELECT id_brg, jumlah, id_order FROM `order` WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, ?)) <= 300";
-                    PreparedStatement relatedOrdersPstmt = conn.prepareStatement(relatedOrdersSql);
-                    relatedOrdersPstmt.setString(1, firebase_uid);
-                    relatedOrdersPstmt.setString(2, metodePengiriman);
-                    relatedOrdersPstmt.setString(3, metodePembayaran);
-                    relatedOrdersPstmt.setTimestamp(4, orderTime);
-                    ResultSet relatedOrdersRs = relatedOrdersPstmt.executeQuery();
-                    
-                    // Restore stock for all related items and update their status
-                    while (relatedOrdersRs.next()) {
-                        int itemId = relatedOrdersRs.getInt("id_brg");
-                        int quantity = relatedOrdersRs.getInt("jumlah");
-                        int relatedOrderId = relatedOrdersRs.getInt("id_order");
-                        
-                        // Restore stock for the item
-                        String restoreStockSql = "UPDATE item SET stok = stok + ? WHERE id_brg = ?";
-                        PreparedStatement stockPstmt = conn.prepareStatement(restoreStockSql);
-                        stockPstmt.setInt(1, quantity);
-                        stockPstmt.setInt(2, itemId);
-                        stockPstmt.executeUpdate();
-                        stockPstmt.close();
-                        
-                        // Update order status to cancelled
-                        String updateOrderSql = "UPDATE `order` SET status_order = 'cancelled' WHERE id_order = ?";
-                        PreparedStatement updateOrderPstmt = conn.prepareStatement(updateOrderSql);
-                        updateOrderPstmt.setInt(1, relatedOrderId);
-                        updateOrderPstmt.executeUpdate();
-                        updateOrderPstmt.close();
-                    }
-                    relatedOrdersRs.close();
-                    relatedOrdersPstmt.close();
-                }
-                orderDetailsRs.close();
-                orderDetailsPstmt.close();
-                
-                // Update invoice status to cancelled
-                String updateInvoiceSql = "UPDATE `invoice` SET status_order = 'cancelled' WHERE id_invoice = ?";
-                PreparedStatement updateInvoicePstmt = conn.prepareStatement(updateInvoiceSql);
-                updateInvoicePstmt.setInt(1, invoiceId);
-                updateInvoicePstmt.executeUpdate();
-                updateInvoicePstmt.close();
+                // Update order status to cancelled
+                String updateOrderSql = "UPDATE `order` SET status_order = 'cancelled' WHERE id_order = ?";
+                PreparedStatement updateOrderPstmt = conn.prepareStatement(updateOrderSql);
+                updateOrderPstmt.setInt(1, orderId);
+                updateOrderPstmt.executeUpdate();
+                updateOrderPstmt.close();
                 
                 // Commit transaction
                 conn.commit();

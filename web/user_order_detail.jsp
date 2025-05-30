@@ -20,17 +20,13 @@
             response.sendRedirect("user_orders.jsp");
             return;
         }
-    }
-
-    String invoiceIdStr = request.getParameter("invoice_id");
-    String orderIdStr = request.getParameter("order_id");
+    }    String orderIdStr = request.getParameter("order_id");
     
-    if (invoiceIdStr == null || orderIdStr == null) {
+    if (orderIdStr == null) {
         response.sendRedirect("user_orders.jsp");
         return;
     }
     
-    int invoiceId = Integer.parseInt(invoiceIdStr);
     int orderId = Integer.parseInt(orderIdStr);
 %>
 <!DOCTYPE html>
@@ -187,9 +183,9 @@
             background-color: #9546fa;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
-            color: #000;
-        }
-          .neon-text {
+            color: #000;        }
+        
+        .neon-text {
             color: var(--text-primary);
             text-shadow: 0 0 5px rgba(187, 134, 252, 0.5),
                          0 0 10px rgba(187, 134, 252, 0.3);
@@ -218,9 +214,9 @@
         .item-image-preview {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             border-radius: 4px;
-            border: 2px solid transparent;
-        }
-          .item-image-preview:hover {
+            border: 2px solid transparent;        }
+        
+        .item-image-preview:hover {
             transform: scale(1.1);
             box-shadow: 0 0 10px rgba(187, 134, 252, 0.6);
             border-color: var(--accent-purple);
@@ -263,24 +259,27 @@
     
     <div class="detail-container">
         
-        <h1 class="neon-text mb-4">Detail Pesanan</h1>
-          <%
+        <h1 class="neon-text mb-4">Detail Pesanan</h1>        <%
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         
-        // Declare variables outside the if blocks for proper scope
-        int invoiceIdData = 0;
+        // Declare variables for order data
         int orderIdData = 0;
         String namaPenerima = "";
         String alamat = "";
         String noTelp = "";
         String totalHarga = "";
         String statusOrder = "";
-        java.sql.Timestamp tglInvoice = null;
         String metodePengiriman = "";
         String metodePembayaran = "";
         java.sql.Timestamp tglOrder = null;
+        String firebase_uid_db = "";
+        String namaBrg = "";
+        String gambarBrg = "";
+        String harga = "";
+        int jumlah = 0;
+        int idBrg = 0;
         boolean hasValidData = false;
         
         try {
@@ -290,55 +289,40 @@
             String dbPassword = "";
             conn = DriverManager.getConnection(url, dbUser, dbPassword);
             
-            // Get invoice details - verify it belongs to current user
-            String invoiceSql = "SELECT * FROM `invoice` WHERE id_invoice = ? AND firebase_uid = ?";
-            pstmt = conn.prepareStatement(invoiceSql);
-            pstmt.setInt(1, invoiceId);
+            // Get order details - verify it belongs to current user
+            String orderSql = "SELECT * FROM `order` WHERE id_order = ? AND firebase_uid = ?";
+            pstmt = conn.prepareStatement(orderSql);
+            pstmt.setInt(1, orderId);
             pstmt.setString(2, firebase_uid);
             rs = pstmt.executeQuery();
             
             if (rs.next()) {
-                // Store invoice data
-                invoiceIdData = rs.getInt("id_invoice");
+                // Store order data
                 orderIdData = rs.getInt("id_order");
+                idBrg = rs.getInt("id_brg");
+                firebase_uid_db = rs.getString("firebase_uid");
+                gambarBrg = rs.getString("gambar_brg");
+                namaBrg = rs.getString("nama_brg");
+                jumlah = rs.getInt("jumlah");
+                harga = rs.getString("harga");
+                totalHarga = rs.getString("total_harga");
                 namaPenerima = rs.getString("nama_penerima");
                 alamat = rs.getString("alamat");
                 noTelp = rs.getString("no_telp");
-                totalHarga = rs.getString("total_harga");
+                metodePengiriman = rs.getString("metode_pengiriman");
+                metodePembayaran = rs.getString("metode_pembayaran");
                 statusOrder = rs.getString("status_order");
-                tglInvoice = rs.getTimestamp("tgl_invoice");
+                tglOrder = rs.getTimestamp("tgl_order");
                 hasValidData = true;
-            }
-            rs.close();
-            pstmt.close();
-            
-            // Get order details - verify it belongs to current user
-            if (hasValidData) {
-                String orderSql = "SELECT * FROM `order` WHERE id_order = ? AND firebase_uid = ?";
-                pstmt = conn.prepareStatement(orderSql);
-                pstmt.setInt(1, orderId);
-                pstmt.setString(2, firebase_uid);
-                rs = pstmt.executeQuery();
-                
-                if (rs.next()) {
-                    metodePengiriman = rs.getString("metode_pengiriman");
-                    metodePembayaran = rs.getString("metode_pembayaran");
-                    tglOrder = rs.getTimestamp("tgl_order");
-                }
             }
         %>
         
         <% if (hasValidData) { %>
-          <!-- Unified Order Information -->
         <div class="detail-card">
             <h3 class="section-title">Informasi Pesanan</h3>
             
             <!-- Order Identification -->
             <div class="info-section-title">Identifikasi Pesanan</div>
-            <div class="info-row">
-                <span class="info-label">ID Invoice:</span>
-                <span class="info-value">#<%= invoiceIdData %></span>
-            </div>
             <div class="info-row">
                 <span class="info-label">ID Order:</span>
                 <span class="info-value">#<%= orderIdData %></span>
@@ -402,15 +386,11 @@
                 <div class="info-section-title">Timeline</div>
                 <div class="info-row">
                     <span class="info-label">Tanggal Pesanan:</span>
-                    <span class="info-value"><%= tglInvoice %></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Tanggal Order:</span>
                     <span class="info-value"><%= tglOrder %></span>
                 </div>
-            </div>
-        </div>
-          <!-- Item Details Table -->
+            </div>        </div>
+        
+        <!-- Item Details Table -->
         <div class="detail-card">
             <h3 class="section-title">Detail Barang</h3>
             <table class="table table-striped">
@@ -424,51 +404,42 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% 
-                    // Fetch all order rows for this invoice's checkout session (no grouping, no combining)
-                    rs.close();
-                    pstmt.close();
-                    String itemSql = "SELECT * FROM `order` WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, (SELECT tgl_order FROM `order` WHERE id_order = ?))) <= 300 ORDER BY id_order";
-                    pstmt = conn.prepareStatement(itemSql);
-                    pstmt.setString(1, firebase_uid);
-                    pstmt.setString(2, metodePengiriman);
-                    pstmt.setString(3, metodePembayaran);
-                    pstmt.setInt(4, orderIdData);
-                    rs = pstmt.executeQuery();
-                    boolean hasItems = false;
-                    while (rs.next()) {
-                        hasItems = true;
+                    <%
+                    // Show this single order item - no need for complex queries
+                    // since the unified order table contains all item details
                     %>
                     <tr>
-                        <td><%= rs.getString("nama_brg") %></td>
+                        <td><%= namaBrg %></td>
                         <td>
-                            <% String gambarBrg = rs.getString("gambar_brg");
-                               if(gambarBrg != null && !gambarBrg.isEmpty()) { %>
-                                <img src="uploads/<%= gambarBrg %>" alt="<%= rs.getString("nama_brg") %>" height="60" 
+                            <% 
+                                if(gambarBrg != null && !gambarBrg.isEmpty()) { 
+                            %>
+                                <img src="uploads/<%= gambarBrg %>" alt="<%= namaBrg %>" height="60" 
                                     class="item-image-preview" data-bs-toggle="modal" data-bs-target="#imagePreviewModal"
-                                    data-img-src="uploads/<%= gambarBrg %>" data-img-name="<%= rs.getString("nama_brg") %>"
+                                    data-img-src="uploads/<%= gambarBrg %>" data-img-name="<%= namaBrg %>"
                                     style="cursor: pointer; border-radius: 4px; object-fit: contain; background: #222;">
                             <% } else { %>
                                 <span class="text-muted">No image</span>
                             <% } %>
                         </td>
-                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("harga"))).replace(',', '.') %></td>
-                        <td><%= rs.getInt("jumlah") %> pcs</td>
-                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(harga)).replace(',', '.') %></td>
+                        <td><%= jumlah %> pcs</td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(totalHarga)).replace(',', '.') %></td>
                     </tr>
-                    <% } %>
-                    <% if (!hasItems) { %>
-                    <tr>
-                        <td colspan="5" class="text-center text-muted">Data barang tidak ditemukan</td>
-                    </tr>
-                    <% } %>
-                </tbody>
-            </table>
+                </tbody>            </table>
         </div>
         
+        <% } else { %>
+            <div class="detail-card">
+                <div class="alert alert-warning">
+                    <h5>Data Tidak Ditemukan</h5>
+                    <p>Order dengan ID #<%= orderId %> tidak ditemukan dalam sistem atau tidak dapat diakses.</p>
+                    <p>Pastikan ID yang dimasukkan benar dan data masih tersedia.</p>
+                </div>
+            </div>
+        <% } %>
+        
         <%
-            }
-            
         } catch(Exception e) {
         %>
             <div class="detail-card">
@@ -477,13 +448,12 @@
                     <p>Gagal mengambil detail pesanan: <%= e.getMessage() %></p>
                 </div>
             </div>
-        <%
-        } finally {
+        <%        } finally {
             try {
                 if(rs != null) rs.close();
                 if(pstmt != null) pstmt.close();
                 if(conn != null) conn.close();
-            } catch(SQLException e) {
+            } catch(SQLException ex) {
                 // Handle close exception
             }
         }

@@ -25,35 +25,27 @@
         Connection conn = DriverManager.getConnection(url, dbUser, dbPassword);
         
         if ("update_order_status".equals(action)) {
-            String invoiceIdStr = request.getParameter("invoice_id");
             String orderIdStr = request.getParameter("order_id");
             String newStatus = request.getParameter("status");
             
-            if (invoiceIdStr == null || orderIdStr == null || newStatus == null) {
+            if (orderIdStr == null || newStatus == null) {
                 out.print("missing_parameters");
                 return;
             }
             
-            int invoiceId = Integer.parseInt(invoiceIdStr);
             int orderId = Integer.parseInt(orderIdStr);
             
-            if (!newStatus.equals("pending") && !newStatus.equals("completed")) {
+            if (!newStatus.equals("pending") && !newStatus.equals("completed") && !newStatus.equals("cancelled")) {
                 out.print("invalid_status");
                 return;
             }
             
-            // Update both invoice and order tables
-            conn.setAutoCommit(false); // Start transaction            try {
-                // Update invoice table
-                String sqlInvoice = "UPDATE `invoice` SET status_order = ? WHERE id_invoice = ?";
-                PreparedStatement pstmtInvoice = conn.prepareStatement(sqlInvoice);
-                pstmtInvoice.setString(1, newStatus);
-                pstmtInvoice.setInt(2, invoiceId);
-                
-                int invoiceRowsAffected = pstmtInvoice.executeUpdate();
-                pstmtInvoice.close();
-                  // Get order details to find related orders in the same checkout session
-                String getOrderSql = "SELECT o.firebase_uid, o.metode_pengiriman, o.metode_pembayaran, o.tgl_order FROM `order` o WHERE o.id_order = ?";
+            // Start transaction
+            conn.setAutoCommit(false);
+            
+            try {
+                // Get order details to find related orders in the same checkout session
+                String getOrderSql = "SELECT firebase_uid, metode_pengiriman, metode_pembayaran, tgl_order FROM `order` WHERE id_order = ?";
                 PreparedStatement getOrderPstmt = conn.prepareStatement(getOrderSql);
                 getOrderPstmt.setInt(1, orderId);
                 ResultSet orderRs = getOrderPstmt.executeQuery();
@@ -80,76 +72,22 @@
                 orderRs.close();
                 getOrderPstmt.close();
                 
-                if (invoiceRowsAffected > 0 && totalOrdersUpdated > 0) {
-                    conn.commit(); // Commit transaction
+                if (totalOrdersUpdated > 0) {
+                    conn.commit();
                     out.print("success");
                 } else {
-                    conn.rollback(); // Rollback transaction
+                    conn.rollback();
                     out.print("record_not_found");
                 }
                 
             } catch (Exception e) {
-                conn.rollback(); // Rollback on error
+                conn.rollback();
                 out.print("update_error: " + e.getMessage());
             } finally {
-                conn.setAutoCommit(true); // Reset auto-commit
+                conn.setAutoCommit(true);
             }
-            
-        } else if ("update_invoice_status".equals(action)) {
-            String invoiceIdStr = request.getParameter("invoice_id");
-            String newStatus = request.getParameter("status");
-            
-            if (invoiceIdStr == null || newStatus == null) {
-                out.print("missing_parameters");
-                return;
-            }
-            
-            int invoiceId = Integer.parseInt(invoiceIdStr);
-            
-            if (!newStatus.equals("pending") && !newStatus.equals("paid") && !newStatus.equals("cancelled")) {
-                out.print("invalid_status");
-                return;
-            }
-            
-            String sql = "UPDATE `invoice` SET status_pembayaran = ? WHERE id_invoice = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, newStatus);
-            pstmt.setInt(2, invoiceId);
-            
-            int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                out.print("success");
-            } else {
-                out.print("invoice_not_found");
-            }
-            
-            pstmt.close();
-            
-        } else if ("delete_invoice".equals(action)) {
-            String invoiceIdStr = request.getParameter("invoice_id");
-            
-            if (invoiceIdStr == null) {
-                out.print("missing_parameters");
-                return;
-            }
-            
-            int invoiceId = Integer.parseInt(invoiceIdStr);
-            
-            String sql = "DELETE FROM `invoice` WHERE id_invoice = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, invoiceId);
-            
-            int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                out.print("success");
-            } else {
-                out.print("invoice_not_found");
-            }
-            
-            pstmt.close();
             
         } else if ("update_status".equals(action)) {
-            // Legacy order status update for backward compatibility
             String orderIdStr = request.getParameter("order_id");
             String newStatus = request.getParameter("status");
             
@@ -160,12 +98,12 @@
             
             int orderId = Integer.parseInt(orderIdStr);
             
-            if (!newStatus.equals("Pending") && !newStatus.equals("Completed")) {
+            if (!newStatus.equals("pending") && !newStatus.equals("completed") && !newStatus.equals("cancelled")) {
                 out.print("invalid_status");
                 return;
             }
             
-            String sql = "UPDATE `order` SET status_pembayaran = ? WHERE id_order = ?";
+            String sql = "UPDATE `order` SET status_order = ? WHERE id_order = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, newStatus);
             pstmt.setInt(2, orderId);
@@ -180,7 +118,6 @@
             pstmt.close();
             
         } else if ("delete_order".equals(action)) {
-            // Legacy order deletion for backward compatibility
             String orderIdStr = request.getParameter("order_id");
             
             if (orderIdStr == null) {
@@ -190,18 +127,56 @@
             
             int orderId = Integer.parseInt(orderIdStr);
             
-            String sql = "DELETE FROM `order` WHERE id_order = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, orderId);
+            // Start transaction to handle stock restoration
+            conn.setAutoCommit(false);
             
-            int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                out.print("success");
-            } else {
-                out.print("order_not_found");
+            try {
+                // Get order details before deletion to restore stock
+                String getOrderDetailsSql = "SELECT id_brg, jumlah FROM `order` WHERE id_order = ?";
+                PreparedStatement getDetailsPstmt = conn.prepareStatement(getOrderDetailsSql);
+                getDetailsPstmt.setInt(1, orderId);
+                ResultSet detailsRs = getDetailsPstmt.executeQuery();
+                
+                if (detailsRs.next()) {
+                    int itemId = detailsRs.getInt("id_brg");
+                    int quantity = detailsRs.getInt("jumlah");
+                    
+                    // Restore stock
+                    String restoreStockSql = "UPDATE item SET stok = stok + ? WHERE id_brg = ?";
+                    PreparedStatement stockPstmt = conn.prepareStatement(restoreStockSql);
+                    stockPstmt.setInt(1, quantity);
+                    stockPstmt.setInt(2, itemId);
+                    stockPstmt.executeUpdate();
+                    stockPstmt.close();
+                    
+                    // Delete the order
+                    String deleteOrderSql = "DELETE FROM `order` WHERE id_order = ?";
+                    PreparedStatement deletePstmt = conn.prepareStatement(deleteOrderSql);
+                    deletePstmt.setInt(1, orderId);
+                    int rowsAffected = deletePstmt.executeUpdate();
+                    deletePstmt.close();
+                    
+                    if (rowsAffected > 0) {
+                        conn.commit();
+                        out.print("success");
+                    } else {
+                        conn.rollback();
+                        out.print("order_not_found");
+                    }
+                } else {
+                    conn.rollback();
+                    out.print("order_not_found");
+                }
+                
+                detailsRs.close();
+                getDetailsPstmt.close();
+                
+            } catch (Exception e) {
+                conn.rollback();
+                out.print("delete_error: " + e.getMessage());
+            } finally {
+                conn.setAutoCommit(true);
             }
-            
-            pstmt.close();
             
         } else {
             out.print("invalid_action");

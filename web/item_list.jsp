@@ -112,9 +112,9 @@
         }
         
         .sidebar-menu li:hover, .sidebar-menu li.active {
-            background-color: rgba(187, 134, 252, 0.2);
-        }
-          .sidebar-menu li.active a {
+            background-color: rgba(187, 134, 252, 0.2);        }
+        
+        .sidebar-menu li.active a {
             color: var(--accent-purple);
         }
           /* Image preview styling */
@@ -366,7 +366,7 @@
             <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
             <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>
             <li class="active"><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
-            <li><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Invoice</a></li>
+            <li><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Orders</a></li>
             <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>

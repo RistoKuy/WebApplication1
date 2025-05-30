@@ -105,9 +105,9 @@
         
         .data-table:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(187, 134, 252, 0.2);
-        }
-          .table {
+            box-shadow: 0 12px 40px rgba(187, 134, 252, 0.2);        }
+        
+        .table {
             color: var(--text-primary);
         }
         
@@ -122,9 +122,9 @@
         }
         
         .table-striped > tbody > tr:nth-of-type(odd) {
-            background-color: rgba(45, 45, 45, 0.3);
-        }
-          .btn-edit {
+            background-color: rgba(45, 45, 45, 0.3);        }
+        
+        .btn-edit {
             background-color: var(--accent-purple);
             color: #000;
             border: none;
@@ -148,9 +148,9 @@
             border-radius: 8px;
             padding: 6px 16px;
             font-size: 0.875rem;
-            transition: all 0.3s ease;
-        }
-          .btn-cancel:hover {
+            transition: all 0.3s ease;        }
+        
+        .btn-cancel:hover {
             background-color: var(--accent-pink);
             color: #121212;
             transform: translateY(-2px);
@@ -254,37 +254,36 @@
                 <div class="alert alert-danger"><%= error %></div>
             <% } else if (firebase_uid == null) { %>
                 <div class="alert alert-warning">Tidak dapat memuat pesanan: Firebase UID tidak ditemukan. Silakan login ulang.</div>
-            <% } else { %>
-            <table class="table table-striped">
+            <% } else { %>            <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID Invoice</th>
+                        <th>ID Order</th>
+                        <th>Nama Barang</th>
+                        <th>Jumlah</th>
                         <th>Tanggal</th>
                         <th>Nama Penerima</th>
                         <th>Total Harga</th>
                         <th>Status Order</th>
-                        <th>Alamat</th>
-                        <th>No. Telp</th>
                         <th>Actions</th>
                     </tr>
-                </thead>
-                <tbody>
+                </thead>                <tbody>
                     <%
                     try {
-                        String sql = "SELECT * FROM `invoice` WHERE firebase_uid = ? ORDER BY tgl_invoice DESC";
+                        String sql = "SELECT * FROM `order` WHERE firebase_uid = ? ORDER BY tgl_order DESC";
                         pstmt = conn.prepareStatement(sql);
                         pstmt.setString(1, firebase_uid);
                         rs = pstmt.executeQuery();
-                        boolean hasInvoice = false;
+                        boolean hasOrders = false;
                         while (rs.next()) {
-                            hasInvoice = true;
-                            int invoiceId = rs.getInt("id_invoice");
+                            hasOrders = true;
                             int orderId = rs.getInt("id_order");
                             String currentOrderStatus = rs.getString("status_order");
                     %>
-                    <tr id="invoice-row-<%= invoiceId %>">
-                        <td><%= invoiceId %></td>
-                        <td><%= rs.getTimestamp("tgl_invoice") %></td>
+                    <tr id="order-row-<%= orderId %>">
+                        <td><%= orderId %></td>
+                        <td><%= rs.getString("nama_brg") %></td>
+                        <td><%= rs.getInt("jumlah") %> pcs</td>
+                        <td><%= rs.getTimestamp("tgl_order") %></td>
                         <td><%= rs.getString("nama_penerima") %></td>
                         <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
                         <td>
@@ -292,25 +291,25 @@
                                 <span class="badge bg-warning text-dark">Pending</span>
                             <% } else if ("completed".equals(currentOrderStatus)) { %>
                                 <span class="badge bg-success">Completed</span>
+                            <% } else if ("cancelled".equals(currentOrderStatus)) { %>
+                                <span class="badge bg-danger">Cancelled</span>
                             <% } else { %>
                                 <span class="badge bg-secondary"><%= currentOrderStatus %></span>
                             <% } %>
                         </td>
-                        <td><%= rs.getString("alamat") %></td>
-                        <td><%= rs.getString("no_telp") %></td>
                         <td>
-                            <a href="user_order_detail.jsp?invoice_id=<%= invoiceId %>&order_id=<%= orderId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
+                            <a href="user_order_detail.jsp?order_id=<%= orderId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
                                 <i class="bi bi-eye"></i> Detail
                             </a>
                             <% if ("pending".equals(currentOrderStatus)) { %>
-                            <button class="btn btn-cancel btn-sm cancel-btn" data-invoice-id="<%= invoiceId %>" title="Cancel Order">
+                            <button class="btn btn-cancel btn-sm cancel-btn" data-order-id="<%= orderId %>" title="Cancel Order">
                                 <i class="bi bi-x-circle"></i> Cancel
                             </button>
                             <% } %>
                         </td>
                     </tr>
                     <% }
-                        if (!hasInvoice) { %>
+                        if (!hasOrders) { %>
                         <tr><td colspan="8" class="text-center">Belum ada pesanan.</td></tr>
                     <% }
                         rs.close();
@@ -330,32 +329,31 @@
         </div>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Event listeners for cancel action
+    <script>        // Event listeners for cancel action
         document.addEventListener('DOMContentLoaded', function() {
             // Handle cancel action
             document.querySelectorAll('.cancel-btn').forEach(function(button) {
                 button.addEventListener('click', function() {
-                    const invoiceId = this.getAttribute('data-invoice-id');
-                    cancelOrder(invoiceId);
+                    const orderId = this.getAttribute('data-order-id');
+                    cancelOrder(orderId);
                 });
             });
         });
 
-        function cancelOrder(invoiceId) {
+        function cancelOrder(orderId) {
             if (confirm('Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat dibatalkan!')) {
                 fetch('user_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=cancel_order&invoice_id=' + invoiceId
+                    body: 'action=cancel_order&order_id=' + orderId
                 })
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'success') {
                         // Remove the row from the table
-                        document.getElementById('invoice-row-' + invoiceId).remove();
+                        document.getElementById('order-row-' + orderId).remove();
                         alert('Pesanan berhasil dibatalkan!');
                           // Check if there are no more orders
                         const tbody = document.querySelector('tbody');

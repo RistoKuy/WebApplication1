@@ -15,7 +15,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Invoice Management | Aplikasi JSP</title>
+    <title>Order Management | Aplikasi JSP</title>
     <!-- Panggil Bootstrap lokal -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     
@@ -99,9 +99,9 @@
         
         .sidebar-header h5 {
             color: var(--accent-purple);
-            font-weight: bold;
-        }
-          .sidebar-menu {
+            font-weight: bold;        }
+        
+        .sidebar-menu {
             list-style: none;
             padding: 0;
             margin: 0;
@@ -145,9 +145,9 @@
         
         .data-table:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(187, 134, 252, 0.2);
-        }
-          .table {
+            box-shadow: 0 12px 40px rgba(187, 134, 252, 0.2);        }
+        
+        .table {
             color: var(--text-primary);
         }
         
@@ -290,21 +290,23 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
-            <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>
-            <li><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
-            <li class="active"><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Invoice</a></li>
+            <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>            <li><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
+            <li class="active"><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Orders</a></li>
             <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>
     
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="data-table">            <h1 class="neon-text">Manajemen Invoice</h1>
-            <table class="table table-striped">                <thead>
+    <!-- Main Content -->    <div class="main-content">
+        <div class="data-table">
+            <h1 class="neon-text">Manajemen Pesanan</h1>
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <th>ID Invoice</th>
+                        <th>ID Order</th>
                         <th>Tanggal</th>
                         <th>Nama Penerima</th>
+                        <th>Nama Barang</th>
+                        <th>Jumlah</th>
                         <th>Total Harga</th>
                         <th>Status Order</th>
                         <th>Alamat</th>
@@ -315,78 +317,82 @@
                 <tbody>
                     <%
                     try {
-                        String sql = "SELECT * FROM `invoice` ORDER BY tgl_invoice DESC";
+                        String sql = "SELECT * FROM `order` ORDER BY tgl_order DESC";
                         pstmt = conn.prepareStatement(sql);
                         rs = pstmt.executeQuery();
-                        boolean hasInvoice = false;
+                        boolean hasOrders = false;
                         while (rs.next()) {
-                            hasInvoice = true;
-                            int invoiceId = rs.getInt("id_invoice");
+                            hasOrders = true;
                             int orderId = rs.getInt("id_order");
                             String currentOrderStatus = rs.getString("status_order");
-                    %>                    <tr id="invoice-row-<%= invoiceId %>">
-                        <td><%= invoiceId %></td>
-                        <td><%= rs.getTimestamp("tgl_invoice") %></td>
+                    %>
+                    <tr id="order-row-<%= orderId %>">
+                        <td><%= orderId %></td>
+                        <td><%= rs.getTimestamp("tgl_order") %></td>
                         <td><%= rs.getString("nama_penerima") %></td>
+                        <td><%= rs.getString("nama_brg") %></td>
+                        <td><%= rs.getInt("jumlah") %> pcs</td>
                         <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
                         <td>
-                            <select class="form-select form-select-sm status-select" data-invoice-id="<%= invoiceId %>" data-order-id="<%= orderId %>">
+                            <select class="form-select form-select-sm status-select" data-order-id="<%= orderId %>">
                                 <option value="pending" <% if("pending".equals(currentOrderStatus)) { %>selected<% } %>>Pending</option>
                                 <option value="completed" <% if("completed".equals(currentOrderStatus)) { %>selected<% } %>>Completed</option>
+                                <option value="cancelled" <% if("cancelled".equals(currentOrderStatus)) { %>selected<% } %>>Cancelled</option>
                             </select>
-                        </td>                        <td><%= rs.getString("alamat") %></td>
+                        </td>
+                        <td><%= rs.getString("alamat") %></td>
                         <td><%= rs.getString("no_telp") %></td>
                         <td>
-                            <a href="admin_order_detail.jsp?invoice_id=<%= invoiceId %>&order_id=<%= orderId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
+                            <a href="admin_order_detail.jsp?order_id=<%= orderId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
                                 <i class="bi bi-eye"></i> Detail
                             </a>
-                            <button class="btn btn-delete btn-sm delete-btn" data-invoice-id="<%= invoiceId %>" title="Hapus Invoice">
+                            <button class="btn btn-delete btn-sm delete-btn" data-order-id="<%= orderId %>" title="Hapus Order">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
                         </td>
                     </tr>
                     <% }
-                        if (!hasInvoice) { %>                        <tr><td colspan="8" class="text-center">Belum ada invoice.</td></tr>
+                        if (!hasOrders) { %>
+                        <tr><td colspan="10" class="text-center">Belum ada pesanan.</td></tr>
                     <% }
-                        rs.close();
-                        pstmt.close();
+                        rs.close();                        pstmt.close();
                     } catch(Exception e) { %>
-                        <tr><td colspan="8" class="text-danger">Gagal mengambil data invoice: <%= e.getMessage() %></td></tr>
+                        <tr><td colspan="10" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
                     <% } %>
                 </tbody>
             </table>
         </div>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script>        // Event listeners for status change and delete actions
+    <script>
+        // Event listeners for status change and delete actions
         document.addEventListener('DOMContentLoaded', function() {
             // Handle status change
             document.querySelectorAll('.status-select').forEach(function(select) {
                 select.addEventListener('change', function() {
-                    const invoiceId = this.getAttribute('data-invoice-id');
                     const orderId = this.getAttribute('data-order-id');
                     const newStatus = this.value;
-                    updateOrderStatus(invoiceId, orderId, newStatus);
+                    updateOrderStatus(orderId, newStatus);
                 });
             });
             
             // Handle delete action
             document.querySelectorAll('.delete-btn').forEach(function(button) {
                 button.addEventListener('click', function() {
-                    const invoiceId = this.getAttribute('data-invoice-id');
-                    deleteInvoice(invoiceId);
+                    const orderId = this.getAttribute('data-order-id');
+                    deleteOrder(orderId);
                 });
             });
         });
 
-        function updateOrderStatus(invoiceId, orderId, newStatus) {
+        function updateOrderStatus(orderId, newStatus) {
             if (confirm('Apakah Anda yakin ingin mengubah status pesanan ini?')) {
                 fetch('admin_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=update_order_status&invoice_id=' + invoiceId + '&order_id=' + orderId + '&status=' + newStatus
+                    body: 'action=update_order_status&order_id=' + orderId + '&status=' + newStatus
                 })
                 .then(response => response.text())
                 .then(data => {
@@ -408,36 +414,37 @@
             }
         }
 
-        function deleteInvoice(invoiceId) {
-            if (confirm('Apakah Anda yakin ingin menghapus invoice ini? Tindakan ini tidak dapat dibatalkan!')) {
+        function deleteOrder(orderId) {
+            if (confirm('Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan!')) {
                 fetch('admin_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=delete_invoice&invoice_id=' + invoiceId
+                    body: 'action=delete_order&order_id=' + orderId
                 })
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'success') {
                         // Remove the row from the table
-                        document.getElementById('invoice-row-' + invoiceId).remove();
-                        alert('Invoice berhasil dihapus!');
-                          // Check if there are no more invoices
+                        document.getElementById('order-row-' + orderId).remove();
+                        alert('Pesanan berhasil dihapus!');
+                        
+                        // Check if there are no more orders
                         const tbody = document.querySelector('tbody');
                         if (tbody.children.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada invoice.</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="10" class="text-center">Belum ada pesanan.</td></tr>';
                         }
-                    } else {
-                        alert('Gagal menghapus invoice: ' + data);
+                    } else {                        alert('Gagal menghapus pesanan: ' + data);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan saat menghapus invoice');
+                    alert('Terjadi kesalahan saat menghapus pesanan');
                 });
             }
-        }</script>
+        }
+    </script>
     
     <%
         // Close the database resources
