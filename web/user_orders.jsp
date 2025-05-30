@@ -88,56 +88,6 @@
             min-height: 100vh;
         }
         
-        /* Sidebar styling */
-        .sidebar {
-            width: 200px;
-            background-color: rgba(18, 18, 18, 0.6);
-            backdrop-filter: blur(15px);
-            color: var(--text-primary);
-            padding: 20px 0;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 10;
-        }
-        
-        .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 20px;
-        }
-        
-        .sidebar-header h5 {
-            color: var(--accent-purple);
-            font-weight: bold;
-        }
-          .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .sidebar-menu li {
-            padding: 10px 20px;
-            transition: background-color 0.3s;
-        }
-        
-        .sidebar-menu li a {
-            color: var(--text-primary);
-            text-decoration: none;
-            display: block;
-        }
-        
-        .sidebar-menu li:hover, .sidebar-menu li.active {
-            background-color: rgba(187, 134, 252, 0.2);
-        }
-        
-        .sidebar-menu li.active a {
-            color: var(--accent-purple);
-        }
-        
         /* Main content styling */
         .main-content {
             margin-left: 200px;
@@ -300,20 +250,6 @@
             out.println("Database connection error: " + e.getMessage());
         }
     %>
-    
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h5><i class="bi bi-person-circle me-2"></i>My Account</h5>
-        </div>
-        <ul class="sidebar-menu">
-            <li><a href="main.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
-            <li><a href="cart.jsp"><i class="bi bi-cart me-2"></i>Cart</a></li>
-            <li class="active"><a href="user_orders.jsp"><i class="bi bi-receipt me-2"></i>My Orders</a></li>
-            <li><a href="update_profile.jsp"><i class="bi bi-person-gear me-2"></i>Profile</a></li>
-            <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-        </ul>
-    </div>
     
     <!-- Main Content -->
     <div class="main-content">
