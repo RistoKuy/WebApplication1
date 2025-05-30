@@ -78,8 +78,12 @@
                 int bytesRead;
                 while ((bytesRead = input.read(buffer)) != -1) {
                     output.write(buffer, 0, bytesRead);
-                }
-            }            // If this is a new image and there was an old one, delete the old one from persistent dir
+                }            }
+            
+            // Update gambar_brg to use the new filename
+            gambar_brg = uniqueFileName;
+            
+            // If this is a new image and there was an old one, delete the old one from persistent dir
             if (current_gambar != null && !current_gambar.isEmpty()) {
                 File oldFile = new File(uploadDir.getAbsolutePath() + File.separator + current_gambar);
                 if (oldFile.exists()) {
