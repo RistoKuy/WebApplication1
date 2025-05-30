@@ -21,6 +21,7 @@ CREATE TABLE `item` (
 CREATE TABLE `order` (
   `id_order` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `id_brg` int(10) NOT NULL,
+  `firebase_uid` varchar(50) NOT NULL,
   `gambar_brg` varchar(100) NOT NULL,
   `nama_brg` varchar(100) NOT NULL,
   `jumlah` int(10) NOT NULL,
@@ -47,11 +48,11 @@ CREATE TABLE `invoice` (
 DELIMITER //
 
 CREATE TRIGGER pesanan_penjualan 
-AFTER INSERT ON item
+AFTER INSERT ON `order`
 FOR EACH ROW 
 BEGIN 
-    UPDATE tb_barang 
-    SET stok = stok - NEW.stok 
+    UPDATE item 
+    SET stok = stok - NEW.jumlah 
     WHERE id_brg = NEW.id_brg; 
 END; //
 

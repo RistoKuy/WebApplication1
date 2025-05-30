@@ -2,7 +2,10 @@
 <%@page import="java.util.*"%>
 <%@page import="javax.servlet.http.*"%>
 <%@page import="java.sql.*"%>
-<%-- Checkout Page --%>
+<%@page import="java.math.BigDecimal"%>
+<%@page import="java.text.NumberFormat"%>
+<%@page import="java.util.Locale"%>
+<%-- Enhanced Checkout Page with Complete Firebase UID Integration --%>
 <%
     // Check if user is logged in
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
@@ -10,6 +13,7 @@
         response.sendRedirect("login.jsp");
         return;
     }
+    
     // Get cart from session
     HttpSession sess = request.getSession();
     List<Map<String, Object>> cart = (List<Map<String, Object>>) sess.getAttribute("cart");
@@ -18,29 +22,38 @@
         return;
     }
     
-    // Get firebase_uid from session (set during login)
+    // Get firebase_uid from session with multiple fallback options
     String firebase_uid = (String) session.getAttribute("firebase_uid");
+    String userEmail = (String) session.getAttribute("userEmail");
+    String userName = (String) session.getAttribute("userName");
+    
     String error = null;
-    String success = null;if (request.getMethod().equalsIgnoreCase("POST")) {
+    String success = null;
+    
+    if (request.getMethod().equalsIgnoreCase("POST")) {
         String nama_penerima = request.getParameter("nama_penerima");
         String alamat = request.getParameter("alamat");
         String no_telp = request.getParameter("no_telp");
         String metode_pembayaran = request.getParameter("metode_pembayaran");
-          // Validate form fields
+        String metode_pengiriman = request.getParameter("metode_pengiriman");
+        
+        // Validate form fields
         if (nama_penerima == null || alamat == null || no_telp == null || metode_pembayaran == null || 
-            nama_penerima.isEmpty() || alamat.isEmpty() || no_telp.isEmpty()) {
-            error = "Semua field harus diisi.";        } else if (firebase_uid == null || firebase_uid.isEmpty()) {
+            metode_pengiriman == null || nama_penerima.isEmpty() || alamat.isEmpty() || 
+            no_telp.isEmpty() || metode_pembayaran.isEmpty() || metode_pengiriman.isEmpty()) {
+            error = "Semua field harus diisi.";
+        } else if (firebase_uid == null || firebase_uid.isEmpty()) {
             // If firebase_uid is not in session, try to get it from user email
             // This is a fallback for older sessions or if login didn't properly set firebase_uid
-            String userEmail = (String) session.getAttribute("userEmail");
             if (userEmail != null && !userEmail.isEmpty()) {
                 // Use email as temporary identifier until Firebase UID is properly set
                 firebase_uid = "email:" + userEmail;
-                session.setAttribute("firebase_uid", firebase_uid);
-            } else {
+                session.setAttribute("firebase_uid", firebase_uid);            } else {
                 error = "Gagal memproses pesanan: Tidak dapat menemukan identitas pengguna. Silakan login ulang.";
             }
-        }        if (error == null) {
+        }
+        
+        if (error == null) {
             Connection conn = null;
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver");
@@ -61,9 +74,8 @@
                     int harga = Integer.parseInt((String)item.get("harga"));
                     totalAmount += jumlah * harga;
                 }
-                
-                // Insert orders with all required fields
-                String sql = "INSERT INTO `order` (id_brg, gambar_brg, nama_brg, jumlah, harga, total_harga, metode_pengiriman, metode_pembayaran, status_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                  // Insert orders with all required fields including firebase_uid
+                String sql = "INSERT INTO `order` (id_brg, firebase_uid, gambar_brg, nama_brg, jumlah, harga, total_harga, metode_pengiriman, metode_pembayaran, status_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                 
                 for (Map<String, Object> item : cart) {
@@ -72,14 +84,15 @@
                     int itemTotal = jumlah * harga;
                     
                     pstmt.setInt(1, Integer.parseInt((String)item.get("id_brg")));
-                    pstmt.setString(2, (String)item.get("gambar_brg"));
-                    pstmt.setString(3, (String)item.get("nama_brg"));
-                    pstmt.setInt(4, jumlah);
-                    pstmt.setString(5, String.valueOf(harga));
-                    pstmt.setString(6, String.valueOf(itemTotal));
-                    pstmt.setString(7, "Standard"); // Default shipping method
-                    pstmt.setString(8, metode_pembayaran);
-                    pstmt.setString(9, "pending"); // Default status
+                    pstmt.setString(2, firebase_uid);
+                    pstmt.setString(3, (String)item.get("gambar_brg"));
+                    pstmt.setString(4, (String)item.get("nama_brg"));
+                    pstmt.setInt(5, jumlah);
+                    pstmt.setString(6, String.valueOf(harga));
+                    pstmt.setString(7, String.valueOf(itemTotal));
+                    pstmt.setString(8, metode_pengiriman);
+                    pstmt.setString(9, metode_pembayaran);
+                    pstmt.setString(10, "pending");
                     pstmt.executeUpdate();
                     
                     // Get generated order ID
@@ -100,13 +113,12 @@
                         }
                     }
                 }
-                
-                // Create invoice for the order
+                  // Create invoice for the orders
                 if (!orderIds.isEmpty()) {
                     String invoiceSql = "INSERT INTO `invoice` (id_order, firebase_uid, nama_penerima, alamat, no_telp, total_harga, status_order) VALUES (?, ?, ?, ?, ?, ?, ?)";
                     PreparedStatement invoicePstmt = conn.prepareStatement(invoiceSql);
                     
-                    // Create one invoice per order (for simplicity, using the first order ID)
+                    // Create one invoice that references the first order (business logic: group orders by checkout session)
                     invoicePstmt.setInt(1, orderIds.get(0));
                     invoicePstmt.setString(2, firebase_uid);
                     invoicePstmt.setString(3, nama_penerima);
@@ -122,9 +134,9 @@
                 conn.commit();
                 pstmt.close();
                 conn.close();
-                sess.setAttribute("cart", new ArrayList<>()); // Clear cart
-                success = "Pesanan berhasil dibuat!";
-                response.sendRedirect("user_orders.jsp");                return;
+                sess.setAttribute("cart", new ArrayList<>()); // Clear cart                success = "Pesanan berhasil dibuat!";
+                response.sendRedirect("user_orders.jsp");
+                return;
             } catch(Exception e) {
                 try {
                     if (conn != null) {
@@ -155,6 +167,17 @@
         <% if (success != null) { %>
             <div class="alert alert-success"><%= success %></div>
         <% } %>
+          <!-- Debug information for Firebase UID (remove in production) -->
+        <% if (firebase_uid != null && !firebase_uid.isEmpty()) { %>
+            <div class="alert alert-info">
+                <small><i class="bi bi-person-check"></i> Logged in as: <%= firebase_uid %></small>
+            </div>
+        <% } else { %>
+            <div class="alert alert-warning">
+                <small><i class="bi bi-exclamation-triangle"></i> Warning: User identification not found</small>
+            </div>
+        <% } %>
+        
         <h4>Ringkasan Belanja</h4>
         <table class="table table-dark table-striped">
             <thead>
@@ -200,13 +223,23 @@
             <div class="mb-3">
                 <label for="no_telp" class="form-label">No. Telepon</label>
                 <input type="text" class="form-control" id="no_telp" name="no_telp" required />
-            </div>
-            <div class="mb-3">
+            </div>            <div class="mb-3">
                 <label for="metode_pembayaran" class="form-label">Metode Pembayaran</label>
                 <select class="form-select" id="metode_pembayaran" name="metode_pembayaran" required>
                     <option value="">Pilih Metode</option>
                     <option value="Debit/Kredit">Debit/Kredit</option>
                     <option value="QRIS">QRIS</option>
+                    <option value="Transfer Bank">Transfer Bank</option>
+                    <option value="COD">Cash on Delivery</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="metode_pengiriman" class="form-label">Metode Pengiriman</label>
+                <select class="form-select" id="metode_pengiriman" name="metode_pengiriman" required>
+                    <option value="">Pilih Metode</option>
+                    <option value="Standard">Standard (3-5 hari)</option>
+                    <option value="Express">Express (1-2 hari)</option>
+                    <option value="Same Day">Same Day</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-success">Order</button>
