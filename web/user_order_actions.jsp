@@ -18,14 +18,17 @@
         return;
     }    String action = request.getParameter("action");
     String orderIdStr = request.getParameter("order_id");
+    String checkoutIdStr = request.getParameter("id_checkout");
     
-    if (action == null || orderIdStr == null) {
+    if (action == null) {
         response.setStatus(400);
-        out.print("Missing required parameters");
+        out.print("Missing action parameter");
         return;
     }
     
-    int orderId = Integer.parseInt(orderIdStr);
+    // Handle legacy individual order cancellation
+    if ("cancel_order".equals(action) && orderIdStr != null) {
+        int orderId = Integer.parseInt(orderIdStr);
     
     Connection conn = null;
     PreparedStatement pstmt = null;
@@ -34,9 +37,9 @@
         Class.forName("com.mysql.cj.jdbc.Driver");
         String url = "jdbc:mysql://localhost:3306/web_enterprise";
         String dbUser = "root";
-        String dbPassword = "";
-        conn = DriverManager.getConnection(url, dbUser, dbPassword);
+        String dbPassword = "";        conn = DriverManager.getConnection(url, dbUser, dbPassword);
           if ("cancel_order".equals(action)) {
+            // Legacy individual order cancellation
             // Start transaction
             conn.setAutoCommit(false);
             
@@ -74,6 +77,58 @@
                 out.print("Order not found or not eligible for cancellation");
             }
             rs.close();
+        } else if ("cancel_checkout".equals(action)) {
+            // New checkout-based cancellation
+            if (checkoutIdStr == null) {
+                response.setStatus(400);
+                out.print("Missing checkout ID parameter");
+                return;
+            }
+            
+            int checkoutId = Integer.parseInt(checkoutIdStr);
+            
+            // Start transaction
+            conn.setAutoCommit(false);
+            
+            // Get all orders in this checkout that belong to the user and are pending
+            String checkoutOrdersSql = "SELECT id_order, id_brg, jumlah FROM `order` WHERE id_checkout = ? AND firebase_uid = ? AND status_order = 'pending'";
+            pstmt = conn.prepareStatement(checkoutOrdersSql);
+            pstmt.setInt(1, checkoutId);
+            pstmt.setString(2, firebase_uid);
+            ResultSet rs = pstmt.executeQuery();
+            
+            boolean hasOrders = false;
+            while (rs.next()) {
+                hasOrders = true;
+                int itemId = rs.getInt("id_brg");
+                int quantity = rs.getInt("jumlah");
+                
+                // Restore stock for each item
+                String restoreStockSql = "UPDATE item SET stok = stok + ? WHERE id_brg = ?";
+                PreparedStatement stockPstmt = conn.prepareStatement(restoreStockSql);
+                stockPstmt.setInt(1, quantity);
+                stockPstmt.setInt(2, itemId);
+                stockPstmt.executeUpdate();
+                stockPstmt.close();
+            }
+            rs.close();
+            
+            if (hasOrders) {
+                // Update all orders in this checkout to cancelled
+                String updateCheckoutSql = "UPDATE `order` SET status_order = 'cancelled' WHERE id_checkout = ? AND firebase_uid = ?";
+                PreparedStatement updateCheckoutPstmt = conn.prepareStatement(updateCheckoutSql);
+                updateCheckoutPstmt.setInt(1, checkoutId);
+                updateCheckoutPstmt.setString(2, firebase_uid);
+                updateCheckoutPstmt.executeUpdate();
+                updateCheckoutPstmt.close();
+                
+                // Commit transaction
+                conn.commit();
+                out.print("success");
+            } else {
+                conn.rollback();
+                out.print("No pending orders found for this checkout");
+            }
         } else {
             out.print("Invalid action");
         }

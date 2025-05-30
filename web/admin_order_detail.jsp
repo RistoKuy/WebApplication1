@@ -2,22 +2,21 @@
 <%@page import="java.sql.*"%>
 <%@page import="java.util.*"%>
 <%-- Admin Order Detail Page --%>
-<%
-    Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
+<%    Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
     Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
     if (isLoggedIn == null || !isLoggedIn || isAdmin == null || !isAdmin) {
         response.sendRedirect("login.jsp");
         return;
     }
 
-    String orderIdStr = request.getParameter("order_id");
+    String checkoutIdStr = request.getParameter("id_checkout");
     
-    if (orderIdStr == null) {
+    if (checkoutIdStr == null) {
         response.sendRedirect("admin_orders.jsp");
         return;
     }
     
-    int orderId = Integer.parseInt(orderIdStr);
+    int checkoutId = Integer.parseInt(checkoutIdStr);
 %>
 <!DOCTYPE html>
 <html lang="id">
@@ -271,30 +270,24 @@
         int jumlah = 0;
         int idBrg = 0;
         boolean hasValidData = false;
-        
-        try {
+          try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/web_enterprise";
             String dbUser = "root";
             String dbPassword = "";
             conn = DriverManager.getConnection(url, dbUser, dbPassword);
             
-            // Get order details - admin can see all orders
-            String orderSql = "SELECT * FROM `order` WHERE id_order = ?";
+            // Get order details by checkout ID
+            String orderSql = "SELECT * FROM `order` WHERE id_checkout = ?";
             pstmt = conn.prepareStatement(orderSql);
-            pstmt.setInt(1, orderId);
+            pstmt.setInt(1, checkoutId);
             rs = pstmt.executeQuery();
             
+            // Get the first order to extract common information
             if (rs.next()) {
-                // Store order data
+                // Store common order data from first item
                 orderIdData = rs.getInt("id_order");
-                idBrg = rs.getInt("id_brg");
                 firebase_uid = rs.getString("firebase_uid");
-                gambarBrg = rs.getString("gambar_brg");
-                namaBrg = rs.getString("nama_brg");
-                jumlah = rs.getInt("jumlah");
-                harga = rs.getString("harga");
-                totalHarga = rs.getString("total_harga");
                 namaPenerima = rs.getString("nama_penerima");
                 alamat = rs.getString("alamat");
                 noTelp = rs.getString("no_telp");
@@ -303,6 +296,14 @@
                 statusOrder = rs.getString("status_order");
                 tglOrder = rs.getTimestamp("tgl_order");
                 hasValidData = true;
+                
+                // Calculate total price from all items in this checkout
+                rs.beforeFirst(); // Reset to beginning
+                int calculatedTotal = 0;
+                while (rs.next()) {
+                    calculatedTotal += Integer.parseInt(rs.getString("total_harga"));
+                }
+                totalHarga = String.valueOf(calculatedTotal);
             }
             rs.close();
             pstmt.close();
@@ -311,12 +312,11 @@
         <% if (hasValidData) { %>
         <!-- Unified Order Information -->
         <div class="detail-card">
-            <h3 class="section-title">Informasi Pesanan</h3>
-              <!-- Order Identification -->
+            <h3 class="section-title">Informasi Pesanan</h3>              <!-- Order Identification -->
             <div class="info-section-title">Identifikasi Pesanan</div>
             <div class="info-row">
-                <span class="info-label">ID Order:</span>
-                <span class="info-value">#<%= orderIdData %></span>
+                <span class="info-label">ID Checkout:</span>
+                <span class="info-value">#<%= checkoutId %></span>
             </div>
             
             <!-- Customer Information -->
@@ -394,34 +394,55 @@
                     </tr>
                 </thead>                <tbody>
                     <%
-                    // Show this single order item - no need for complex queries
-                    // since the unified order table contains all item details
+                    // Query again to display all items in this checkout
+                    PreparedStatement pstmtItems = null;
+                    ResultSet rsItems = null;
+                    try {
+                        String itemsSql = "SELECT * FROM `order` WHERE id_checkout = ?";
+                        pstmtItems = conn.prepareStatement(itemsSql);
+                        pstmtItems.setInt(1, checkoutId);
+                        rsItems = pstmtItems.executeQuery();
+                        
+                        while (rsItems.next()) {
+                            String itemNama = rsItems.getString("nama_brg");
+                            String itemGambar = rsItems.getString("gambar_brg");
+                            String itemHarga = rsItems.getString("harga");
+                            int itemJumlah = rsItems.getInt("jumlah");
+                            String itemTotal = rsItems.getString("total_harga");
                     %>
                     <tr>
-                        <td><%= namaBrg %></td>
+                        <td><%= itemNama %></td>
                         <td>
                             <% 
-                                if(gambarBrg != null && !gambarBrg.isEmpty()) { 
+                                if(itemGambar != null && !itemGambar.isEmpty()) { 
                             %>
-                                <img src="uploads/<%= gambarBrg %>" alt="<%= namaBrg %>" height="60" 
+                                <img src="uploads/<%= itemGambar %>" alt="<%= itemNama %>" height="60" 
                                     class="item-image-preview" data-bs-toggle="modal" data-bs-target="#imagePreviewModal"
-                                    data-img-src="uploads/<%= gambarBrg %>" data-img-name="<%= namaBrg %>"
+                                    data-img-src="uploads/<%= itemGambar %>" data-img-name="<%= itemNama %>"
                                     style="cursor: pointer; border-radius: 4px; object-fit: contain; background: #222;">
                             <% } else { %>
                                 <span class="text-muted">No image</span>
                             <% } %>
                         </td>
-                        <td>Rp <%= String.format("%,d", Integer.parseInt(harga)).replace(',', '.') %></td>
-                        <td><%= jumlah %> pcs</td>
-                        <td>Rp <%= String.format("%,d", Integer.parseInt(totalHarga)).replace(',', '.') %></td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(itemHarga)).replace(',', '.') %></td>
+                        <td><%= itemJumlah %> pcs</td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(itemTotal)).replace(',', '.') %></td>
                     </tr>
+                    <%
+                        }
+                    } catch (Exception e) {
+                        out.println("<tr><td colspan='5' class='text-danger'>Error loading items: " + e.getMessage() + "</td></tr>");
+                    } finally {
+                        if (rsItems != null) rsItems.close();
+                        if (pstmtItems != null) pstmtItems.close();
+                    }
+                    %>
                 </tbody>
-            </table>        </div>
-          <% } else { %>
+            </table>        </div>        <% } else { %>
             <div class="detail-card">
                 <div class="alert alert-warning">
                     <h5>Data Tidak Ditemukan</h5>
-                    <p>Order dengan ID #<%= orderId %> tidak ditemukan dalam sistem.</p>
+                    <p>Checkout dengan ID #<%= checkoutId %> tidak ditemukan dalam sistem.</p>
                     <p>Pastikan ID yang dimasukkan benar dan data masih tersedia.</p>
                 </div>
             </div>

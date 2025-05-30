@@ -60,43 +60,42 @@
                 String url = "jdbc:mysql://localhost:3306/web_enterprise";
                 String dbUser = "root";
                 String dbPassword = "";
-                conn = DriverManager.getConnection(url, dbUser, dbPassword);
-                  // Start transaction
+                conn = DriverManager.getConnection(url, dbUser, dbPassword);                  // Start transaction
                 conn.setAutoCommit(false);
                 
                 int totalAmount = 0;
                 List<Integer> orderIds = new ArrayList<>();
                 
-                // Generate unique checkout session ID
-                String checkoutSessionId = "CHK_" + System.currentTimeMillis() + "_" + firebase_uid.hashCode();
+                // Generate unique checkout ID for this entire checkout session
+                int checkoutId = (int)(System.currentTimeMillis() / 1000); // Use timestamp as checkout ID
                 
                 // Calculate total amount
                 for (Map<String, Object> item : cart) {
                     int jumlah = (int)item.get("jumlah");
                     int harga = Integer.parseInt((String)item.get("harga"));
                     totalAmount += jumlah * harga;
-                }                // Insert orders with all required fields including customer info
-                String sql = "INSERT INTO `order` (id_brg, firebase_uid, gambar_brg, nama_brg, jumlah, harga, total_harga, nama_penerima, alamat, no_telp, metode_pengiriman, metode_pembayaran, status_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                }                // Insert orders with all required fields including customer info and checkout ID
+                String sql = "INSERT INTO `order` (id_brg, id_checkout, firebase_uid, gambar_brg, nama_brg, jumlah, harga, total_harga, nama_penerima, alamat, no_telp, metode_pengiriman, metode_pembayaran, status_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                
-                for (Map<String, Object> item : cart) {
+                  for (Map<String, Object> item : cart) {
                     int jumlah = (int)item.get("jumlah");
                     int harga = Integer.parseInt((String)item.get("harga"));
                     int itemTotal = jumlah * harga;
                     
                     pstmt.setInt(1, Integer.parseInt((String)item.get("id_brg")));
-                    pstmt.setString(2, firebase_uid);
-                    pstmt.setString(3, (String)item.get("gambar_brg"));
-                    pstmt.setString(4, (String)item.get("nama_brg"));
-                    pstmt.setInt(5, jumlah);
-                    pstmt.setString(6, String.valueOf(harga));
-                    pstmt.setString(7, String.valueOf(itemTotal));
-                    pstmt.setString(8, nama_penerima);
-                    pstmt.setString(9, alamat);
-                    pstmt.setString(10, no_telp);
-                    pstmt.setString(11, metode_pengiriman);
-                    pstmt.setString(12, metode_pembayaran);
-                    pstmt.setString(13, "pending");
+                    pstmt.setInt(2, checkoutId);
+                    pstmt.setString(3, firebase_uid);
+                    pstmt.setString(4, (String)item.get("gambar_brg"));
+                    pstmt.setString(5, (String)item.get("nama_brg"));
+                    pstmt.setInt(6, jumlah);
+                    pstmt.setString(7, String.valueOf(harga));
+                    pstmt.setString(8, String.valueOf(itemTotal));
+                    pstmt.setString(9, nama_penerima);
+                    pstmt.setString(10, alamat);
+                    pstmt.setString(11, no_telp);
+                    pstmt.setString(12, metode_pengiriman);
+                    pstmt.setString(13, metode_pembayaran);
+                    pstmt.setString(14, "pending");
                     pstmt.executeUpdate();
                       // Get generated order ID
                     ResultSet generatedKeys = pstmt.getGeneratedKeys();

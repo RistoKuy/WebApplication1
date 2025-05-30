@@ -257,9 +257,7 @@
             <% } else { %>            <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID Order</th>
-                        <th>Nama Barang</th>
-                        <th>Jumlah</th>
+                        <th>ID Checkout</th>
                         <th>Tanggal</th>
                         <th>Nama Penerima</th>
                         <th>Total Harga</th>
@@ -269,23 +267,26 @@
                 </thead>                <tbody>
                     <%
                     try {
-                        String sql = "SELECT * FROM `order` WHERE firebase_uid = ? ORDER BY tgl_order DESC";
+                        String sql = "SELECT id_checkout, MIN(tgl_order) as tgl_order, nama_penerima, " +
+                                   "SUM(CAST(total_harga AS UNSIGNED)) as total_checkout, status_order " +
+                                   "FROM `order` WHERE firebase_uid = ? " +
+                                   "GROUP BY id_checkout, nama_penerima, status_order " +
+                                   "ORDER BY MIN(tgl_order) DESC";
                         pstmt = conn.prepareStatement(sql);
                         pstmt.setString(1, firebase_uid);
                         rs = pstmt.executeQuery();
                         boolean hasOrders = false;
                         while (rs.next()) {
                             hasOrders = true;
-                            int orderId = rs.getInt("id_order");
+                            int checkoutId = rs.getInt("id_checkout");
                             String currentOrderStatus = rs.getString("status_order");
+                            int totalCheckout = rs.getInt("total_checkout");
                     %>
-                    <tr id="order-row-<%= orderId %>">
-                        <td><%= orderId %></td>
-                        <td><%= rs.getString("nama_brg") %></td>
-                        <td><%= rs.getInt("jumlah") %> pcs</td>
+                    <tr id="checkout-row-<%= checkoutId %>">
+                        <td>#<%= checkoutId %></td>
                         <td><%= rs.getTimestamp("tgl_order") %></td>
                         <td><%= rs.getString("nama_penerima") %></td>
-                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
+                        <td>Rp <%= String.format("%,d", totalCheckout).replace(',', '.') %></td>
                         <td>
                             <% if ("pending".equals(currentOrderStatus)) { %>
                                 <span class="badge bg-warning text-dark">Pending</span>
@@ -298,11 +299,11 @@
                             <% } %>
                         </td>
                         <td>
-                            <a href="user_order_detail.jsp?order_id=<%= orderId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
+                            <a href="user_order_detail.jsp?id_checkout=<%= checkoutId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
                                 <i class="bi bi-eye"></i> Detail
                             </a>
                             <% if ("pending".equals(currentOrderStatus)) { %>
-                            <button class="btn btn-cancel btn-sm cancel-btn" data-order-id="<%= orderId %>" title="Cancel Order">
+                            <button class="btn btn-cancel btn-sm cancel-btn" data-checkout-id="<%= checkoutId %>" title="Cancel Order">
                                 <i class="bi bi-x-circle"></i> Cancel
                             </button>
                             <% } %>
@@ -310,12 +311,12 @@
                     </tr>
                     <% }
                         if (!hasOrders) { %>
-                        <tr><td colspan="8" class="text-center">Belum ada pesanan.</td></tr>
+                        <tr><td colspan="6" class="text-center">Belum ada pesanan.</td></tr>
                     <% }
                         rs.close();
                         pstmt.close();
                     } catch(Exception e) { %>
-                        <tr><td colspan="8" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
+                        <tr><td colspan="6" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
                     <% } %>
                 </tbody>
             </table>
@@ -334,31 +335,31 @@
             // Handle cancel action
             document.querySelectorAll('.cancel-btn').forEach(function(button) {
                 button.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-order-id');
-                    cancelOrder(orderId);
+                    const checkoutId = this.getAttribute('data-checkout-id');
+                    cancelOrder(checkoutId);
                 });
             });
         });
 
-        function cancelOrder(orderId) {
+        function cancelOrder(checkoutId) {
             if (confirm('Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat dibatalkan!')) {
                 fetch('user_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=cancel_order&order_id=' + orderId
+                    body: 'action=cancel_checkout&id_checkout=' + checkoutId
                 })
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'success') {
                         // Remove the row from the table
-                        document.getElementById('order-row-' + orderId).remove();
+                        document.getElementById('checkout-row-' + checkoutId).remove();
                         alert('Pesanan berhasil dibatalkan!');
                           // Check if there are no more orders
                         const tbody = document.querySelector('tbody');
                         if (tbody.children.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada pesanan.</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada pesanan.</td></tr>';
                         }
                     } else {
                         alert('Gagal membatalkan pesanan: ' + data);

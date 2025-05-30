@@ -298,101 +298,94 @@
     
     <!-- Main Content -->    <div class="main-content">
         <div class="data-table">
-            <h1 class="neon-text">Manajemen Pesanan</h1>
-            <table class="table table-striped">
+            <h1 class="neon-text">Manajemen Pesanan</h1>            <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID Order</th>
+                        <th>ID Checkout</th>
                         <th>Tanggal</th>
                         <th>Nama Penerima</th>
-                        <th>Nama Barang</th>
-                        <th>Jumlah</th>
                         <th>Total Harga</th>
                         <th>Status Order</th>
-                        <th>Alamat</th>
-                        <th>No. Telp</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <%
                     try {
-                        String sql = "SELECT * FROM `order` ORDER BY tgl_order DESC";
+                        // Group orders by id_checkout and get order summary
+                        String sql = "SELECT id_checkout, MIN(tgl_order) as tgl_order, nama_penerima, SUM(CAST(total_harga AS UNSIGNED)) as grand_total, status_order, COUNT(*) as item_count FROM `order` GROUP BY id_checkout, nama_penerima, status_order ORDER BY MIN(tgl_order) DESC";
                         pstmt = conn.prepareStatement(sql);
                         rs = pstmt.executeQuery();
                         boolean hasOrders = false;
                         while (rs.next()) {
                             hasOrders = true;
-                            int orderId = rs.getInt("id_order");
+                            int checkoutId = rs.getInt("id_checkout");
                             String currentOrderStatus = rs.getString("status_order");
+                            int itemCount = rs.getInt("item_count");
                     %>
-                    <tr id="order-row-<%= orderId %>">
-                        <td><%= orderId %></td>
+                    <tr id="order-row-<%= checkoutId %>">
+                        <td>#<%= checkoutId %></td>
                         <td><%= rs.getTimestamp("tgl_order") %></td>
                         <td><%= rs.getString("nama_penerima") %></td>
-                        <td><%= rs.getString("nama_brg") %></td>
-                        <td><%= rs.getInt("jumlah") %> pcs</td>
-                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
+                        <td>Rp <%= String.format("%,d", rs.getLong("grand_total")).replace(',', '.') %> (<%= itemCount %> item<%= itemCount > 1 ? "s" : "" %>)</td>
                         <td>
-                            <select class="form-select form-select-sm status-select" data-order-id="<%= orderId %>">
+                            <select class="form-select form-select-sm status-select" data-checkout-id="<%= checkoutId %>">
                                 <option value="pending" <% if("pending".equals(currentOrderStatus)) { %>selected<% } %>>Pending</option>
                                 <option value="completed" <% if("completed".equals(currentOrderStatus)) { %>selected<% } %>>Completed</option>
                                 <option value="cancelled" <% if("cancelled".equals(currentOrderStatus)) { %>selected<% } %>>Cancelled</option>
                             </select>
                         </td>
-                        <td><%= rs.getString("alamat") %></td>
-                        <td><%= rs.getString("no_telp") %></td>
                         <td>
-                            <a href="admin_order_detail.jsp?order_id=<%= orderId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
+                            <a href="admin_order_detail.jsp?id_checkout=<%= checkoutId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
                                 <i class="bi bi-eye"></i> Detail
                             </a>
-                            <button class="btn btn-delete btn-sm delete-btn" data-order-id="<%= orderId %>" title="Hapus Order">
+                            <button class="btn btn-delete btn-sm delete-btn" data-checkout-id="<%= checkoutId %>" title="Hapus Order">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
                         </td>
                     </tr>
                     <% }
                         if (!hasOrders) { %>
-                        <tr><td colspan="10" class="text-center">Belum ada pesanan.</td></tr>
+                        <tr><td colspan="6" class="text-center">Belum ada pesanan.</td></tr>
                     <% }
-                        rs.close();                        pstmt.close();
+                        rs.close();
+                        pstmt.close();
                     } catch(Exception e) { %>
-                        <tr><td colspan="10" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
+                        <tr><td colspan="6" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
                     <% } %>
                 </tbody>
             </table>
         </div>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Event listeners for status change and delete actions
+    <script>        // Event listeners for status change and delete actions
         document.addEventListener('DOMContentLoaded', function() {
             // Handle status change
             document.querySelectorAll('.status-select').forEach(function(select) {
                 select.addEventListener('change', function() {
-                    const orderId = this.getAttribute('data-order-id');
+                    const checkoutId = this.getAttribute('data-checkout-id');
                     const newStatus = this.value;
-                    updateOrderStatus(orderId, newStatus);
+                    updateOrderStatus(checkoutId, newStatus);
                 });
             });
             
             // Handle delete action
             document.querySelectorAll('.delete-btn').forEach(function(button) {
                 button.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-order-id');
-                    deleteOrder(orderId);
+                    const checkoutId = this.getAttribute('data-checkout-id');
+                    deleteOrder(checkoutId);
                 });
             });
         });
 
-        function updateOrderStatus(orderId, newStatus) {
+        function updateOrderStatus(checkoutId, newStatus) {
             if (confirm('Apakah Anda yakin ingin mengubah status pesanan ini?')) {
                 fetch('admin_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=update_order_status&order_id=' + orderId + '&status=' + newStatus
+                    body: 'action=update_checkout_status&id_checkout=' + checkoutId + '&status=' + newStatus
                 })
                 .then(response => response.text())
                 .then(data => {
@@ -412,30 +405,28 @@
                 // User cancelled, reload to restore original value
                 location.reload();
             }
-        }
-
-        function deleteOrder(orderId) {
+        }        function deleteOrder(checkoutId) {
             if (confirm('Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan!')) {
                 fetch('admin_order_actions.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'action=delete_order&order_id=' + orderId
+                    body: 'action=delete_checkout&id_checkout=' + checkoutId
                 })
                 .then(response => response.text())
                 .then(data => {
                     if (data.trim() === 'success') {
                         // Remove the row from the table
-                        document.getElementById('order-row-' + orderId).remove();
+                        document.getElementById('order-row-' + checkoutId).remove();
                         alert('Pesanan berhasil dihapus!');
                         
                         // Check if there are no more orders
                         const tbody = document.querySelector('tbody');
                         if (tbody.children.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="10" class="text-center">Belum ada pesanan.</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada pesanan.</td></tr>';
                         }
-                    } else {                        alert('Gagal menghapus pesanan: ' + data);
+                    } else {alert('Gagal menghapus pesanan: ' + data);
                     }
                 })
                 .catch(error => {
