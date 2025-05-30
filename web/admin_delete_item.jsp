@@ -53,13 +53,47 @@
         pstmt.setString(1, id_brg);
         
         // Execute the query and check the result
-        int rowsAffected = pstmt.executeUpdate();          // If deletion was successful and there is an associated image, delete the file from persistent uploads directory
-        if (rowsAffected > 0 && gambar_brg != null && !gambar_brg.isEmpty()) {            // Delete from project's uploads directory (not build directory)
-            String projectRoot = application.getRealPath("/").replaceAll("\\\\build\\\\web\\\\?$", "").replaceAll("/build/web/?$", "");
-            String persistentUploadPath = projectRoot + File.separator + "uploads";
-            File persistentImageFile = new File(persistentUploadPath + File.separator + gambar_brg);
-            if (persistentImageFile.exists()) {
-                persistentImageFile.delete();
+        int rowsAffected = pstmt.executeUpdate();
+          // If deletion was successful and there is an associated image, delete the file from both locations
+        if (rowsAffected > 0 && gambar_brg != null && !gambar_brg.isEmpty()) {
+            // Delete from build directory
+            String buildUploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
+            File buildImageFile = new File(buildUploadPath + File.separator + gambar_brg);
+            if (buildImageFile.exists()) {
+                buildImageFile.delete();
+            }
+            
+            // Delete from web directory
+            try {
+                String webDirPath = request.getServletContext().getRealPath("/");
+                File webDir = new File(webDirPath);
+                String projectRoot = webDir.getParent(); // Go up from build to project root
+                String webAssetsPath = projectRoot + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                
+                File webImageFile = new File(webAssetsPath + File.separator + gambar_brg);
+                if (webImageFile.exists()) {
+                    webImageFile.delete();
+                }
+            } catch(Exception e) {
+                System.out.println("Error deleting file from web directory: " + e.getMessage());
+                // Continue execution even if deletion from web directory fails
+            }
+
+            // Delete from persistent web/assets/img directory
+            try {
+                // Get the build directory (build/web)
+                String buildDirPathDel = getServletContext().getRealPath("");
+                File buildDirDel = new File(buildDirPathDel);
+                // Go up two levels to get the project root
+                String projectRootDel = buildDirDel.getParentFile().getParent();
+                String persistentAssetsPathDel = projectRootDel + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                File webImageFile = new File(persistentAssetsPathDel + File.separator + gambar_brg);
+                if (webImageFile.exists()) {
+                    webImageFile.delete();
+                }
+            } catch(Exception e) {
+                System.out.println("Error deleting file from persistent web/assets/img: " + e.getMessage());
+                // Continue execution even if deletion from persistent directory fails
             }
         }
         

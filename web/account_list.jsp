@@ -325,9 +325,8 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
-            <li class="active"><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>
-            <li><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
-            <li><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Orders</a></li>
+            <li class="active"><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User Management</a></li>
+            <li><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item Management</a></li>
             <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>
@@ -336,7 +335,7 @@
     <div class="main-content">
         <div class="data-table">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0 neon-text">User</h2>
+                <h2 class="mb-0 neon-text">User Management</h2>
                 <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addUserModal">
                     <i class="bi bi-plus-circle me-2"></i>Add New User
                 </button>

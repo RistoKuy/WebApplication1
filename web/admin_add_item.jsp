@@ -63,7 +63,7 @@
     // Handle image file upload
     String gambar_brg = "";
     Part filePart = null;
-
+    
     try {
         // Check if the request is multipart content
         if (request.getContentType() != null && request.getContentType().toLowerCase().contains("multipart/form-data")) {
@@ -73,29 +73,50 @@
         // If there's an error getting the file part, continue without image
         System.out.println("Error getting file part: " + e.getMessage());
     }
-    if (filePart != null && filePart.getSize() > 0) {
+      if (filePart != null && filePart.getSize() > 0) {
         String fileName = filePart.getSubmittedFileName();
         if (fileName != null && !fileName.isEmpty()) {
             // Generate a unique filename to prevent overwriting
             String fileExtension = fileName.substring(fileName.lastIndexOf("."));
             String uniqueFileName = "item_" + System.currentTimeMillis() + fileExtension;
-            gambar_brg = uniqueFileName;            // Save the file to the project's uploads directory (not build directory)
-            String projectRoot = application.getRealPath("/").replaceAll("\\\\build\\\\web\\\\?$", "").replaceAll("/build/web/?$", "");
-            String persistentUploadPath = projectRoot + File.separator + "uploads";
-            File uploadDir = new File(persistentUploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
+            gambar_brg = uniqueFileName;
+            
+            // Get the absolute path to the build directory img folder
+            String buildUploadPath = getServletContext().getRealPath("") + File.separator + "assets" + File.separator + "img";
+            File buildUploadDir = new File(buildUploadPath);
+            if (!buildUploadDir.exists()) {
+                buildUploadDir.mkdirs();
             }
-            // Debug output for file save path
-            System.out.println("[DEBUG] Saving file to: " + uploadDir.getAbsolutePath() + File.separator + uniqueFileName);
-            // Use stream copy instead of filePart.write
-            try (InputStream input = filePart.getInputStream();
-                 OutputStream output = new FileOutputStream(new File(uploadDir, uniqueFileName))) {
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = input.read(buffer)) != -1) {
-                    output.write(buffer, 0, bytesRead);
+            
+            // Save the file to the build directory
+            filePart.write(buildUploadPath + File.separator + uniqueFileName);
+
+            // Define the source file for copying (must be after filePart.write)
+            File sourceFile = new File(buildUploadPath + File.separator + uniqueFileName);
+            // Now also copy to the persistent web/assets/img directory
+            try {
+                // Get the build directory (build/web)
+                String buildDirPath = getServletContext().getRealPath("");
+                File buildDir = new File(buildDirPath);
+                // Go up two levels to get the project root
+                String projectRoot = buildDir.getParentFile().getParent();
+                String persistentAssetsPath = projectRoot + File.separator + "web" + File.separator + "assets" + File.separator + "img";
+                File persistentAssetsDir = new File(persistentAssetsPath);
+                if (!persistentAssetsDir.exists()) {
+                    boolean created = persistentAssetsDir.mkdirs();
+                    if (!created) {
+                        System.out.println("Failed to create persistent web assets directory: " + persistentAssetsPath);
+                    }
                 }
+                File persistentDestFile = new File(persistentAssetsPath + File.separator + uniqueFileName);
+                try {
+                    Files.copy(sourceFile.toPath(), persistentDestFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("Image saved to both build and persistent web/assets/img directories");
+                } catch(Exception e) {
+                    System.out.println("Error copying file to persistent web/assets/img: " + e.getMessage());
+                }
+            } catch(Exception e) {
+                System.out.println("Error preparing persistent web/assets/img directory: " + e.getMessage());
             }
         }
     }

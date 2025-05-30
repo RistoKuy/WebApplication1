@@ -85,9 +85,9 @@
         }
         
         .form-control {
-            background-color: rgb(255, 255, 255);
+            background-color: rgba(45, 45, 45, 0.7);
             color: var(--text-primary);
-            border: 1px solid rgb(255, 255, 255);
+            border: 1px solid rgba(68, 68, 68, 0.5);
             padding: 12px;
             margin-bottom: 20px;
             border-radius: 8px;
@@ -174,16 +174,16 @@
             <i class="bi bi-arrow-right"></i>
         </a>
         <h1>Register</h1>
-          <form id="registerForm" action="register_output.jsp" method="post">
-            <div class="mb-3" id="namaField" style="display: none;">
+        
+        <form action="register_output.jsp" method="post">
+            <div class="mb-3">
                 <label for="nama" class="form-label">Your Name</label>
-                <input type="text" class="form-control" id="nama" name="nama">
+                <input type="text" class="form-control" id="nama" name="nama" required>
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Your Email</label>
                 <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <div class="mb-3">
+            </div>            <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
@@ -199,47 +199,8 @@
             <a href="login.jsp" class="login-link">Already have an account? Log in</a>
         </form>
     </div>
-      <!-- Panggil Bootstrap JS lokal -->
-    <script src="js/bootstrap.bundle.min.js"></script>
     
-    <!-- Include Firebase Configuration -->
-    <%@ include file="firebase_config.jsp" %>    <script type="module">
-      // Toggle name field visibility based on admin checkbox
-      document.getElementById('isAdmin').addEventListener('change', function() {
-        const namaField = document.getElementById('namaField');
-        const namaInput = document.getElementById('nama');
-        
-        if (this.checked) {
-          namaField.style.display = 'block';
-          namaInput.required = true;
-        } else {
-          namaField.style.display = 'none';
-          namaInput.required = false;
-          namaInput.value = ''; // Clear the field when hidden
-        }
-      });
-      
-      document.getElementById('registerForm').addEventListener('submit', async function(e) {
-        const isAdmin = document.getElementById('isAdmin').checked;
-        if (isAdmin) {
-          // Admin registration: submit to server (local DB)
-          return;
-        }
-        
-        // User registration: use Firebase
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const nama = ''; // No name for regular users
-        
-        const result = await window.FirebaseUtils.register(email, password, nama);
-        if (result.success) {
-          alert('Registration successful! You can now login.');
-          window.location.href = 'login.jsp';
-        } else {
-          alert('Firebase registration failed: ' + result.error);
-        }
-      });
-    </script>
+    <!-- Panggil Bootstrap JS lokal -->
+    <script src="js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

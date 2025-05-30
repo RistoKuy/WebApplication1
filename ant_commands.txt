@@ -1,0 +1,7 @@
+ant clean build     // Removes all compiled files (clean) and then builds the project
+ant build           // Compiles and packages the application
+ant compile         // Only compiles the source code without packaging
+ant run             // clean build but automatically redirect to the localhost
+ant                 // Runs the default target defined in build.xml
+
+http://localhost:8080/WebApplication1 //After deploy
