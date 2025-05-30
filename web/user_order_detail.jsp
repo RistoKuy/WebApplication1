@@ -423,54 +423,27 @@
                         <th>Total Harga</th>
                     </tr>
                 </thead>
-                <tbody>                    <%
-                    // Get ALL item details from orders that belong to this checkout session
-                    // We'll find all orders with the same firebase_uid, metode_pengiriman, metode_pembayaran 
-                    // and created around the same time as the order referenced in the invoice
+                <tbody>
+                    <% 
+                    // Fetch all order rows for this invoice's checkout session (no grouping, no combining)
                     rs.close();
                     pstmt.close();
-                    
-                    // First get the reference order details to find related orders
-                    String referenceOrderSql = "SELECT metode_pengiriman, metode_pembayaran, tgl_order FROM `order` WHERE id_order = ? AND firebase_uid = ?";
-                    pstmt = conn.prepareStatement(referenceOrderSql);
-                    pstmt.setInt(1, orderIdData);
-                    pstmt.setString(2, firebase_uid);
+                    String itemSql = "SELECT * FROM `order` WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, (SELECT tgl_order FROM `order` WHERE id_order = ?))) <= 300 ORDER BY id_order";
+                    pstmt = conn.prepareStatement(itemSql);
+                    pstmt.setString(1, firebase_uid);
+                    pstmt.setString(2, metodePengiriman);
+                    pstmt.setString(3, metodePembayaran);
+                    pstmt.setInt(4, orderIdData);
                     rs = pstmt.executeQuery();
-                    
-                    String refMetodePengiriman = "";
-                    String refMetodePembayaran = "";
-                    java.sql.Timestamp refTglOrder = null;
-                    
-                    if (rs.next()) {
-                        refMetodePengiriman = rs.getString("metode_pengiriman");
-                        refMetodePembayaran = rs.getString("metode_pembayaran");
-                        refTglOrder = rs.getTimestamp("tgl_order");
-                    }
-                    rs.close();
-                    pstmt.close();
-                    
-                    // Now get all orders from the same checkout session (within 60 seconds of the reference order)
-                    if (refTglOrder != null) {
-                        String itemSql = "SELECT * FROM `order` WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? " +
-                                        "AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, ?)) <= 60 ORDER BY id_order";
-                        pstmt = conn.prepareStatement(itemSql);
-                        pstmt.setString(1, firebase_uid);
-                        pstmt.setString(2, refMetodePengiriman);
-                        pstmt.setString(3, refMetodePembayaran);
-                        pstmt.setTimestamp(4, refTglOrder);
-                        rs = pstmt.executeQuery();
-                        
-                        boolean hasItems = false;
-                        while (rs.next()) {
-                            hasItems = true;
+                    boolean hasItems = false;
+                    while (rs.next()) {
+                        hasItems = true;
                     %>
                     <tr>
                         <td><%= rs.getString("nama_brg") %></td>
                         <td>
-                            <% 
-                                String gambarBrg = rs.getString("gambar_brg");
-                                if(gambarBrg != null && !gambarBrg.isEmpty()) { 
-                            %>
+                            <% String gambarBrg = rs.getString("gambar_brg");
+                               if(gambarBrg != null && !gambarBrg.isEmpty()) { %>
                                 <img src="uploads/<%= gambarBrg %>" alt="<%= rs.getString("nama_brg") %>" height="60" 
                                     class="item-image-preview" data-bs-toggle="modal" data-bs-target="#imagePreviewModal"
                                     data-img-src="uploads/<%= gambarBrg %>" data-img-name="<%= rs.getString("nama_brg") %>"
@@ -483,19 +456,10 @@
                         <td><%= rs.getInt("jumlah") %> pcs</td>
                         <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
                     </tr>
-                    <% 
-                        }
-                        if (!hasItems) {
-                    %>
+                    <% } %>
+                    <% if (!hasItems) { %>
                     <tr>
                         <td colspan="5" class="text-center text-muted">Data barang tidak ditemukan</td>
-                    </tr>
-                    <% 
-                        }
-                    } else {
-                    %>
-                    <tr>
-                        <td colspan="5" class="text-center text-muted">Tidak dapat memuat data barang</td>
                     </tr>
                     <% } %>
                 </tbody>

@@ -48,39 +48,37 @@
             pstmt = conn.prepareStatement(checkSql);
             pstmt.setInt(1, invoiceId);
             pstmt.setString(2, firebase_uid);
-            ResultSet rs = pstmt.executeQuery();
-              if (rs.next()) {
+            ResultSet rs = pstmt.executeQuery();            if (rs.next()) {
                 int orderId = rs.getInt("id_order");
                 
-                // Get reference order details to find all related orders from the same checkout session
-                String referenceOrderSql = "SELECT firebase_uid, metode_pengiriman, metode_pembayaran, tgl_order FROM `order` WHERE id_order = ?";
-                PreparedStatement refOrderPstmt = conn.prepareStatement(referenceOrderSql);
-                refOrderPstmt.setInt(1, orderId);
-                ResultSet refOrderRs = refOrderPstmt.executeQuery();
+                // Get the order details to find related orders in the same checkout session
+                String orderDetailsSql = "SELECT firebase_uid, metode_pengiriman, metode_pembayaran, tgl_order FROM `order` WHERE id_order = ? AND firebase_uid = ?";
+                PreparedStatement orderDetailsPstmt = conn.prepareStatement(orderDetailsSql);
+                orderDetailsPstmt.setInt(1, orderId);
+                orderDetailsPstmt.setString(2, firebase_uid);
+                ResultSet orderDetailsRs = orderDetailsPstmt.executeQuery();
                 
-                if (refOrderRs.next()) {
-                    String refFirebaseUid = refOrderRs.getString("firebase_uid");
-                    String refMetodePengiriman = refOrderRs.getString("metode_pengiriman");
-                    String refMetodePembayaran = refOrderRs.getString("metode_pembayaran");
-                    java.sql.Timestamp refTglOrder = refOrderRs.getTimestamp("tgl_order");
+                if (orderDetailsRs.next()) {
+                    String metodePengiriman = orderDetailsRs.getString("metode_pengiriman");
+                    String metodePembayaran = orderDetailsRs.getString("metode_pembayaran");
+                    java.sql.Timestamp orderTime = orderDetailsRs.getTimestamp("tgl_order");
                     
-                    // Find all orders from the same checkout session (within 60 seconds)
-                    String relatedOrdersSql = "SELECT id_order, id_brg, jumlah FROM `order` WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? " +
-                                            "AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, ?)) <= 60";
+                    // Find ALL orders from the same checkout session and restore their stock
+                    String relatedOrdersSql = "SELECT id_brg, jumlah, id_order FROM `order` WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, ?)) <= 300";
                     PreparedStatement relatedOrdersPstmt = conn.prepareStatement(relatedOrdersSql);
-                    relatedOrdersPstmt.setString(1, refFirebaseUid);
-                    relatedOrdersPstmt.setString(2, refMetodePengiriman);
-                    relatedOrdersPstmt.setString(3, refMetodePembayaran);
-                    relatedOrdersPstmt.setTimestamp(4, refTglOrder);
+                    relatedOrdersPstmt.setString(1, firebase_uid);
+                    relatedOrdersPstmt.setString(2, metodePengiriman);
+                    relatedOrdersPstmt.setString(3, metodePembayaran);
+                    relatedOrdersPstmt.setTimestamp(4, orderTime);
                     ResultSet relatedOrdersRs = relatedOrdersPstmt.executeQuery();
                     
-                    // Process all related orders
+                    // Restore stock for all related items and update their status
                     while (relatedOrdersRs.next()) {
-                        int relatedOrderId = relatedOrdersRs.getInt("id_order");
                         int itemId = relatedOrdersRs.getInt("id_brg");
                         int quantity = relatedOrdersRs.getInt("jumlah");
+                        int relatedOrderId = relatedOrdersRs.getInt("id_order");
                         
-                        // Restore stock for each item
+                        // Restore stock for the item
                         String restoreStockSql = "UPDATE item SET stok = stok + ? WHERE id_brg = ?";
                         PreparedStatement stockPstmt = conn.prepareStatement(restoreStockSql);
                         stockPstmt.setInt(1, quantity);
@@ -95,12 +93,11 @@
                         updateOrderPstmt.executeUpdate();
                         updateOrderPstmt.close();
                     }
-                    
                     relatedOrdersRs.close();
                     relatedOrdersPstmt.close();
                 }
-                refOrderRs.close();
-                refOrderPstmt.close();
+                orderDetailsRs.close();
+                orderDetailsPstmt.close();
                 
                 // Update invoice status to cancelled
                 String updateInvoiceSql = "UPDATE `invoice` SET status_order = 'cancelled' WHERE id_invoice = ?";

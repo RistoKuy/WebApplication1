@@ -256,8 +256,7 @@
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        
-        // Declare variables outside the if blocks for proper scope
+          // Declare variables outside the if blocks for proper scope
         int invoiceIdData = 0;
         int orderIdData = 0;
         String namaPenerima = "";
@@ -269,6 +268,7 @@
         String metodePengiriman = "";
         String metodePembayaran = "";
         java.sql.Timestamp tglOrder = null;
+        String invoiceFirebaseUid = ""; // Add this to store firebase_uid from invoice
         boolean hasValidData = false;
         
         try {
@@ -282,11 +282,11 @@
             pstmt = conn.prepareStatement(invoiceSql);
             pstmt.setInt(1, invoiceId);
             rs = pstmt.executeQuery();
-            
-            if (rs.next()) {
+              if (rs.next()) {
                 // Store invoice data
                 invoiceIdData = rs.getInt("id_invoice");
                 orderIdData = rs.getInt("id_order");
+                invoiceFirebaseUid = rs.getString("firebase_uid"); // Store firebase_uid from invoice
                 namaPenerima = rs.getString("nama_penerima");
                 alamat = rs.getString("alamat");
                 noTelp = rs.getString("no_telp");
@@ -406,48 +406,25 @@
                         <th>Jumlah</th>
                         <th>Total Harga</th>
                     </tr>
-                </thead>
-                <tbody>                    <%
-                    // Get ALL item details from orders that belong to this checkout session
-                    // We'll find all orders with the same firebase_uid, metode_pengiriman, metode_pembayaran 
-                    // and created around the same time as the order referenced in the invoice
+                </thead>                <tbody>                    <%
+                    // Get item details from the specific order referenced in the invoice
+                    // This is the correct approach - each invoice should only show its referenced order
                     rs.close();
-                    pstmt.close();
-                    
-                    // First get the reference order details to find related orders
-                    String referenceOrderSql = "SELECT firebase_uid, metode_pengiriman, metode_pembayaran, tgl_order FROM `order` WHERE id_order = ?";
-                    pstmt = conn.prepareStatement(referenceOrderSql);
-                    pstmt.setInt(1, orderIdData);
+                    pstmt.close();                    // Get the item details from ALL orders that belong to the same checkout session
+                    // Business Logic: Multiple items in one checkout create multiple order rows but share:
+                    // - Same firebase_uid (user)
+                    // - Same metode_pengiriman & metode_pembayaran (checkout choices)
+                    // - Similar timestamp (within 5 minutes to account for processing time)
+                    String itemSql = "SELECT * FROM `order` WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, (SELECT tgl_order FROM `order` WHERE id_order = ?))) <= 300 ORDER BY id_order";
+                    pstmt = conn.prepareStatement(itemSql);
+                    pstmt.setString(1, invoiceFirebaseUid); // Use firebase_uid from invoice
+                    pstmt.setString(2, metodePengiriman);
+                    pstmt.setString(3, metodePembayaran);
+                    pstmt.setInt(4, orderIdData);
                     rs = pstmt.executeQuery();
-                    
-                    String refFirebaseUid = "";
-                    String refMetodePengiriman = "";
-                    String refMetodePembayaran = "";
-                    java.sql.Timestamp refTglOrder = null;
-                    
-                    if (rs.next()) {
-                        refFirebaseUid = rs.getString("firebase_uid");
-                        refMetodePengiriman = rs.getString("metode_pengiriman");
-                        refMetodePembayaran = rs.getString("metode_pembayaran");
-                        refTglOrder = rs.getTimestamp("tgl_order");
-                    }
-                    rs.close();
-                    pstmt.close();
-                    
-                    // Now get all orders from the same checkout session (within 60 seconds of the reference order)
-                    if (refTglOrder != null) {
-                        String itemSql = "SELECT * FROM `order` WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? " +
-                                        "AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, ?)) <= 60 ORDER BY id_order";
-                        pstmt = conn.prepareStatement(itemSql);
-                        pstmt.setString(1, refFirebaseUid);
-                        pstmt.setString(2, refMetodePengiriman);
-                        pstmt.setString(3, refMetodePembayaran);
-                        pstmt.setTimestamp(4, refTglOrder);
-                        rs = pstmt.executeQuery();
-                        
-                        boolean hasItems = false;
-                        while (rs.next()) {
-                            hasItems = true;
+                      boolean hasItems = false;
+                    while (rs.next()) {
+                        hasItems = true;
                     %>
                     <tr>
                         <td><%= rs.getString("nama_brg") %></td>
@@ -468,19 +445,11 @@
                         <td><%= rs.getInt("jumlah") %> pcs</td>
                         <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
                     </tr>
-                    <% 
-                        }
-                        if (!hasItems) {
-                    %>
+                    <% } %>
+                    
+                    <% if (!hasItems) { %>
                     <tr>
                         <td colspan="5" class="text-center text-muted">Data barang tidak ditemukan</td>
-                    </tr>
-                    <% 
-                        }
-                    } else {
-                    %>
-                    <tr>
-                        <td colspan="5" class="text-center text-muted">Tidak dapat memuat data barang</td>
                     </tr>
                     <% } %>
                 </tbody>

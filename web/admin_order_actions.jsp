@@ -43,8 +43,7 @@
             }
             
             // Update both invoice and order tables
-            conn.setAutoCommit(false); // Start transaction
-              try {
+            conn.setAutoCommit(false); // Start transaction            try {
                 // Update invoice table
                 String sqlInvoice = "UPDATE `invoice` SET status_order = ? WHERE id_invoice = ?";
                 PreparedStatement pstmtInvoice = conn.prepareStatement(sqlInvoice);
@@ -53,35 +52,33 @@
                 
                 int invoiceRowsAffected = pstmtInvoice.executeUpdate();
                 pstmtInvoice.close();
-                
-                // Get reference order details to find all related orders from the same checkout session
-                String referenceOrderSql = "SELECT firebase_uid, metode_pengiriman, metode_pembayaran, tgl_order FROM `order` WHERE id_order = ?";
-                PreparedStatement refOrderPstmt = conn.prepareStatement(referenceOrderSql);
-                refOrderPstmt.setInt(1, orderId);
-                ResultSet refOrderRs = refOrderPstmt.executeQuery();
+                  // Get order details to find related orders in the same checkout session
+                String getOrderSql = "SELECT o.firebase_uid, o.metode_pengiriman, o.metode_pembayaran, o.tgl_order FROM `order` o WHERE o.id_order = ?";
+                PreparedStatement getOrderPstmt = conn.prepareStatement(getOrderSql);
+                getOrderPstmt.setInt(1, orderId);
+                ResultSet orderRs = getOrderPstmt.executeQuery();
                 
                 int totalOrdersUpdated = 0;
-                if (refOrderRs.next()) {
-                    String refFirebaseUid = refOrderRs.getString("firebase_uid");
-                    String refMetodePengiriman = refOrderRs.getString("metode_pengiriman");
-                    String refMetodePembayaran = refOrderRs.getString("metode_pembayaran");
-                    java.sql.Timestamp refTglOrder = refOrderRs.getTimestamp("tgl_order");
+                if (orderRs.next()) {
+                    String firebase_uid = orderRs.getString("firebase_uid");
+                    String metodePengiriman = orderRs.getString("metode_pengiriman");
+                    String metodePembayaran = orderRs.getString("metode_pembayaran");
+                    java.sql.Timestamp orderTime = orderRs.getTimestamp("tgl_order");
                     
-                    // Update all orders from the same checkout session (within 60 seconds)
-                    String updateRelatedOrdersSql = "UPDATE `order` SET status_order = ? WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? " +
-                                                   "AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, ?)) <= 60";
+                    // Update ALL orders from the same checkout session
+                    String updateRelatedOrdersSql = "UPDATE `order` SET status_order = ? WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, ?)) <= 300";
                     PreparedStatement updateRelatedOrdersPstmt = conn.prepareStatement(updateRelatedOrdersSql);
                     updateRelatedOrdersPstmt.setString(1, newStatus);
-                    updateRelatedOrdersPstmt.setString(2, refFirebaseUid);
-                    updateRelatedOrdersPstmt.setString(3, refMetodePengiriman);
-                    updateRelatedOrdersPstmt.setString(4, refMetodePembayaran);
-                    updateRelatedOrdersPstmt.setTimestamp(5, refTglOrder);
+                    updateRelatedOrdersPstmt.setString(2, firebase_uid);
+                    updateRelatedOrdersPstmt.setString(3, metodePengiriman);
+                    updateRelatedOrdersPstmt.setString(4, metodePembayaran);
+                    updateRelatedOrdersPstmt.setTimestamp(5, orderTime);
                     
                     totalOrdersUpdated = updateRelatedOrdersPstmt.executeUpdate();
                     updateRelatedOrdersPstmt.close();
                 }
-                refOrderRs.close();
-                refOrderPstmt.close();
+                orderRs.close();
+                getOrderPstmt.close();
                 
                 if (invoiceRowsAffected > 0 && totalOrdersUpdated > 0) {
                     conn.commit(); // Commit transaction
