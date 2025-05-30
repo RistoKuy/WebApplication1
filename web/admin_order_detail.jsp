@@ -26,7 +26,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Detail Invoice & Order | Aplikasi JSP</title>
+    <title>Detail Pesanan | Aplikasi JSP</title>
     <!-- Panggil Bootstrap lokal -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     
@@ -151,6 +151,12 @@
             border: 1px solid #28a745;
         }
         
+        .status-cancelled {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+        
         .btn-back {
             background-color: var(--accent-purple);
             color: #000;
@@ -171,11 +177,69 @@
             box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
             color: #000;
         }
-        
-        .neon-text {
+          .neon-text {
             color: var(--text-primary);
             text-shadow: 0 0 5px rgba(187, 134, 252, 0.5),
                          0 0 10px rgba(187, 134, 252, 0.3);
+        }
+        
+        /* Table styling */
+        .table {
+            color: var(--text-primary);
+        }
+        
+        .table th {
+            background-color: rgba(45, 45, 45, 0.5);
+            color: var(--accent-purple);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .table td {
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: rgba(45, 45, 45, 0.3);
+        }
+        
+        /* Image preview styling */
+        .item-image-preview {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 4px;
+            border: 2px solid transparent;
+        }
+          .item-image-preview:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(187, 134, 252, 0.6);
+            border-color: var(--accent-purple);
+        }
+        
+        /* Section separators for unified information */
+        .info-section-separator {
+            border-top: 1px solid rgba(187, 134, 252, 0.3);
+            margin: 20px 0 15px 0;
+            padding-top: 15px;
+            position: relative;
+        }
+        
+        .info-section-separator::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--accent-purple);
+            border-radius: 1px;
+        }
+        
+        .info-section-title {
+            color: var(--accent-blue);
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -186,18 +250,26 @@
     <div class="overlay"></div>
     
     <div class="detail-container">
-        <div class="mb-4">
-            <a href="admin_orders.jsp" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Kembali ke Manajemen Invoice
-            </a>
-        </div>
         
-        <h1 class="neon-text mb-4">Detail Invoice & Order</h1>
-        
-        <%
+        <h1 class="neon-text mb-4">Detail Pesanan</h1>
+          <%
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
+        
+        // Declare variables outside the if blocks for proper scope
+        int invoiceIdData = 0;
+        int orderIdData = 0;
+        String namaPenerima = "";
+        String alamat = "";
+        String noTelp = "";
+        String totalHarga = "";
+        String statusOrder = "";
+        java.sql.Timestamp tglInvoice = null;
+        String metodePengiriman = "";
+        String metodePembayaran = "";
+        java.sql.Timestamp tglOrder = null;
+        boolean hasValidData = false;
         
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -205,142 +277,195 @@
             String dbUser = "root";
             String dbPassword = "";
             conn = DriverManager.getConnection(url, dbUser, dbPassword);
-            
-            // Get invoice details
+              // Get invoice details - admin can see all invoices
             String invoiceSql = "SELECT * FROM `invoice` WHERE id_invoice = ?";
             pstmt = conn.prepareStatement(invoiceSql);
             pstmt.setInt(1, invoiceId);
             rs = pstmt.executeQuery();
             
             if (rs.next()) {
-                String statusOrder = rs.getString("status_order");
-        %>
-        
-        <!-- Invoice Information -->
-        <div class="detail-card">
-            <h3 class="section-title">Informasi Invoice</h3>
-            <div class="info-row">
-                <span class="info-label">ID Invoice:</span>
-                <span class="info-value"><%= rs.getInt("id_invoice") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">ID Order:</span>
-                <span class="info-value"><%= rs.getInt("id_order") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Firebase UID:</span>
-                <span class="info-value"><%= rs.getString("firebase_uid") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Nama Penerima:</span>
-                <span class="info-value"><%= rs.getString("nama_penerima") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Alamat:</span>
-                <span class="info-value"><%= rs.getString("alamat") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">No. Telepon:</span>
-                <span class="info-value"><%= rs.getString("no_telp") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Total Harga:</span>
-                <span class="info-value">Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Status Order:</span>
-                <span class="info-value">
-                    <span class="status-badge <%= "completed".equals(statusOrder) ? "status-completed" : "status-pending" %>">
-                        <%= statusOrder %>
-                    </span>
-                </span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Tanggal Invoice:</span>
-                <span class="info-value"><%= rs.getTimestamp("tgl_invoice") %></span>
-            </div>
-        </div>
-        
-        <%
+                // Store invoice data
+                invoiceIdData = rs.getInt("id_invoice");
+                orderIdData = rs.getInt("id_order");
+                namaPenerima = rs.getString("nama_penerima");
+                alamat = rs.getString("alamat");
+                noTelp = rs.getString("no_telp");
+                totalHarga = rs.getString("total_harga");
+                statusOrder = rs.getString("status_order");
+                tglInvoice = rs.getTimestamp("tgl_invoice");
+                hasValidData = true;
             }
             rs.close();
             pstmt.close();
-            
-            // Get order details
-            String orderSql = "SELECT * FROM `order` WHERE id_order = ?";
-            pstmt = conn.prepareStatement(orderSql);
-            pstmt.setInt(1, orderId);
-            rs = pstmt.executeQuery();
-            
-            if (rs.next()) {
-                String orderStatus = rs.getString("status_order");
+              // Get order details - admin can see all orders
+            if (hasValidData) {
+                String orderSql = "SELECT * FROM `order` WHERE id_order = ?";
+                pstmt = conn.prepareStatement(orderSql);
+                pstmt.setInt(1, orderId);
+                rs = pstmt.executeQuery();
+                
+                if (rs.next()) {
+                    metodePengiriman = rs.getString("metode_pengiriman");
+                    metodePembayaran = rs.getString("metode_pembayaran");
+                    tglOrder = rs.getTimestamp("tgl_order");
+                }
+            }
         %>
         
-        <!-- Order Information -->
+        <% if (hasValidData) { %>
+          <!-- Unified Order Information -->
         <div class="detail-card">
-            <h3 class="section-title">Informasi Order</h3>
+            <h3 class="section-title">Informasi Pesanan</h3>
+            
+            <!-- Order Identification -->
+            <div class="info-section-title">Identifikasi Pesanan</div>
+            <div class="info-row">
+                <span class="info-label">ID Invoice:</span>
+                <span class="info-value">#<%= invoiceIdData %></span>
+            </div>
             <div class="info-row">
                 <span class="info-label">ID Order:</span>
-                <span class="info-value"><%= rs.getInt("id_order") %></span>
+                <span class="info-value">#<%= orderIdData %></span>
             </div>
-            <div class="info-row">
-                <span class="info-label">ID Barang:</span>
-                <span class="info-value"><%= rs.getInt("id_brg") %></span>
+            
+            <!-- Customer Information -->
+            <div class="info-section-separator">
+                <div class="info-section-title">Informasi Penerima</div>
+                <div class="info-row">
+                    <span class="info-label">Nama Penerima:</span>
+                    <span class="info-value"><%= namaPenerima %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Alamat Pengiriman:</span>
+                    <span class="info-value"><%= alamat %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">No. Telepon:</span>
+                    <span class="info-value"><%= noTelp %></span>
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label">Nama Barang:</span>
-                <span class="info-value"><%= rs.getString("nama_brg") %></span>
+            
+            <!-- Order Processing Details -->
+            <div class="info-section-separator">
+                <div class="info-section-title">Detail Pengiriman & Pembayaran</div>
+                <div class="info-row">
+                    <span class="info-label">Metode Pengiriman:</span>
+                    <span class="info-value"><%= metodePengiriman %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Metode Pembayaran:</span>
+                    <span class="info-value"><%= metodePembayaran %></span>
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label">Gambar Barang:</span>
-                <span class="info-value"><%= rs.getString("gambar_brg") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Jumlah:</span>
-                <span class="info-value"><%= rs.getInt("jumlah") %> pcs</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Harga Satuan:</span>
-                <span class="info-value">Rp <%= String.format("%,d", Integer.parseInt(rs.getString("harga"))).replace(',', '.') %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Total Harga:</span>
-                <span class="info-value">Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Metode Pengiriman:</span>
-                <span class="info-value"><%= rs.getString("metode_pengiriman") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Metode Pembayaran:</span>
-                <span class="info-value"><%= rs.getString("metode_pembayaran") %></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Status Order:</span>
-                <span class="info-value">
-                    <span class="status-badge <%= "completed".equals(orderStatus) ? "status-completed" : "status-pending" %>">
-                        <%= orderStatus %>
+            
+            <!-- Financial & Status Information -->
+            <div class="info-section-separator">
+                <div class="info-section-title">Status & Total</div>
+                <div class="info-row">
+                    <span class="info-label">Total Harga:</span>
+                    <span class="info-value"><strong style="color: var(--accent-blue); font-size: 1.1em;">Rp <%= String.format("%,d", Integer.parseInt(totalHarga)).replace(',', '.') %></strong></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status Pesanan:</span>
+                    <span class="info-value">
+                        <% if ("pending".equals(statusOrder)) { %>
+                            <span class="status-badge status-pending">Pending</span>
+                        <% } else if ("completed".equals(statusOrder)) { %>
+                            <span class="status-badge status-completed">Completed</span>
+                        <% } else if ("cancelled".equals(statusOrder)) { %>
+                            <span class="status-badge status-cancelled">Cancelled</span>
+                        <% } else { %>
+                            <span class="status-badge"><%= statusOrder %></span>
+                        <% } %>
                     </span>
-                </span>
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label">Tanggal Order:</span>
-                <span class="info-value"><%= rs.getTimestamp("tgl_order") %></span>
+            
+            <!-- Timeline Information -->
+            <div class="info-section-separator">
+                <div class="info-section-title">Timeline</div>
+                <div class="info-row">
+                    <span class="info-label">Tanggal Pesanan:</span>
+                    <span class="info-value"><%= tglInvoice %></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tanggal Order:</span>
+                    <span class="info-value"><%= tglOrder %></span>
+                </div>
             </div>
         </div>
+          <!-- Item Details Table -->
+        <div class="detail-card">
+            <h3 class="section-title">Detail Barang</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nama Barang</th>
+                        <th>Gambar</th>
+                        <th>Harga Satuan</th>
+                        <th>Jumlah</th>
+                        <th>Total Harga</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+                    // Get item details from order table
+                    rs.close();
+                    pstmt.close();
+                      String itemSql = "SELECT * FROM `order` WHERE id_order = ?";
+                    pstmt = conn.prepareStatement(itemSql);
+                    pstmt.setInt(1, orderIdData);
+                    rs = pstmt.executeQuery();
+                    
+                    if (rs.next()) {
+                    %>
+                    <tr>
+                        <td><%= rs.getString("nama_brg") %></td>
+                        <td>
+                            <% 
+                                String gambarBrg = rs.getString("gambar_brg");
+                                if(gambarBrg != null && !gambarBrg.isEmpty()) { 
+                            %>
+                                <img src="uploads/<%= gambarBrg %>" alt="<%= rs.getString("nama_brg") %>" height="60" 
+                                    class="item-image-preview" data-bs-toggle="modal" data-bs-target="#imagePreviewModal"
+                                    data-img-src="uploads/<%= gambarBrg %>" data-img-name="<%= rs.getString("nama_brg") %>"
+                                    style="cursor: pointer; border-radius: 4px; object-fit: contain; background: #222;">
+                            <% } else { %>
+                                <span class="text-muted">No image</span>
+                            <% } %>
+                        </td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("harga"))).replace(',', '.') %></td>
+                        <td><%= rs.getInt("jumlah") %> pcs</td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
+                    </tr>
+                    <% 
+                    } else {
+                    %>
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Data barang tidak ditemukan</td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>        </div>
+        
+        <% } else { %>
+            <div class="detail-card">
+                <div class="alert alert-warning">
+                    <h5>Data Tidak Ditemukan</h5>
+                    <p>Invoice dengan ID #<%= invoiceId %> atau Order dengan ID #<%= orderId %> tidak ditemukan dalam sistem.</p>
+                    <p>Pastikan ID yang dimasukkan benar dan data masih tersedia.</p>
+                </div>
+            </div>
+        <% } %>
         
         <%
-            }
             
         } catch(Exception e) {
         %>
             <div class="detail-card">
                 <div class="alert alert-danger">
-                    <h4>Error</h4>
-                    <p>Gagal mengambil data: <%= e.getMessage() %></p>
-                    <a href="admin_orders.jsp" class="btn-back mt-3">
-                        <i class="bi bi-arrow-left"></i> Kembali ke Manajemen Invoice
-                    </a>
+                    <h5>Error</h5>
+                    <p>Gagal mengambil detail pesanan: <%= e.getMessage() %></p>
                 </div>
             </div>
         <%
@@ -350,18 +475,146 @@
                 if(pstmt != null) pstmt.close();
                 if(conn != null) conn.close();
             } catch(SQLException e) {
-                e.printStackTrace();
+                // Handle close exception
             }
         }
         %>
-        
-        <div class="mt-4">
+          <div class="mt-4">
             <a href="admin_orders.jsp" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Kembali ke Manajemen Invoice
+                <i class="bi bi-arrow-left"></i> Kembali
             </a>
         </div>
     </div>
     
+    <!-- Image Preview Modal -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title text-white" id="imagePreviewModalLabel">Preview Gambar</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-0 position-relative" style="overflow: hidden; max-height: 80vh;">
+                    <div id="imageContainer" class="d-flex justify-content-center align-items-center p-3" style="min-height: 300px;">
+                        <img id="fullSizeImage" src="" alt="" class="img-fluid" style="max-width: 100%; max-height: 70vh; transition: transform 0.3s ease; transform-origin: center; cursor: move;">
+                    </div>
+                    <div class="image-controls position-absolute bottom-0 start-50 translate-middle-x pb-2 pt-2 px-3 bg-dark bg-opacity-75 rounded-pill" style="transition: opacity 0.3s ease; opacity: 0.7;">
+                        <button id="zoomIn" class="btn btn-sm btn-outline-light rounded-circle"><i class="bi bi-zoom-in"></i></button>
+                        <button id="zoomOut" class="btn btn-sm btn-outline-light rounded-circle mx-2"><i class="bi bi-zoom-out"></i></button>
+                        <button id="resetZoom" class="btn btn-sm btn-outline-light rounded-circle"><i class="bi bi-arrows-fullscreen"></i></button>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <span class="me-auto text-light small" id="imageInfo"></span>
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript for image preview -->
+    <script>
+        // Image Preview Modal
+        let currentZoom = 1;
+        const zoomStep = 0.25;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let lastX, lastY;
+        
+        document.querySelectorAll('.item-image-preview').forEach(image => {
+            image.addEventListener('click', function() {
+                const imgSrc = this.getAttribute('data-img-src');
+                const imgName = this.getAttribute('data-img-name');
+                const fullSizeImage = document.getElementById('fullSizeImage');
+                
+                // Reset zoom and position for new image
+                currentZoom = 1;
+                translateX = 0;
+                translateY = 0;
+                fullSizeImage.style.transform = `scale(${currentZoom}) translate(${translateX}px, ${translateY}px)`;
+                
+                // Set the image source and update modal title
+                fullSizeImage.src = imgSrc;
+                fullSizeImage.alt = imgName;
+                document.getElementById('imagePreviewModalLabel').textContent = 'Preview Gambar: ' + imgName;
+                
+                // Show loading state and handle image load
+                fullSizeImage.style.opacity = '0.5';
+                fullSizeImage.onload = function() {
+                    fullSizeImage.style.opacity = '1';
+                    document.getElementById('imageInfo').textContent = imgName + ' (' + this.naturalWidth + ' × ' + this.naturalHeight + 'px)';
+                };
+            });
+        });
+        
+        // Image zoom controls
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            if (currentZoom < 3) {
+                currentZoom += zoomStep;
+                document.getElementById('fullSizeImage').style.transform = `scale(${currentZoom}) translate(${translateX}px, ${translateY}px)`;
+            }
+        });
+        
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            if (currentZoom > 0.5) {
+                currentZoom -= zoomStep;
+                document.getElementById('fullSizeImage').style.transform = `scale(${currentZoom}) translate(${translateX}px, ${translateY}px)`;
+            }
+        });
+        
+        document.getElementById('resetZoom').addEventListener('click', function() {
+            currentZoom = 1;
+            translateX = 0;
+            translateY = 0;
+            document.getElementById('fullSizeImage').style.transform = `scale(${currentZoom}) translate(${translateX}px, ${translateY}px)`;
+        });
+        
+        // Image dragging functionality
+        const fullSizeImage = document.getElementById('fullSizeImage');
+        fullSizeImage.addEventListener('mousedown', function(e) {
+            if (currentZoom > 1) {
+                isDragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                this.style.cursor = 'grabbing';
+            }
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging && currentZoom > 1) {
+                const deltaX = e.clientX - lastX;
+                const deltaY = e.clientY - lastY;
+                translateX += deltaX / currentZoom;
+                translateY += deltaY / currentZoom;
+                fullSizeImage.style.transform = `scale(${currentZoom}) translate(${translateX}px, ${translateY}px)`;
+                lastX = e.clientX;
+                lastY = e.clientY;
+            }
+        });
+        
+        document.addEventListener('mouseup', function() {
+            isDragging = false;
+            fullSizeImage.style.cursor = 'move';
+        });
+        
+        // Reset on modal close
+        document.getElementById('imagePreviewModal').addEventListener('hidden.bs.modal', function() {
+            currentZoom = 1;
+            translateX = 0;
+            translateY = 0;
+        });
+        
+        // Hover effect for image controls
+        document.querySelector('.image-controls').addEventListener('mouseenter', function() {
+            this.style.opacity = '1';
+        });
+        
+        document.querySelector('.image-controls').addEventListener('mouseleave', function() {
+            this.style.opacity = '0.7';
+        });
+    </script>
 </body>
 </html>

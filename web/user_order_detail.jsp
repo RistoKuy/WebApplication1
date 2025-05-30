@@ -491,7 +491,7 @@
         %>
           <div class="mt-4">
             <a href="user_orders.jsp" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Kembali ke Pesanan Saya
+                <i class="bi bi-arrow-left"></i> Kembali
             </a>
         </div>
     </div>
