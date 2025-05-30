@@ -26,73 +26,430 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Pesanan Saya</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>My Orders | Aplikasi JSP</title>
+    <!-- Panggil Bootstrap lokal -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Adding Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom styles inside head -->
+    <style>
+        :root {
+            --dark-bg: #121212;
+            --dark-card: #1e1e1e;
+            --dark-light: #2d2d2d;
+            --accent-purple: #bb86fc;
+            --accent-blue: #03dac6;
+            --accent-pink: #cf6679;
+            --text-primary: #e1e1e1;
+            --text-secondary: #b0b0b0;
+        }
+        
+        /* Hero section enhancements */
+        .bg-gradient {
+            position: relative;
+            overflow: hidden;
+            background: none !important;
+        }
+        
+        /* Add the hero background image overlay */
+        .hero-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1745750747228-d7ae37cba3a5?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -10;
+            filter: brightness(0.6);
+        }
+        
+        /* Page overlay to darken the background image slightly */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(18, 18, 18, 0.7), rgba(32, 10, 64, 0.8));
+            z-index: -5;
+        }
+        
+        body {
+            background-color: transparent;
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar styling */
+        .sidebar {
+            width: 200px;
+            background-color: rgba(18, 18, 18, 0.6);
+            backdrop-filter: blur(15px);
+            color: var(--text-primary);
+            padding: 20px 0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-header h5 {
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+          .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            padding: 10px 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-menu li a {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: block;
+        }
+        
+        .sidebar-menu li:hover, .sidebar-menu li.active {
+            background-color: rgba(187, 134, 252, 0.2);
+        }
+        
+        .sidebar-menu li.active a {
+            color: var(--accent-purple);
+        }
+        
+        /* Main content styling */
+        .main-content {
+            margin-left: 200px;
+            flex: 1;
+            padding: 30px;
+        }
+        
+        .data-table {
+            background-color: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .data-table:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(187, 134, 252, 0.2);
+        }
+          .table {
+            color: var(--text-primary);
+        }
+        
+        .table th {
+            background-color: rgba(45, 45, 45, 0.5);
+            color: var(--accent-purple);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .table td {
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: rgba(45, 45, 45, 0.3);
+        }
+          .btn-edit {
+            background-color: var(--accent-purple);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+        }
+        
+        .btn-edit:hover {
+            background-color: #9546fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
+        }
+        
+        .btn-cancel {
+            background-color: transparent;
+            color: var(--accent-pink);
+            border: 1px solid var(--accent-pink);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+          .btn-cancel:hover {
+            background-color: var(--accent-pink);
+            color: #121212;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(207, 102, 121, 0.3);
+        }
+        
+        .btn-info {
+            background-color: transparent;
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-info:hover {
+            background-color: var(--accent-blue);
+            color: #121212;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(3, 218, 198, 0.3);
+        }
+        
+        .btn-back {
+            background-color: var(--accent-purple);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            background-color: #9546fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(187, 134, 252, 0.3);
+            color: #000;
+        }
+          /* Neon text effect */
+        .neon-text {
+            color: var(--text-primary);
+            text-shadow: 0 0 5px rgba(187, 134, 252, 0.5),
+                         0 0 10px rgba(187, 134, 252, 0.3);
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+            scrollbar-color: var(--accent-purple) var(--dark-bg);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 4px;
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
-<body class="bg-dark text-white">    <div class="container py-5">
-        <h2 class="mb-4">Pesanan Saya</h2>
-        <% if (error != null) { %>
-            <div class="alert alert-danger"><%= error %></div>
-        <% } else if (firebase_uid == null) { %>
-            <div class="alert alert-warning">Tidak dapat memuat pesanan: Firebase UID tidak ditemukan. Silakan login ulang.</div>
-        <% } else { %>
-        <table class="table table-dark table-striped">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Nama Barang</th>
-                    <th>Jumlah</th>
-                    <th>Harga</th>
-                    <th>Metode</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <%
-                try {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    String url = "jdbc:mysql://localhost:3306/web_enterprise";
-                    String dbUser = "root";
-                    String dbPassword = "";
-                    Connection conn = DriverManager.getConnection(url, dbUser, dbPassword);
-                    String sql = "SELECT * FROM `order` WHERE firebase_uid = ? ORDER BY tgl_order DESC";
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
-                    pstmt.setString(1, firebase_uid);
-                    ResultSet rs = pstmt.executeQuery();
-                    boolean hasOrder = false;
-                    while (rs.next()) {
-                        hasOrder = true;
-                %>                <tr>
-                    <td><%= rs.getTimestamp("tgl_order") %></td>
-                    <td><%= rs.getString("nama_brg") %></td>
-                    <td><%= rs.getInt("jumlah") %></td>
-                    <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("harga"))).replace(',', '.') %></td>
-                    <td><%= rs.getString("metode_pembayaran") %></td>
-                    <td>
-                        <% String orderStatus = rs.getString("status_order");
-                           if ("pending".equals(orderStatus)) { %>
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        <% } else if ("completed".equals(orderStatus)) { %>
-                            <span class="badge bg-success">Completed</span>
-                        <% } else { %>
-                            <span class="badge bg-secondary"><%= orderStatus %></span>
-                        <% } %>
-                    </td>
-                </tr>
-                <% }
-                    if (!hasOrder) { %>
-                    <tr><td colspan="6" class="text-center">Belum ada pesanan.</td></tr>
-                <% }
-                    rs.close();
-                    pstmt.close();
-                    conn.close();
-                } catch(Exception e) { %>
-                    <tr><td colspan="6" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
-                <% } %>            </tbody>
-        </table>
-        <% } %>
-        <a href="main.jsp" class="btn btn-primary">Kembali ke Toko</a>
+
+<body>    <!-- Background image and overlay -->
+    <div class="hero-background"></div>
+    <div class="overlay"></div>
+      <%
+        // Database connection
+        String userName = (String) session.getAttribute("userName");
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
+        try {
+            // Connect to database for better security and flexibility
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            String url = "jdbc:mysql://localhost:3306/web_enterprise";
+            String dbUser = "root";
+            String dbPassword = "";
+            conn = DriverManager.getConnection(url, dbUser, dbPassword);
+        } catch (Exception e) {
+            out.println("Database connection error: " + e.getMessage());
+        }
+    %>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h5><i class="bi bi-person-circle me-2"></i>My Account</h5>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="main.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
+            <li><a href="cart.jsp"><i class="bi bi-cart me-2"></i>Cart</a></li>
+            <li class="active"><a href="user_orders.jsp"><i class="bi bi-receipt me-2"></i>My Orders</a></li>
+            <li><a href="update_profile.jsp"><i class="bi bi-person-gear me-2"></i>Profile</a></li>
+            <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="data-table">
+            <h1 class="neon-text">Pesanan Saya</h1>
+            <% if (error != null) { %>
+                <div class="alert alert-danger"><%= error %></div>
+            <% } else if (firebase_uid == null) { %>
+                <div class="alert alert-warning">Tidak dapat memuat pesanan: Firebase UID tidak ditemukan. Silakan login ulang.</div>
+            <% } else { %>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID Invoice</th>
+                        <th>Tanggal</th>
+                        <th>Nama Penerima</th>
+                        <th>Total Harga</th>
+                        <th>Status Order</th>
+                        <th>Alamat</th>
+                        <th>No. Telp</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+                    try {
+                        String sql = "SELECT * FROM `invoice` WHERE firebase_uid = ? ORDER BY tgl_invoice DESC";
+                        pstmt = conn.prepareStatement(sql);
+                        pstmt.setString(1, firebase_uid);
+                        rs = pstmt.executeQuery();
+                        boolean hasInvoice = false;
+                        while (rs.next()) {
+                            hasInvoice = true;
+                            int invoiceId = rs.getInt("id_invoice");
+                            int orderId = rs.getInt("id_order");
+                            String currentOrderStatus = rs.getString("status_order");
+                    %>
+                    <tr id="invoice-row-<%= invoiceId %>">
+                        <td><%= invoiceId %></td>
+                        <td><%= rs.getTimestamp("tgl_invoice") %></td>
+                        <td><%= rs.getString("nama_penerima") %></td>
+                        <td>Rp <%= String.format("%,d", Integer.parseInt(rs.getString("total_harga"))).replace(',', '.') %></td>
+                        <td>
+                            <% if ("pending".equals(currentOrderStatus)) { %>
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            <% } else if ("completed".equals(currentOrderStatus)) { %>
+                                <span class="badge bg-success">Completed</span>
+                            <% } else { %>
+                                <span class="badge bg-secondary"><%= currentOrderStatus %></span>
+                            <% } %>
+                        </td>
+                        <td><%= rs.getString("alamat") %></td>
+                        <td><%= rs.getString("no_telp") %></td>
+                        <td>
+                            <a href="user_order_detail.jsp?invoice_id=<%= invoiceId %>&order_id=<%= orderId %>" class="btn btn-info btn-sm me-2" title="Lihat Detail">
+                                <i class="bi bi-eye"></i> Detail
+                            </a>
+                            <% if ("pending".equals(currentOrderStatus)) { %>
+                            <button class="btn btn-cancel btn-sm cancel-btn" data-invoice-id="<%= invoiceId %>" title="Cancel Order">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </button>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }
+                        if (!hasInvoice) { %>
+                        <tr><td colspan="8" class="text-center">Belum ada pesanan.</td></tr>
+                    <% }
+                        rs.close();
+                        pstmt.close();
+                    } catch(Exception e) { %>
+                        <tr><td colspan="8" class="text-danger">Gagal mengambil data pesanan: <%= e.getMessage() %></td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+            <% } %>
+            
+            <div class="mt-4">
+                <a href="main.jsp" class="btn-back">
+                    <i class="bi bi-arrow-left"></i> Kembali ke Toko
+                </a>
+            </div>
+        </div>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Event listeners for cancel action
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle cancel action
+            document.querySelectorAll('.cancel-btn').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const invoiceId = this.getAttribute('data-invoice-id');
+                    cancelOrder(invoiceId);
+                });
+            });
+        });
+
+        function cancelOrder(invoiceId) {
+            if (confirm('Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat dibatalkan!')) {
+                fetch('user_order_actions.jsp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=cancel_order&invoice_id=' + invoiceId
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim() === 'success') {
+                        // Remove the row from the table
+                        document.getElementById('invoice-row-' + invoiceId).remove();
+                        alert('Pesanan berhasil dibatalkan!');
+                          // Check if there are no more orders
+                        const tbody = document.querySelector('tbody');
+                        if (tbody.children.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="8" class="text-center">Belum ada pesanan.</td></tr>';
+                        }
+                    } else {
+                        alert('Gagal membatalkan pesanan: ' + data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat membatalkan pesanan');
+                });
+            }
+        }
+    </script>
+    
+    <%
+        // Close the database resources
+        try {
+            if(conn != null) conn.close();
+        } catch(SQLException e) {
+            out.println("Error closing database connection: " + e.getMessage());
+        }
+    %>
 </body>
 </html>
