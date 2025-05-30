@@ -13,6 +13,8 @@ A modern JSP-based web application with Firebase authentication, user management
 - [Usage Guide](#usage-guide)
 - [API Documentation](#api-documentation)
 - [Security Features](#security-features)
+- [Feature Comparison](#feature-comparison)
+- [Advanced Configuration](#advanced-configuration)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 
@@ -38,11 +40,24 @@ WebApplication1 is a full-featured enterprise web application built with JSP, Fi
 - ✅ Admin and user role separation
 
 ### E-commerce Features
-- ✅ Product catalog
+- ✅ Product catalog with image support
 - ✅ Shopping cart functionality
+- ✅ Complete checkout system
+- ✅ Order management system
+- ✅ Order tracking and status updates
 - ✅ Item management (admin)
 - ✅ User account management
+- ✅ Stock management and automatic updates
 
+### Order Management Features
+- ✅ Complete order processing system
+- ✅ Multi-item checkout with unique checkout IDs
+- ✅ Order status tracking (pending, completed, cancelled)
+- ✅ Customer information management
+- ✅ Payment and delivery method selection
+- ✅ Order cancellation with automatic stock restoration
+- ✅ Admin order management and status updates
+- ✅ Detailed order history and tracking
 ### Security Features
 - ✅ Client-side re-authentication
 - ✅ Server-side validation
@@ -53,8 +68,11 @@ WebApplication1 is a full-featured enterprise web application built with JSP, Fi
 ### UI/UX
 - ✅ Modern dark theme design
 - ✅ Responsive Bootstrap layout
-- ✅ Interactive animations
-- ✅ User-friendly forms
+- ✅ Interactive animations and hover effects
+- ✅ User-friendly forms and modals
+- ✅ Image preview functionality with zoom controls
+- ✅ Sidebar navigation for admin panel
+- ✅ Neon text effects and gradient backgrounds
 
 ## 📁 Project Structure
 
@@ -62,20 +80,51 @@ WebApplication1 is a full-featured enterprise web application built with JSP, Fi
 WebApplication1/
 ├── build/                      # Compiled output
 ├── web/                        # Web application root
-│   ├── *.jsp                   # JSP pages
-│   ├── css/                    # Stylesheets
+│   ├── *.jsp                   # JSP pages (30+ pages)
+│   │   ├── account_*.jsp       # User account management
+│   │   ├── admin_*.jsp         # Admin management pages
+│   │   ├── cart.jsp            # Shopping cart
+│   │   ├── checkout.jsp        # Order checkout
+│   │   ├── *_orders.jsp        # Order management
+│   │   ├── *_order_detail.jsp  # Order details
+│   │   └── *_order_actions.jsp # Order CRUD operations
+│   ├── css/                    # Bootstrap & custom styles
 │   ├── js/                     # JavaScript files
 │   ├── assets/                 # Images and icons
+│   ├── uploads/                # User uploaded files
 │   └── WEB-INF/               # Configuration and libraries
 │       ├── lib/               # JAR dependencies
 │       └── firebase-adminsdk.json # Firebase credentials
 ├── src/                        # Source code
 ├── nbproject/                  # NetBeans project files
 ├── lib/                        # External libraries
+├── uploads/                    # Product image uploads
+├── web_enterprise.sql          # Database schema
 └── README.md                   # This file
 ```
 
 ## 🚀 Setup & Installation
+
+### Quick Start (Development)
+
+For rapid development setup:
+
+```bash
+# 1. Clone and navigate to project
+cd c:\Project\WebApplication1
+
+# 2. Start MySQL service
+net start mysql
+
+# 3. Import database schema
+mysql -u root -p < web_enterprise.sql
+
+# 4. Build and deploy
+ant clean build
+
+# 5. Start Tomcat and access application
+# http://localhost:8080/WebApplication1
+```
 
 ### Prerequisites
 - Java JDK 8 or higher
@@ -96,6 +145,18 @@ cd WebApplication1
 mysql -u root -p < web_enterprise.sql
 ```
 
+#### Database Schema Overview
+The application uses a MySQL database with the following key tables:
+- **users**: User account information and roles
+- **item**: Product catalog with images and stock
+- **order**: Order management with customer details
+- **Additional tables**: For user preferences and system configuration
+
+#### Required Database Configuration
+- Database name: `web_enterprise`
+- Default user: `root` (no password for development)
+- Ensure MySQL server is running on localhost:3306
+
 ### 3. Firebase Setup
 Follow the [Firebase Configuration](#firebase-configuration) section below.
 
@@ -111,6 +172,19 @@ Ensure these JAR files are in `web/WEB-INF/lib/`:
 - `slf4j-api-2.0.7.jar`
 - `mysql-connector-j-9.3.0.jar`
 - `jakarta.servlet-api-5.0.0.jar`
+
+### 5. File Upload Setup
+Create and configure the uploads directory:
+```bash
+mkdir uploads
+# Ensure write permissions for Tomcat user
+# On Windows, verify folder permissions allow file creation
+```
+
+The `uploads/` directory stores:
+- Product images uploaded by administrators
+- User-generated content
+- System-generated files
 
 ## 🔥 Firebase Configuration
 
@@ -226,7 +300,70 @@ ant
 ### Access Application
 After deployment: http://localhost:8080/WebApplication1
 
+### Production Deployment Checklist
+
+#### Security Configuration
+- [ ] Update Firebase credentials for production
+- [ ] Configure HTTPS/SSL certificates
+- [ ] Update database credentials
+- [ ] Enable error logging
+- [ ] Disable debug output
+
+#### Database Setup
+- [ ] Create production database
+- [ ] Import schema with `web_enterprise.sql`
+- [ ] Configure database user with minimal privileges
+- [ ] Set up database backup procedures
+
+#### File System
+- [ ] Configure uploads directory with proper permissions
+- [ ] Set up log rotation
+- [ ] Configure backup procedures for uploaded files
+
+#### Performance
+- [ ] Configure connection pooling
+- [ ] Set up monitoring and alerting
+- [ ] Optimize image storage and delivery
+- [ ] Configure caching where appropriate
+
 ## 📖 Usage Guide
+
+### Application Pages Overview
+
+#### Public Pages
+- `index.jsp` - Landing page
+- `login.jsp` - User authentication
+- `register.jsp` - New user registration
+
+#### User Pages
+- `main.jsp` - Main shopping interface
+- `item_list.jsp` - Product catalog
+- `cart.jsp` - Shopping cart management
+- `checkout.jsp` - Order processing
+- `user_orders.jsp` - Order history
+- `user_order_detail.jsp` - Detailed order view
+- `change_password.jsp` - Password management
+- `update_profile.jsp` - Profile updates
+
+#### Admin Pages
+- `dashboard.jsp` - Admin control panel
+- `account_list.jsp` - User management
+- `admin_add_user.jsp` - Add new users
+- `admin_update_user.jsp` - Edit user information
+- `admin_delete_user.jsp` - Remove users
+- `admin_update_role.jsp` - Role management
+- `item_list.jsp` - Product management
+- `admin_add_item.jsp` - Add new products
+- `admin_update_item.jsp` - Edit products
+- `admin_delete_item.jsp` - Remove products
+- `admin_orders.jsp` - Order management dashboard
+- `admin_order_detail.jsp` - Detailed order management
+
+#### Action Handlers
+- `user_order_actions.jsp` - User order operations
+- `admin_order_actions.jsp` - Admin order operations
+- `login_output.jsp` - Authentication processing
+- `register_output.jsp` - Registration processing
 
 ### User Registration & Login
 1. Navigate to the registration page
@@ -244,9 +381,32 @@ After deployment: http://localhost:8080/WebApplication1
 
 ### Admin Functions
 - User management
-- Item management
+- Item management with image upload
+- Order management and status updates
 - Role updates
 - Account administration
+- Complete order tracking and control
+
+### Shopping & Order Management
+
+#### For Users:
+1. **Browse Products**: View item catalog with images and details
+2. **Shopping Cart**: Add items, modify quantities, view cart
+3. **Checkout Process**:
+   - Enter delivery information (name, address, phone)
+   - Select payment method (Debit/Credit, QRIS, Bank Transfer, COD)
+   - Choose delivery method (Standard, Express, Same Day)
+   - Complete order with automatic stock deduction
+4. **Order Tracking**:
+   - View order history with status tracking
+   - Access detailed order information
+   - Cancel pending orders (with automatic stock restoration)
+
+#### For Admins:
+1. **Order Management Dashboard**: View all customer orders
+2. **Status Updates**: Change order status (pending → completed/cancelled)
+3. **Order Details**: Access complete order information and customer data
+4. **Order Deletion**: Remove orders with automatic stock restoration
 
 ## 📚 API Documentation
 
@@ -281,6 +441,22 @@ All Firebase utility functions return consistent response objects:
 | `getUserData(uid)` | `string` | `Promise<Response>` | Fetch user data |
 | `updateUserData(uid, data)` | `string, object` | `Promise<Response>` | Update user data |
 | `waitForAuth()` | none | `Promise<FirebaseUser \| null>` | Wait for auth state |
+
+### Order Management API
+
+#### Order Actions (User)
+- **cancel_checkout**: Cancel an entire checkout (all items)
+- **cancel_order**: Cancel individual order item (legacy support)
+
+#### Order Actions (Admin)
+- **update_checkout_status**: Update status for all orders in a checkout
+- **delete_checkout**: Delete entire checkout with stock restoration
+- **update_order_status**: Update individual order status (legacy support)
+
+#### Order Status Values
+- `pending`: Order placed, awaiting processing
+- `completed`: Order fulfilled and delivered
+- `cancelled`: Order cancelled, stock restored
 
 ## 🔒 Security Features
 
@@ -318,6 +494,28 @@ All Firebase utility functions return consistent response objects:
 **Problem**: Missing dependencies
 **Solution**: Check all JAR files are present and Tomcat is properly configured
 
+#### Order System Issues
+**Problem**: Orders not appearing or processing incorrectly
+**Solution**: 
+- Verify database connectivity
+- Check Firebase UID session handling
+- Ensure MySQL database has proper schema (run web_enterprise.sql)
+- Check for transaction rollback errors in logs
+
+#### Image Upload Problems
+**Problem**: Product images not displaying
+**Solution**: 
+- Verify `uploads/` directory exists and has write permissions
+- Check file path references in database
+- Ensure image files are in correct format (PNG, JPG)
+
+#### Stock Management Issues
+**Problem**: Stock not updating correctly
+**Solution**:
+- Check for transaction conflicts
+- Verify auto-commit settings in database operations
+- Monitor for incomplete order cancellations
+
 ### Debug Steps
 1. Check Tomcat logs for errors
 2. Verify Firebase credentials are valid
@@ -353,6 +551,44 @@ All Firebase utility functions return consistent response objects:
 - Implement proper session management
 - Regular security audits
 
+## 🚀 Feature Comparison
+
+| Feature | User Access | Admin Access | Description |
+|---------|-------------|--------------|-------------|
+| **Authentication** | ✅ Login/Register | ✅ Full Control | Firebase-based auth system |
+| **Product Browsing** | ✅ View Catalog | ✅ Full Management | Browse and search products |
+| **Shopping Cart** | ✅ Add/Remove Items | ❌ View Only | Cart management with quantities |
+| **Order Placement** | ✅ Checkout Process | ❌ No Direct Orders | Complete order workflow |
+| **Order Tracking** | ✅ Own Orders | ✅ All Orders | View order history and details |
+| **Order Management** | ✅ Cancel Pending | ✅ Full Control | Status updates and cancellations |
+| **User Management** | ✅ Own Profile | ✅ All Users | Account and role management |
+| **Product Management** | ❌ Read Only | ✅ CRUD Operations | Add, edit, delete products |
+| **Stock Management** | ❌ View Only | ✅ Full Control | Inventory tracking and updates |
+| **Image Upload** | ❌ Not Available | ✅ Product Images | File upload for product catalog |
+| **Reports & Analytics** | ✅ Personal Stats | ✅ System-wide | Order and user analytics |
+
+## 🔧 Advanced Configuration
+
+### Environment-Specific Settings
+
+#### Development Environment
+- Debug mode enabled
+- Detailed error messages
+- Local database connection
+- File upload to local directory
+
+#### Production Environment
+- Error logging to files
+- Secure database connections
+- HTTPS enforcement
+- Cloud storage for uploads
+
+### Performance Optimization
+- Database connection pooling
+- Image compression for uploads
+- Session management optimization
+- Caching strategies for frequently accessed data
+
 ## 📄 License
 
 This project is licensed under the MIT License. See LICENSE file for details.
@@ -368,7 +604,7 @@ This project is licensed under the MIT License. See LICENSE file for details.
 ---
 
 **Project Status**: ✅ Active Development  
-**Last Updated**: May 28, 2025  
-**Version**: 1.0.0  
+**Last Updated**: May 30, 2025  
+**Version**: 2.0.0  
 
 For questions or support, please open an issue in the repository.
