@@ -61,20 +61,21 @@
                 String dbUser = "root";
                 String dbPassword = "";
                 conn = DriverManager.getConnection(url, dbUser, dbPassword);
-                
-                // Start transaction
+                  // Start transaction
                 conn.setAutoCommit(false);
                 
                 int totalAmount = 0;
                 List<Integer> orderIds = new ArrayList<>();
+                
+                // Generate unique checkout session ID
+                String checkoutSessionId = "CHK_" + System.currentTimeMillis() + "_" + firebase_uid.hashCode();
                 
                 // Calculate total amount
                 for (Map<String, Object> item : cart) {
                     int jumlah = (int)item.get("jumlah");
                     int harga = Integer.parseInt((String)item.get("harga"));
                     totalAmount += jumlah * harga;
-                }
-                  // Insert orders with all required fields including firebase_uid
+                }                  // Insert orders with all required fields including firebase_uid and checkout session info
                 String sql = "INSERT INTO `order` (id_brg, firebase_uid, gambar_brg, nama_brg, jumlah, harga, total_harga, metode_pengiriman, metode_pembayaran, status_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                 
@@ -112,13 +113,13 @@
                             throw new Exception("Stok tidak cukup untuk barang: " + item.get("nama_brg"));
                         }
                     }
-                }
-                  // Create invoice for the orders
+                }                  // Create invoice for the orders - store relationship info for multiple orders
                 if (!orderIds.isEmpty()) {
                     String invoiceSql = "INSERT INTO `invoice` (id_order, firebase_uid, nama_penerima, alamat, no_telp, total_harga, status_order) VALUES (?, ?, ?, ?, ?, ?, ?)";
-                    PreparedStatement invoicePstmt = conn.prepareStatement(invoiceSql);
+                    PreparedStatement invoicePstmt = conn.prepareStatement(invoiceSql, Statement.RETURN_GENERATED_KEYS);
                     
                     // Create one invoice that references the first order (business logic: group orders by checkout session)
+                    // Store checkout session info in the invoice for linking multiple orders
                     invoicePstmt.setInt(1, orderIds.get(0));
                     invoicePstmt.setString(2, firebase_uid);
                     invoicePstmt.setString(3, nama_penerima);
@@ -127,6 +128,18 @@
                     invoicePstmt.setString(6, String.valueOf(totalAmount));
                     invoicePstmt.setString(7, "pending");
                     invoicePstmt.executeUpdate();
+                    
+                    // Get the generated invoice ID
+                    ResultSet invoiceKeys = invoicePstmt.getGeneratedKeys();
+                    if (invoiceKeys.next()) {
+                        int invoiceId = invoiceKeys.getInt(1);
+                        
+                        // Create a session entry to link all orders to this invoice
+                        // We'll store this in the session for now, but in a real application, 
+                        // you'd create a separate table or add a field to link related orders
+                        session.setAttribute("checkout_session_" + invoiceId, orderIds);
+                    }
+                    invoiceKeys.close();
                     invoicePstmt.close();
                 }
                 

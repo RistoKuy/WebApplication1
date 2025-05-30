@@ -44,33 +44,52 @@
             
             // Update both invoice and order tables
             conn.setAutoCommit(false); // Start transaction
-            
-            try {
+              try {
                 // Update invoice table
                 String sqlInvoice = "UPDATE `invoice` SET status_order = ? WHERE id_invoice = ?";
                 PreparedStatement pstmtInvoice = conn.prepareStatement(sqlInvoice);
                 pstmtInvoice.setString(1, newStatus);
                 pstmtInvoice.setInt(2, invoiceId);
                 
-                // Update order table
-                String sqlOrder = "UPDATE `order` SET status_order = ? WHERE id_order = ?";
-                PreparedStatement pstmtOrder = conn.prepareStatement(sqlOrder);
-                pstmtOrder.setString(1, newStatus);
-                pstmtOrder.setInt(2, orderId);
-                
                 int invoiceRowsAffected = pstmtInvoice.executeUpdate();
-                int orderRowsAffected = pstmtOrder.executeUpdate();
+                pstmtInvoice.close();
                 
-                if (invoiceRowsAffected > 0 && orderRowsAffected > 0) {
+                // Get reference order details to find all related orders from the same checkout session
+                String referenceOrderSql = "SELECT firebase_uid, metode_pengiriman, metode_pembayaran, tgl_order FROM `order` WHERE id_order = ?";
+                PreparedStatement refOrderPstmt = conn.prepareStatement(referenceOrderSql);
+                refOrderPstmt.setInt(1, orderId);
+                ResultSet refOrderRs = refOrderPstmt.executeQuery();
+                
+                int totalOrdersUpdated = 0;
+                if (refOrderRs.next()) {
+                    String refFirebaseUid = refOrderRs.getString("firebase_uid");
+                    String refMetodePengiriman = refOrderRs.getString("metode_pengiriman");
+                    String refMetodePembayaran = refOrderRs.getString("metode_pembayaran");
+                    java.sql.Timestamp refTglOrder = refOrderRs.getTimestamp("tgl_order");
+                    
+                    // Update all orders from the same checkout session (within 60 seconds)
+                    String updateRelatedOrdersSql = "UPDATE `order` SET status_order = ? WHERE firebase_uid = ? AND metode_pengiriman = ? AND metode_pembayaran = ? " +
+                                                   "AND ABS(TIMESTAMPDIFF(SECOND, tgl_order, ?)) <= 60";
+                    PreparedStatement updateRelatedOrdersPstmt = conn.prepareStatement(updateRelatedOrdersSql);
+                    updateRelatedOrdersPstmt.setString(1, newStatus);
+                    updateRelatedOrdersPstmt.setString(2, refFirebaseUid);
+                    updateRelatedOrdersPstmt.setString(3, refMetodePengiriman);
+                    updateRelatedOrdersPstmt.setString(4, refMetodePembayaran);
+                    updateRelatedOrdersPstmt.setTimestamp(5, refTglOrder);
+                    
+                    totalOrdersUpdated = updateRelatedOrdersPstmt.executeUpdate();
+                    updateRelatedOrdersPstmt.close();
+                }
+                refOrderRs.close();
+                refOrderPstmt.close();
+                
+                if (invoiceRowsAffected > 0 && totalOrdersUpdated > 0) {
                     conn.commit(); // Commit transaction
                     out.print("success");
                 } else {
                     conn.rollback(); // Rollback transaction
                     out.print("record_not_found");
                 }
-                
-                pstmtInvoice.close();
-                pstmtOrder.close();
                 
             } catch (Exception e) {
                 conn.rollback(); // Rollback on error
