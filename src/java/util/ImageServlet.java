@@ -22,11 +22,8 @@ public class ImageServlet extends HttpServlet {
         // Prevent path traversal attacks
         if (filename.contains("..") || filename.contains(":") || filename.contains("\\")) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-          // Get project root (not build directory) and construct uploads path
-        String projectRoot = getServletContext().getRealPath("/").replaceAll("\\\\build\\\\web\\\\?$", "").replaceAll("/build/web/?$", "");
-        String basePath = projectRoot + File.separator + "uploads";
+            return;        }          // Get uploads path using PathUtil for cross-environment compatibility
+        String basePath = PathUtil.getUploadsPath(getServletContext());
         File file = new File(basePath, filename);
         // Ensure the file is within the intended directory
         if (!file.getCanonicalPath().startsWith(new File(basePath).getCanonicalPath())) {
