@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
+<%@page import="java.util.*"%>
 <%-- Shop Page: Show Item List --%>
 <%
     // Check if user is logged in
@@ -222,11 +223,38 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item ms-2">
-                        <span class="nav-link fw-semibold">Selamat Datang, <%= userName %></span>
+                        <span class="nav-link fw-semibold">Selamat Datang, <%= (String) session.getAttribute("userEmail") %></span>
                     </li>
-                    <li class="nav-item ms-2">
+                    <!-- <li class="nav-item ms-2">
                         <a class="nav-link fw-semibold" href="update_profile.jsp">
                             <i class="bi bi-person-circle me-1"></i> Profil
+                        </a>
+                    </li> -->
+                    <li class="nav-item ms-2">
+                        <a class="nav-link fw-semibold" href="change_password.jsp">
+                            <i class="bi bi-key me-1"></i> Change Password
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user_orders.jsp"><i class="bi bi-receipt"></i> My Orders</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <%-- Show cart quantity badge --%>
+                        <a class="nav-link fw-semibold position-relative" href="cart.jsp">
+                            <i class="bi bi-cart4 me-1"></i> Keranjang
+                            <% 
+                            List<Map<String, Object>> cart = (List<Map<String, Object>>) session.getAttribute("cart");
+                            int cartQty = 0;
+                            if (cart != null) {
+                                for (Map<String, Object> item : cart) {
+                                    cartQty += (int) item.get("jumlah");
+                                }
+                            }
+                            if (cartQty > 0) { %>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.8rem;">
+                                <%= cartQty %>
+                            </span>
+                            <% } %>
                         </a>
                     </li>
                     <li class="nav-item ms-2">
@@ -238,6 +266,20 @@
             </div>
         </div>
     </nav>
+    <% 
+    String cartSuccess = (String) session.getAttribute("cartSuccess");
+    if (cartSuccess != null) {
+    %>
+    <div class="container mt-3" style="padding-top: 80px;">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= cartSuccess %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    <%
+        session.removeAttribute("cartSuccess");
+    }
+    %>
     <!-- Hero Section -->
     <div class="py-5 bg-gradient" style="padding-top: 8rem !important;">
         <div class="container text-center py-5">
@@ -270,6 +312,7 @@
                 boolean hasItem = false;
                 while(rs.next()) {
                     hasItem = true;
+                    int id_brg = rs.getInt("id_brg");
                     String nama_brg = rs.getString("nama_brg");
                     String deskripsi = rs.getString("deskripsi");
                     String harga = rs.getString("harga");
@@ -281,9 +324,8 @@
             <div class="col-md-4">
                 <div class="card border-0 shadow h-100">
                     <div class="card-body text-center p-4">
-                        <div class="mb-3">
-                            <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
-                                <img src="assets/img/<%= gambar_brg %>" alt="<%= nama_brg %>" class="img-fluid rounded" style="max-height: 180px; object-fit: contain; background: #222;">
+                        <div class="mb-3">                            <% if(gambar_brg != null && !gambar_brg.isEmpty()) { %>
+                                <img src="uploads/<%= gambar_brg %>" alt="<%= nama_brg %>" class="img-fluid rounded" style="max-height: 180px; object-fit: contain; background: #222;">
                             <% } else { %>
                                 <span class="text-muted">No image</span>
                             <% } %>
@@ -296,7 +338,17 @@
                         <div class="mb-2">
                             <span class="badge bg-success">Stok: <%= stok %></span>
                         </div>
-                        <a href="#" class="btn btn-primary rounded-pill px-4 disabled"><i class="bi bi-cart"></i> Beli</a>
+                        <form method="post" action="cart.jsp" style="display:inline;">
+                            <input type="hidden" name="id_brg" value="<%= id_brg %>" />
+                            <input type="hidden" name="nama_brg" value="<%= nama_brg %>" />
+                            <input type="hidden" name="harga" value="<%= harga %>" />
+                            <input type="hidden" name="gambar_brg" value="<%= gambar_brg %>" />
+                            <input type="hidden" name="stok" value="<%= stok %>" />
+                            <input type="hidden" name="from" value="main.jsp" />
+                            <button type="submit" class="btn btn-primary rounded-pill px-4" <%= (stok > 0 ? "" : "disabled") %>>
+                                <i class="bi bi-cart"></i> Beli
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

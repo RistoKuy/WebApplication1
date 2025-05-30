@@ -51,5 +51,8 @@ Desktop.ini
 *~
 .directory
 
+# Uploads directory - ignore contents but keep the directory
+uploads/*
+!uploads/.gitkeep
+
 nbproject/private/private.xml
-web/assets/img

@@ -180,11 +180,12 @@
         <div class="form-section">
             <h1>Login</h1>
             
-            <form action="login_output.jsp" method="post">
+            <form id="loginForm" action="login_output.jsp" method="post">
                 <div class="mb-3">
                     <label for="email" class="form-label">Your Email</label>
                     <input type="email" class="form-control" id="email" name="email" required>
-                </div>                <div class="mb-3">
+                </div>
+                <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
@@ -201,8 +202,40 @@
             </form>
         </div>
     </div>
-    
-    <!-- Panggil Bootstrap JS lokal -->
+      <!-- Panggil Bootstrap JS lokal -->
     <script src="js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Include Firebase Configuration -->
+    <%@ include file="firebase_config.jsp" %>
+
+    <script type="module">
+      document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        const isAdmin = document.getElementById('isAdmin').checked;
+        if (isAdmin) {
+          // Admin login: submit to server (local DB)
+          return;
+        }
+        
+        // User login: use Firebase
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        const result = await window.FirebaseUtils.login(email, password);
+        if (result.success) {
+          // Show success message before redirect
+          const formSection = document.querySelector('.form-section');
+          const successDiv = document.createElement('div');
+          successDiv.className = 'alert alert-success mt-3';
+          successDiv.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Login successful! Redirecting...';
+          formSection.appendChild(successDiv);
+          setTimeout(() => {
+            window.location.href = 'main.jsp';
+          }, 1200);
+        } else {
+          alert('Firebase login failed: ' + result.error);
+        }
+      });
+    </script>
 </body>
 </html>
