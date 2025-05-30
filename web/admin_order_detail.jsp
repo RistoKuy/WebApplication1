@@ -276,14 +276,14 @@
             String dbUser = "root";
             String dbPassword = "";
             conn = DriverManager.getConnection(url, dbUser, dbPassword);
-            
-            // Get order details by checkout ID
+              // Get order details by checkout ID
             String orderSql = "SELECT * FROM `order` WHERE id_checkout = ?";
             pstmt = conn.prepareStatement(orderSql);
             pstmt.setInt(1, checkoutId);
             rs = pstmt.executeQuery();
             
-            // Get the first order to extract common information
+            // Get the first order to extract common information and calculate total
+            int calculatedTotal = 0;
             if (rs.next()) {
                 // Store common order data from first item
                 orderIdData = rs.getInt("id_order");
@@ -297,9 +297,10 @@
                 tglOrder = rs.getTimestamp("tgl_order");
                 hasValidData = true;
                 
-                // Calculate total price from all items in this checkout
-                rs.beforeFirst(); // Reset to beginning
-                int calculatedTotal = 0;
+                // Add first item's total to calculated total
+                calculatedTotal += Integer.parseInt(rs.getString("total_harga"));
+                
+                // Continue with remaining items
                 while (rs.next()) {
                     calculatedTotal += Integer.parseInt(rs.getString("total_harga"));
                 }
