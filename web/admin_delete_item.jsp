@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
 <%@page import="java.io.*"%>
+<%@ page import="util.PathUtil" %>
 <%@page import="java.util.*"%>
 <%@page import="jakarta.servlet.http.*"%>
 <%@page import="jakarta.servlet.ServletException"%>
@@ -16,12 +17,12 @@
     
     // Get parameters from form
     String id_brg = request.getParameter("id_brg");
-    
-    // Database connection variables
+      // Database connection variables
     Connection conn = null;
     PreparedStatement pstmt = null;
     ResultSet rs = null;
-      try {
+    
+    try {
         // Load the database driver
         Class.forName("com.mysql.cj.jdbc.Driver");
         
@@ -42,9 +43,14 @@
             gambar_brg = rs.getString("gambar_brg");
         }
         
-        // Close the result set
+        // Close the result set and prepare for deletion
         if (rs != null) {
             rs.close();
+            rs = null;
+        }
+        if (pstmt != null) {
+            pstmt.close();
+            pstmt = null;
         }
         
         // Delete the item record
@@ -53,11 +59,13 @@
         pstmt.setString(1, id_brg);
         
         // Execute the query and check the result
-        int rowsAffected = pstmt.executeUpdate();          // If deletion was successful and there is an associated image, delete the file from persistent uploads directory
-        if (rowsAffected > 0 && gambar_brg != null && !gambar_brg.isEmpty()) {            // Delete from project's uploads directory (not build directory)
-            String projectRoot = application.getRealPath("/").replaceAll("\\\\build\\\\web\\\\?$", "").replaceAll("/build/web/?$", "");
-            String persistentUploadPath = projectRoot + File.separator + "uploads";
-            File persistentImageFile = new File(persistentUploadPath + File.separator + gambar_brg);
+        int rowsAffected = pstmt.executeUpdate();
+        
+        // If deletion was successful and there is an associated image, delete the file from persistent uploads directory
+        if (rowsAffected > 0 && gambar_brg != null && !gambar_brg.isEmpty()) {
+            // Delete from project's uploads directory using PathUtil for cross-environment compatibility
+            String uploadsPath = PathUtil.getUploadsPath(application);
+            File persistentImageFile = new File(uploadsPath + File.separator + gambar_brg);
             if (persistentImageFile.exists()) {
                 persistentImageFile.delete();
             }
@@ -73,7 +81,8 @@
     } catch (Exception e) {
         // Redirect with error message
         response.sendRedirect("item_list.jsp?error=Error: " + e.getMessage());
-          } finally {
+        
+    } finally {
         // Close resources
         try {
             if (rs != null) rs.close();

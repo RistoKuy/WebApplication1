@@ -5,6 +5,7 @@
 <%@page import="jakarta.servlet.http.*"%>
 <%@page import="jakarta.servlet.ServletException"%>
 <%@ page import="java.nio.file.*" %>
+<%@ page import="util.PathUtil" %>
 <%
     // Check if user is logged in
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
@@ -66,13 +67,8 @@
         if (fileName != null && !fileName.isEmpty()) {
             // Generate a unique filename to prevent overwriting
             String fileExtension = fileName.substring(fileName.lastIndexOf("."));
-            String uniqueFileName = "item_" + System.currentTimeMillis() + fileExtension;
-            gambar_brg = uniqueFileName;            // Save the file to the project's uploads/img directory (not build directory)            String projectRoot = application.getRealPath("/").replaceAll("\\\\build\\\\web\\\\?$", "").replaceAll("/build/web/?$", "");
-            String persistentUploadPath = projectRoot + File.separator + "uploads";
-            File uploadDir = new File(persistentUploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
+            String uniqueFileName = "item_" + System.currentTimeMillis() + fileExtension;            // Save the file using the PathUtil utility for cross-environment compatibility
+            File uploadDir = PathUtil.getUploadsDirectory(application);
             // Debug output for file save path
             System.out.println("[DEBUG] Saving file to: " + uploadDir.getAbsolutePath() + File.separator + uniqueFileName);
             // Use stream copy instead of filePart.write
