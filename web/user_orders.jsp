@@ -77,22 +77,20 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, rgba(18, 18, 18, 0.7), rgba(32, 10, 64, 0.8));
-            z-index: -5;
-        }
-        
-        body {
+            z-index: -5;        }
+          body {
             background-color: transparent;
             color: var(--text-primary);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
             min-height: 100vh;
+            padding: 30px;
         }
         
         /* Main content styling */
         .main-content {
-            margin-left: 200px;
-            flex: 1;
-            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
         }
         
         .data-table {
@@ -216,9 +214,7 @@
         
         ::-webkit-scrollbar-track {
             background: var(--dark-bg);
-        }
-        
-        ::-webkit-scrollbar-thumb {
+        }        ::-webkit-scrollbar-thumb {
             background: var(--accent-purple);
             border-radius: 4px;
         }
@@ -248,8 +244,7 @@
             conn = DriverManager.getConnection(url, dbUser, dbPassword);
         } catch (Exception e) {
             out.println("Database connection error: " + e.getMessage());
-        }
-    %>
+        }    %>
     
     <!-- Main Content -->
     <div class="main-content">
