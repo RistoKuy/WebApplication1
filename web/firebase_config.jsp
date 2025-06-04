@@ -3,7 +3,7 @@
   // Firebase Configuration and Utilities
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
   import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
   // Firebase configuration
@@ -132,9 +132,7 @@
       } catch (error) {
         return { success: false, error: error.message };
       }
-    },
-
-    // Wait for authentication state to be ready
+    },    // Wait for authentication state to be ready
     waitForAuth() {
       return new Promise((resolve) => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -142,6 +140,39 @@
           resolve(user);
         });
       });
+    },
+
+    // Google login function
+    async loginWithGoogle() {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        
+        // Check if user data exists in database
+        const userData = await this.getUserData(user.uid);
+        
+        if (!userData.success) {
+          // User doesn't exist, create new user data
+          await set(ref(database, 'users/' + user.uid), {
+            nama: user.displayName || user.email.split('@')[0],
+            email: user.email,
+            createdAt: new Date().toISOString(),
+            loginMethod: 'google'
+          });
+        }
+        
+        // Set session on server for user
+        await fetch('firebase_session.jsp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'email=' + encodeURIComponent(user.email) + '&firebase_uid=' + encodeURIComponent(user.uid)
+        });
+        
+        return { success: true, user: user };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     }
   };
 
