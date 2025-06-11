@@ -346,7 +346,7 @@
                             <input type="hidden" name="stok" value="<%= stok %>" />
                             <input type="hidden" name="from" value="main.jsp" />
                             <button type="submit" class="btn btn-primary rounded-pill px-4" <%= (stok > 0 ? "" : "disabled") %>>
-                                <i class="bi bi-cart"></i> Beli
+                                <i class="bi bi-cart"></i> Tambah
                             </button>
                         </form>
                     </div>

@@ -25,20 +25,18 @@
         out.print("Missing action parameter");
         return;
     }
-    
-    // Handle legacy individual order cancellation
-    if ("cancel_order".equals(action) && orderIdStr != null) {
-        int orderId = Integer.parseInt(orderIdStr);
-    
-    Connection conn = null;
+      Connection conn = null;
     PreparedStatement pstmt = null;
     
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
         String url = "jdbc:mysql://localhost:3306/web_enterprise";
         String dbUser = "root";
-        String dbPassword = "";        conn = DriverManager.getConnection(url, dbUser, dbPassword);
-          if ("cancel_order".equals(action)) {
+        String dbPassword = "";
+        conn = DriverManager.getConnection(url, dbUser, dbPassword);
+        
+        if ("cancel_order".equals(action) && orderIdStr != null) {
+            int orderId = Integer.parseInt(orderIdStr);
             // Legacy individual order cancellation
             // Start transaction
             conn.setAutoCommit(false);
@@ -74,16 +72,10 @@
                 out.print("success");
             } else {
                 conn.rollback();
-                out.print("Order not found or not eligible for cancellation");
-            }
+                out.print("Order not found or not eligible for cancellation");            }
             rs.close();
-        } else if ("cancel_checkout".equals(action)) {
-            // New checkout-based cancellation
-            if (checkoutIdStr == null) {
-                response.setStatus(400);
-                out.print("Missing checkout ID parameter");
-                return;
-            }
+            pstmt.close();
+        } else if ("cancel_checkout".equals(action) && checkoutIdStr != null) {
             
             int checkoutId = Integer.parseInt(checkoutIdStr);
             
@@ -127,14 +119,12 @@
                 out.print("success");
             } else {
                 conn.rollback();
-                out.print("No pending orders found for this checkout");
-            }
+                out.print("No pending orders found for this checkout");            }
+            rs.close();
+            pstmt.close();
         } else {
             out.print("Invalid action");
         }
-        
-        pstmt.close();
-        conn.close();
         
     } catch(Exception e) {
         try {
@@ -145,5 +135,12 @@
             // Handle rollback exception
         }
         out.print("Error: " + e.getMessage());
+    } finally {
+        try {
+            if (pstmt != null) pstmt.close();
+            if (conn != null) conn.close();
+        } catch(SQLException e) {
+            // Handle cleanup exception
+        }
     }
 %>
