@@ -55,4 +55,4 @@ Desktop.ini
 uploads/*
 !uploads/.gitkeep
 
-nbproject/private/private.xml
+nbproject/
