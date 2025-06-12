@@ -3,31 +3,31 @@
   // Firebase Configuration and Utilities
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
   // Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyCfYaFJQsmu4Qt4YthfsCYpkAE6iyyGhBg",
     authDomain: "webapplication1-4bebd.firebaseapp.com",
     projectId: "webapplication1-4bebd",
-    // Remove databaseURL if not using Realtime Database
-    // databaseURL: "https://webapplication1-4bebd-default-rtdb.asia-southeast1.firebasedatabase.app",
+    databaseURL: "https://webapplication1-4bebd-default-rtdb.asia-southeast1.firebasedatabase.app",
     storageBucket: "webapplication1-4bebd.firebasestorage.app",
     messagingSenderId: "561789365143",
     appId: "1:561789365143:web:f1add524dc4b8859fd32d2",
     measurementId: "G-27LM5PPDNJ"
   };
+
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
-  // Comment out database initialization if not using Realtime Database
-  // const database = getDatabase(app);
+  const database = getDatabase(app);
 
   // Make Firebase services available globally
   window.firebaseApp = app;
   window.firebaseAuth = auth;
-  // window.firebaseDatabase = database;
+  window.firebaseDatabase = database;
   window.firebaseAnalytics = analytics;
 
   // Firebase utility functions
@@ -45,14 +45,20 @@
       } catch (error) {
         return { success: false, error: error.message };
       }
-    },    // Register function
+    },
+
+    // Register function
     async register(email, password, nama) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
-        // Note: Database functionality removed - using only Firebase Auth
-        // If you need to store user data, consider using Firestore instead
+        // Save user data to Firebase Database
+        await set(ref(database, 'users/' + user.uid), {
+          nama: nama,
+          email: email,
+          createdAt: new Date().toISOString()
+        });
         
         return { success: true, user: user };
       } catch (error) {
@@ -99,22 +105,14 @@
     // Check if user is logged in
     isLoggedIn() {
       return auth.currentUser !== null;
-    },    // Get user data from database
+    },
+
+    // Get user data from database
     async getUserData(uid) {
       try {
-        // Database functionality removed - using only Firebase Auth
-        // Return user data from Firebase Auth instead
-        const user = auth.currentUser;
-        if (user && user.uid === uid) {
-          return { 
-            success: true, 
-            data: {
-              email: user.email,
-              uid: user.uid,
-              displayName: user.displayName,
-              createdAt: user.metadata.creationTime
-            }
-          };
+        const snapshot = await get(child(ref(database), `users/${uid}`));
+        if (snapshot.exists()) {
+          return { success: true, data: snapshot.val() };
         } else {
           return { success: false, error: 'No user data found' };
         }
@@ -126,14 +124,15 @@
     // Update user data in database
     async updateUserData(uid, data) {
       try {
-        // Database functionality removed - using only Firebase Auth
-        // Note: Firebase Auth has limited profile update capabilities
-        console.log('Update user data called but database functionality is disabled');
+        await set(ref(database, 'users/' + uid), {
+          ...data,
+          updatedAt: new Date().toISOString()
+        });
         return { success: true };
       } catch (error) {
         return { success: false, error: error.message };
       }
-    },// Wait for authentication state to be ready
+    },    // Wait for authentication state to be ready
     waitForAuth() {
       return new Promise((resolve) => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
