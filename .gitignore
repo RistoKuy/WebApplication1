@@ -61,5 +61,12 @@ Desktop.ini
 uploads/*
 !uploads/.gitkeep
 
-nbproject/
-.env
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
