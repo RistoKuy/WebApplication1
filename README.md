@@ -62,30 +62,53 @@ WebApplication1 is a full-featured enterprise web application built with JSP, Fi
 
 ```
 WebApplication1/
-├── build/                      # Compiled output
-├── web/                        # Web application root
-│   ├── *.jsp                   # JSP pages (30+ pages)
-│   │   ├── account_*.jsp       # User account management
-│   │   ├── admin_*.jsp         # Admin management pages
-│   │   ├── cart.jsp            # Shopping cart
-│   │   ├── checkout.jsp        # Order checkout
-│   │   ├── *_orders.jsp        # Order management
-│   │   ├── *_order_detail.jsp  # Order details
-│   │   └── *_order_actions.jsp # Order CRUD operations
-│   ├── css/                    # Bootstrap & custom styles
-│   ├── js/                     # JavaScript files
-│   ├── assets/                 # Images and icons
-│   ├── uploads/                # User uploaded files
-│   └── WEB-INF/               # Configuration and libraries
-│       ├── lib/               # JAR dependencies
-│       └── firebase-adminsdk.json # Firebase credentials
-├── src/                        # Source code
-├── nbproject/                  # NetBeans project files
-├── lib/                        # External libraries
-├── uploads/                    # Product image uploads
-├── web_enterprise.sql          # Database schema
-└── README.md                   # This file
+├── .env                        # Environment configuration (not in repo)
+├── .env.example               # Environment template
+├── .gitignore                 # Git ignore rules
+├── build.xml                  # Ant build configuration
+├── web_enterprise.sql         # Database schema
+├── build/                     # Compiled output
+├── web/                       # Web application root
+│   ├── *.jsp                  # JSP pages (30+ pages)
+│   │   ├── account_*.jsp      # User account management
+│   │   ├── admin_*.jsp        # Admin management pages
+│   │   ├── cart.jsp           # Shopping cart
+│   │   ├── checkout.jsp       # Order checkout
+│   │   ├── *_orders.jsp       # Order management
+│   │   ├── *_order_detail.jsp # Order details
+│   │   ├── *_order_actions.jsp # Order CRUD operations
+│   │   ├── firebase_config.jsp # Firebase configuration
+│   │   ├── test_environment.jsp # Environment testing
+│   │   └── debug_env.jsp      # Debug environment vars
+│   ├── css/                   # Bootstrap & custom styles
+│   ├── js/                    # JavaScript files
+│   ├── assets/                # Images and icons
+│   ├── uploads/               # User uploaded files
+│   └── WEB-INF/              # Configuration and libraries
+│       ├── lib/              # JAR dependencies
+│       ├── web.xml           # Web app configuration
+│       └── firebase-adminsdk.json # Firebase credentials (not in repo)
+├── src/                       # Source code
+│   └── java/
+│       └── util/             # Utility classes
+│           ├── EnvConfig.java     # Environment configuration utility
+│           ├── DatabaseUtil.java  # Database connection utility
+│           └── PathUtil.java      # Path utilities
+├── nbproject/                 # NetBeans project files
+├── lib/                       # External libraries
+│   ├── jakarta.servlet-api-5.0.0.jar
+│   └── mysql-connector-j-9.3.0.jar
+└── README.md                  # This documentation
 ```
+
+### Key Files for Environment Configuration
+
+- **`.env`**: Main environment configuration file (create from `.env.example`)
+- **`.env.example`**: Template with all required environment variables
+- **`src/java/util/EnvConfig.java`**: Utility class for reading environment variables
+- **`src/java/util/DatabaseUtil.java`**: Database connection management
+- **`web/firebase_config.jsp`**: Firebase configuration using environment variables
+- **`web/test_environment.jsp`**: Configuration testing and validation page
 
 ## 🔧 Environment Configuration
 
@@ -781,7 +804,7 @@ This project is licensed under the MIT License. See LICENSE file for details.
 ---
 
 **Project Status**: ✅ Active Development  
-**Last Updated**: May 30, 2025  
-**Version**: 2.0.0  
+**Last Updated**: June 14, 2025  
+**Version**: 2.2.0  
 
 For questions or support, please open an issue in the repository.
