@@ -1,23 +1,6 @@
 # WebApplication1 - JSP Enterprise Web Application
 
-A modern JSP-based web application with Firebase authentication, user management, and e-commerce functionality.
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Project Structure](#project-structure)
-- [Environment Configuration](#environment-configuration)
-- [Setup & Installation](#setup--installation)
-- [Firebase Configuration](#firebase-configuration)
-- [Build & Deployment](#build--deployment)
-- [Usage Guide](#usage-guide)
-- [API Documentation](#api-documentation)
-- [Security Features](#security-features)
-- [Feature Comparison](#feature-comparison)
-- [Advanced Configuration](#advanced-configuration)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
+A modern JSP-based web application with Firebase authentication, user management, and e-commerce functionality. **Fully configured with environment variables for secure deployment.**
 
 ## 🌟 Overview
 
@@ -106,9 +89,45 @@ WebApplication1/
 
 ## 🔧 Environment Configuration
 
-**Important**: This application uses environment variables for configuration. You must set up your environment before running the application.
+**Important**: This application uses environment variables for secure configuration management. You must set up your environment before running the application.
 
-### Quick Setup
+### Configuration System
+
+The application has been refactored to separate configuration from code using:
+- `.env` file for environment variables
+- `EnvConfig.java` utility class for reading configuration  
+- `DatabaseUtil.java` for database connections
+- Updated JSP files to use configuration utilities
+
+### Environment Variables
+
+#### Database Configuration
+- `DB_URL`: Database connection URL (default: `jdbc:mysql://localhost:3306/web_enterprise`)
+- `DB_USERNAME`: Database username (default: `root`)
+- `DB_PASSWORD`: Database password (default: empty)
+- `DB_DRIVER`: JDBC driver class (default: `com.mysql.cj.jdbc.Driver`)
+
+#### Firebase Configuration
+- `FIREBASE_API_KEY`: Firebase Web API key
+- `FIREBASE_AUTH_DOMAIN`: Firebase Auth domain
+- `FIREBASE_PROJECT_ID`: Firebase project ID
+- `FIREBASE_STORAGE_BUCKET`: Firebase storage bucket
+- `FIREBASE_MESSAGING_SENDER_ID`: Firebase messaging sender ID
+- `FIREBASE_APP_ID`: Firebase app ID
+- `FIREBASE_MEASUREMENT_ID`: Firebase Analytics measurement ID
+- `FIREBASE_DATABASE_URL`: Firebase Realtime Database URL
+- `FIREBASE_SERVICE_ACCOUNT_PATH`: Path to Firebase service account JSON file
+
+#### Application Configuration
+- `APP_UPLOAD_DIR`: Directory for file uploads (default: `uploads/`)
+- `APP_SESSION_TIMEOUT`: Session timeout in minutes (default: `30`)
+- `LOGIN_REDIRECT_DELAY`: Login success redirect delay in ms (default: `1200`)
+- `LOGIN_SUCCESS_MESSAGE`: Login success message text
+- `PASSWORD_MIN_LENGTH`: Minimum password length (default: `6`)
+- `SESSION_SECURE`: Whether to use secure sessions (default: `false`)
+
+### Quick Environment Setup
+
 ```bash
 # 1. Copy environment template
 copy .env.example .env
@@ -120,7 +139,92 @@ copy .env.example .env
 # Place firebase-adminsdk.json in web/WEB-INF/
 ```
 
-📖 **For detailed configuration instructions, see [ENVIRONMENT_CONFIG.md](ENVIRONMENT_CONFIG.md)**
+### Example .env File
+
+```env
+# Database Configuration
+DB_URL=jdbc:mysql://localhost:3306/web_enterprise
+DB_USERNAME=root
+DB_PASSWORD=your_database_password
+DB_DRIVER=com.mysql.cj.jdbc.Driver
+
+# Firebase Configuration
+FIREBASE_API_KEY=your_firebase_api_key_here
+FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+FIREBASE_APP_ID=your_app_id
+FIREBASE_MEASUREMENT_ID=your_measurement_id
+FIREBASE_DATABASE_URL=https://your-project-default-rtdb.region.firebasedatabase.app
+
+# Firebase Service Account
+FIREBASE_SERVICE_ACCOUNT_PATH=/WEB-INF/firebase-adminsdk.json
+
+# Application Configuration
+APP_UPLOAD_DIR=uploads/
+APP_SESSION_TIMEOUT=30
+LOGIN_REDIRECT_DELAY=1200
+LOGIN_SUCCESS_MESSAGE=Login successful! Redirecting...
+PASSWORD_MIN_LENGTH=6
+SESSION_SECURE=false
+```
+
+### Security Benefits
+
+1. **Credentials Separation**: Database passwords and API keys are no longer in source code
+2. **Environment-Specific Configuration**: Different settings for development/production
+3. **Version Control Safety**: `.env` file is gitignored to prevent credential exposure
+4. **Centralized Configuration**: All configuration in one place
+
+### Files Refactored for Environment Configuration
+
+**Firebase Configuration:**
+- `web/firebase_config.jsp`: Uses EnvConfig for Firebase settings
+- `web/change_password.jsp`: Uses EnvConfig for Firebase initialization
+- `web/login.jsp`: Uses firebase_config.jsp (which uses EnvConfig), documented for additional UI configuration
+
+**Database Configuration:**
+- `web/account_list.jsp`
+- `web/checkout.jsp`
+- `web/login_output.jsp`
+- `web/update_profile.jsp`
+- `web/user_order_detail.jsp`
+- `web/user_order_actions.jsp`
+- `web/user_orders.jsp`
+- `web/admin_orders.jsp`
+- `web/admin_order_detail.jsp`
+- `web/admin_order_actions.jsp`
+- `web/admin_add_item.jsp`
+- `web/admin_delete_item.jsp`
+- `web/admin_add_user.jsp`
+- `web/admin_delete_user.jsp`
+- `web/admin_update_role.jsp`
+- `web/admin_update_user.jsp`
+- `web/admin_update_item.jsp`
+
+### Database Connection Pattern
+
+**Before (Hardcoded):**
+```java
+Class.forName("com.mysql.cj.jdbc.Driver");
+String url = "jdbc:mysql://localhost:3306/web_enterprise";
+String dbUser = "root";
+String dbPassword = "";
+conn = DriverManager.getConnection(url, dbUser, dbPassword);
+```
+
+**After (Environment-Based):**
+```java
+conn = util.DatabaseUtil.getConnection();
+```
+
+### Configuration Testing
+
+Use the built-in configuration test page to verify your setup:
+- Navigate to `/test_environment.jsp` after deployment
+- Check database connectivity and Firebase configuration
+- Verify all environment variables are loaded correctly
 
 ---
 
@@ -210,21 +314,31 @@ The `uploads/` directory stores:
 ## 🔥 Firebase Configuration
 
 ### Centralized Configuration
-All Firebase configuration has been consolidated into `firebase_config.jsp` for easy maintenance and reuse.
+All Firebase configuration uses environment variables through `firebase_config.jsp` for easy maintenance and security.
 
 ### Setting Up Firebase
 
-#### Step 1: Get Firebase Service Account
+#### Step 1: Get Firebase Credentials
 1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project: `webapplication1-4bebd`
+2. Select your project
 3. Click the gear icon (⚙️) → Project Settings
-4. Go to "Service accounts" tab
-5. Click "Generate new private key"
-6. Download the JSON file
-7. Rename to `firebase-adminsdk.json`
+4. Go to "General" tab and copy the config values to your `.env` file
+5. Go to "Service accounts" tab
+6. Click "Generate new private key"
+7. Download the JSON file and rename to `firebase-adminsdk.json`
 8. Place in: `web/WEB-INF/firebase-adminsdk.json`
 
-#### Step 2: Security Configuration
+#### Step 2: Environment Configuration
+Update your `.env` file with the Firebase configuration values:
+
+```env
+FIREBASE_API_KEY=your_api_key_here
+FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+FIREBASE_PROJECT_ID=your-project-id
+# ... etc (see Environment Configuration section above)
+```
+
+#### Step 3: Security Notes
 ```json
 // firebase-adminsdk.json structure (template)
 {
@@ -503,17 +617,42 @@ All Firebase utility functions return consistent response objects:
 
 ### Common Issues
 
-#### JSP Compilation Errors
-**Problem**: Missing Firebase Admin SDK JARs
-**Solution**: Download and place all required JAR files in `web/WEB-INF/lib/`
+#### Environment Configuration Issues
+**Problem**: Firebase authentication fails with "invalid API key" error
+**Solution**: 
+- Verify `.env` file exists and contains correct Firebase configuration
+- Check `FIREBASE_API_KEY` and other Firebase variables in `.env`
+- Ensure `EnvConfig.java` is compiled and accessible
+- Use `/test_environment.jsp` to verify configuration loading
 
-#### Firebase Authentication Fails
+#### Database Connection Errors
+**Problem**: "Failed to connect to database" errors
+**Solution**:
+- Verify database credentials in `.env` file
+- Check MySQL server is running on specified host/port
+- Ensure `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` are correctly set
+- Test with `/test_environment.jsp` page
+
+#### JSP Compilation Errors
+**Problem**: Missing Firebase Admin SDK JARs or `util.EnvConfig` not found
+**Solution**: 
+- Download and place all required JAR files in `web/WEB-INF/lib/`
+- Compile Java utility classes: `javac -cp "lib/*" src/java/util/*.java`
+- Restart Tomcat server
+
+#### Firebase Service Account Issues
 **Problem**: Missing or invalid `firebase-adminsdk.json`
-**Solution**: Download fresh credentials from Firebase Console
+**Solution**: 
+- Download fresh credentials from Firebase Console
+- Place in `web/WEB-INF/firebase-adminsdk.json`
+- Ensure file is not committed to version control (.gitignore)
 
 #### Build Failures
-**Problem**: Missing dependencies
-**Solution**: Check all JAR files are present and Tomcat is properly configured
+**Problem**: Missing dependencies or configuration errors
+**Solution**: 
+- Check all JAR files are present and Tomcat is properly configured
+- Verify `.env` file is properly formatted
+- Ensure Firebase service account file exists
 
 #### Order System Issues
 **Problem**: Orders not appearing or processing incorrectly
@@ -552,21 +691,38 @@ All Firebase utility functions return consistent response objects:
 ## 🏗️ Development Guidelines
 
 ### Best Practices
-1. Always include `firebase_config.jsp` before using Firebase functions
-2. Use utility functions instead of direct Firebase calls
-3. Handle both success and error cases
-4. Listen to authentication state events
-5. Use `waitForAuth()` for authentication-dependent operations
+1. **Environment Configuration**: Always use `EnvConfig.get()` for configuration values instead of hardcoding
+2. **Database Connections**: Use `DatabaseUtil.getConnection()` instead of manual connection setup
+3. **Firebase Integration**: Include `firebase_config.jsp` before using Firebase functions
+4. **Error Handling**: Handle both success and error cases in configuration loading
+5. **Authentication**: Use `waitForAuth()` for authentication-dependent operations
 
 ### Code Organization
-- Centralized Firebase configuration
-- Consistent error handling patterns
-- Modular utility functions
-- Event-driven architecture
-- Clean separation of concerns
+- **Centralized Configuration**: All config in `.env` file and `EnvConfig.java`
+- **Database Abstraction**: Use `DatabaseUtil` for all database operations
+- **Consistent Error Handling**: Standard patterns for configuration and connection errors
+- **Modular Utility Functions**: Reusable components for common operations
+- **Clean Separation**: Configuration separate from business logic
 
 ### Security Considerations
-- Never expose Firebase credentials
+- **Never Commit Secrets**: Use `.env` file and `.gitignore` properly
+- **Environment Variables**: Use system environment variables in production
+- **Secure Connections**: Use HTTPS and secure database connections in production
+- **Regular Security Audits**: Review configuration and credentials regularly
+- **Access Control**: Validate all user inputs and implement proper session management
+
+### Environment-Specific Configuration
+
+#### Development
+- Use `.env` file for local configuration
+- Keep Firebase service account file locally (not in version control)
+- Use local database with test data
+
+#### Production  
+- Set environment variables in deployment platform
+- Ensure Firebase service account file is securely deployed
+- Use strong database passwords and secure connections
+- Enable HTTPS and secure session configuration
 - Validate all user inputs
 - Use HTTPS in production
 - Implement proper session management
