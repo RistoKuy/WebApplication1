@@ -6,6 +6,7 @@
 <%@page import="jakarta.servlet.ServletException"%>
 <%@ page import="java.nio.file.*" %>
 <%@ page import="util.PathUtil" %>
+<%@page import="util.DatabaseUtil"%>
 <%
     // Check if user is logged in
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
@@ -96,16 +97,9 @@
     // Database connection variables
     Connection conn = null;
     PreparedStatement pstmt = null;
-    
-    try {
-        // Load the database driver
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        
-        // Connect to the database
-        String url = "jdbc:mysql://localhost:3306/web_enterprise";
-        String dbUser = "root";
-        String dbPassword = "";
-        conn = DriverManager.getConnection(url, dbUser, dbPassword);
+      try {
+        // Connect to the database using environment configuration
+        conn = util.DatabaseUtil.getConnection();
         
         // SQL query to update item
         String sql = "UPDATE item SET nama_brg = ?, deskripsi = ?, harga = ?, stok = ?, gambar_brg = ? WHERE id_brg = ?";

@@ -1,5 +1,6 @@
 <%@page contentType="text/plain" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
+<%@page import="util.DatabaseUtil"%>
 <%-- Admin Order Actions Handler --%>
 <%
     // Check if user is admin
@@ -16,13 +17,8 @@
         out.print("missing_parameters");
         return;
     }
-    
-    try {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        String url = "jdbc:mysql://localhost:3306/web_enterprise";
-        String dbUser = "root";
-        String dbPassword = "";
-        Connection conn = DriverManager.getConnection(url, dbUser, dbPassword);
+      try {
+        Connection conn = util.DatabaseUtil.getConnection();
           if ("update_checkout_status".equals(action)) {
             String checkoutIdStr = request.getParameter("id_checkout");
             String newStatus = request.getParameter("status");

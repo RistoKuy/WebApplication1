@@ -7,6 +7,7 @@ A modern JSP-based web application with Firebase authentication, user management
 - [Overview](#overview)
 - [Features](#features)
 - [Project Structure](#project-structure)
+- [Environment Configuration](#environment-configuration)
 - [Setup & Installation](#setup--installation)
 - [Firebase Configuration](#firebase-configuration)
 - [Build & Deployment](#build--deployment)
@@ -102,6 +103,26 @@ WebApplication1/
 ├── web_enterprise.sql          # Database schema
 └── README.md                   # This file
 ```
+
+## 🔧 Environment Configuration
+
+**Important**: This application uses environment variables for configuration. You must set up your environment before running the application.
+
+### Quick Setup
+```bash
+# 1. Copy environment template
+copy .env.example .env
+
+# 2. Edit .env with your actual values
+# Update database credentials, Firebase keys, etc.
+
+# 3. Ensure Firebase service account file is in place
+# Place firebase-adminsdk.json in web/WEB-INF/
+```
+
+📖 **For detailed configuration instructions, see [ENVIRONMENT_CONFIG.md](ENVIRONMENT_CONFIG.md)**
+
+---
 
 ## 🚀 Setup & Installation
 

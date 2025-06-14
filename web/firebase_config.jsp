@@ -1,21 +1,22 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="util.EnvConfig"%>
 <script type="module">
   // Firebase Configuration and Utilities
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
-  // Firebase configuration
+  // Firebase configuration from environment variables
   const firebaseConfig = {
-    apiKey: "AIzaSyCfYaFJQsmu4Qt4YthfsCYpkAE6iyyGhBg",
-    authDomain: "webapplication1-4bebd.firebaseapp.com",
-    projectId: "webapplication1-4bebd",
+    apiKey: "<%= EnvConfig.getFirebaseApiKey() %>",
+    authDomain: "<%= EnvConfig.getFirebaseAuthDomain() %>",
+    projectId: "<%= EnvConfig.getFirebaseProjectId() %>",
     // Remove databaseURL if not using Realtime Database
-    // databaseURL: "https://webapplication1-4bebd-default-rtdb.asia-southeast1.firebasedatabase.app",
-    storageBucket: "webapplication1-4bebd.firebasestorage.app",
-    messagingSenderId: "561789365143",
-    appId: "1:561789365143:web:f1add524dc4b8859fd32d2",
-    measurementId: "G-27LM5PPDNJ"
+    // databaseURL: "<%= EnvConfig.getFirebaseDatabaseUrl() %>",
+    storageBucket: "<%= EnvConfig.getFirebaseStorageBucket() %>",
+    messagingSenderId: "<%= EnvConfig.getFirebaseMessagingSenderId() %>",
+    appId: "<%= EnvConfig.getFirebaseAppId() %>",
+    measurementId: "<%= EnvConfig.getFirebaseMeasurementId() %>"
   };
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);

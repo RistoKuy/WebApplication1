@@ -7,6 +7,7 @@
 <%@page import="com.google.auth.oauth2.GoogleCredentials"%>
 <%@page import="java.io.FileInputStream"%>
 <%@page import="java.net.URLEncoder"%>
+<%@page import="util.EnvConfig"%>
 
 <%
     String message = request.getParameter("message"); // For displaying messages
@@ -15,7 +16,7 @@
         // Ensure Firebase is initialized
         if (FirebaseApp.getApps().isEmpty()) {
             try {
-                String serviceAccountPath = application.getRealPath("/WEB-INF/firebase-adminsdk.json");
+                String serviceAccountPath = application.getRealPath(EnvConfig.getFirebaseServiceAccountPath());
                 java.io.File serviceAccountFile = new java.io.File(serviceAccountPath);
                 
                 if (!serviceAccountFile.exists()) {
@@ -24,7 +25,7 @@
                     FileInputStream serviceAccount = new FileInputStream(serviceAccountFile);
                     FirebaseOptions options = new FirebaseOptions.Builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .setDatabaseUrl("https://webapplication1-4bebd-default-rtdb.asia-southeast1.firebasedatabase.app") // Correct Firebase Realtime Database URL
+                        .setDatabaseUrl(EnvConfig.getFirebaseDatabaseUrl()) // Use environment configuration
                         .build();
                     FirebaseApp.initializeApp(options);
                     message = "Firebase initialized successfully.";

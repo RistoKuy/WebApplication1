@@ -1,3 +1,9 @@
+# Environment Configuration
+.env
+
+# Firebase Service Account
+web/WEB-INF/firebase-adminsdk.json
+
 # NetBeans specific files
 nbproject/private/private.properties
 nbproject/private/private.xml
@@ -56,3 +62,4 @@ uploads/*
 !uploads/.gitkeep
 
 nbproject/
+.env

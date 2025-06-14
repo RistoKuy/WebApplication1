@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
+<%@page import="util.DatabaseUtil"%>
 <%-- User Order Actions Handler --%>
 <%
     // Check if user is logged in
@@ -29,11 +30,7 @@
     PreparedStatement pstmt = null;
     
     try {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        String url = "jdbc:mysql://localhost:3306/web_enterprise";
-        String dbUser = "root";
-        String dbPassword = "";
-        conn = DriverManager.getConnection(url, dbUser, dbPassword);
+        Class.forName("com.mysql.cj.jdbc.Driver");        conn = util.DatabaseUtil.getConnection();
         
         if ("cancel_order".equals(action) && orderIdStr != null) {
             int orderId = Integer.parseInt(orderIdStr);

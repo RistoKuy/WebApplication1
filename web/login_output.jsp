@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*" %>
+<%@page import="util.DatabaseUtil"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -61,18 +62,9 @@
             // Database connection variables
             Connection conn = null;
             PreparedStatement pstmt = null;
-            ResultSet rs = null;
-
-            try {
-                // Register JDBC driver
-                Class.forName("com.mysql.cj.jdbc.Driver");
-
-                // Open a connection
-                String url = "jdbc:mysql://localhost:3306/web_enterprise";
-                String user = "root";
-                String dbPassword = "";
-
-                conn = DriverManager.getConnection(url, user, dbPassword);
+            ResultSet rs = null;            try {
+                // Open a connection using environment configuration
+                conn = util.DatabaseUtil.getConnection();
 
                 // SQL query to check user credentials
                 String sql = "SELECT * FROM user WHERE email = ? AND password = ?";

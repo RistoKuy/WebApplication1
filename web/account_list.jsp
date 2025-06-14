@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
+<%@page import="util.DatabaseUtil"%>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -301,16 +302,9 @@
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        
-        try {
-            // Load the database driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            
-            // Connect to the database
-            String url = "jdbc:mysql://localhost:3306/web_enterprise";
-            String dbUser = "root";
-            String dbPassword = "";
-            conn = DriverManager.getConnection(url, dbUser, dbPassword);
+          try {
+            // Connect to the database using environment configuration
+            conn = util.DatabaseUtil.getConnection();
             
             // We'll use prepared statement instead of regular statement
             // for better security and flexibility

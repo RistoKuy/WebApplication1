@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
 <%@page import="java.util.*"%>
+<%@page import="util.DatabaseUtil"%>
 <%-- User Order History Page --%>
 <%
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
@@ -237,11 +238,7 @@
         
         try {
             // Connect to database for better security and flexibility
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url = "jdbc:mysql://localhost:3306/web_enterprise";
-            String dbUser = "root";
-            String dbPassword = "";
-            conn = DriverManager.getConnection(url, dbUser, dbPassword);
+            Class.forName("com.mysql.cj.jdbc.Driver");            conn = util.DatabaseUtil.getConnection();
         } catch (Exception e) {
             out.println("Database connection error: " + e.getMessage());
         }    %>

@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
 <%@page import="java.util.*"%>
+<%@page import="util.DatabaseUtil"%>
 <%-- User Order Detail Page --%>
 <%
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
@@ -282,11 +283,7 @@
         int idBrg = 0;
         boolean hasValidData = false;
           try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url = "jdbc:mysql://localhost:3306/web_enterprise";
-            String dbUser = "root";
-            String dbPassword = "";
-            conn = DriverManager.getConnection(url, dbUser, dbPassword);
+            Class.forName("com.mysql.cj.jdbc.Driver");            conn = util.DatabaseUtil.getConnection();
               // Get order details by checkout ID - verify it belongs to current user
             String orderSql = "SELECT * FROM `order` WHERE id_checkout = ? AND firebase_uid = ?";
             pstmt = conn.prepareStatement(orderSql);

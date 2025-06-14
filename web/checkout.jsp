@@ -5,6 +5,7 @@
 <%@page import="java.math.BigDecimal"%>
 <%@page import="java.text.NumberFormat"%>
 <%@page import="java.util.Locale"%>
+<%@page import="util.DatabaseUtil"%>
 <%-- Enhanced Checkout Page with Complete Firebase UID Integration --%>
 <%
     // Check if user is logged in
@@ -52,15 +53,10 @@
                 error = "Gagal memproses pesanan: Tidak dapat menemukan identitas pengguna. Silakan login ulang.";
             }
         }
-        
-        if (error == null) {
+          if (error == null) {
             Connection conn = null;
             try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                String url = "jdbc:mysql://localhost:3306/web_enterprise";
-                String dbUser = "root";
-                String dbPassword = "";
-                conn = DriverManager.getConnection(url, dbUser, dbPassword);                  // Start transaction
+                conn = util.DatabaseUtil.getConnection();// Start transaction
                 conn.setAutoCommit(false);
                 
                 int totalAmount = 0;

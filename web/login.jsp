@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="util.EnvConfig"%>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -268,8 +269,27 @@
       <!-- Panggil Bootstrap JS lokal -->
     <script src="js/bootstrap.bundle.min.js"></script>
     
+    <%-- 
+    🔧 ENVIRONMENT CONFIGURATION STATUS:
+    ✅ Firebase: Uses firebase_config.jsp with EnvConfig
+    ✅ Database: Not used in this file (login uses Firebase)
+    📝 Additional configurable values available:
+        - LOGIN_REDIRECT_DELAY: <%= EnvConfig.getInt("LOGIN_REDIRECT_DELAY", 1200) %>ms
+        - PASSWORD_MIN_LENGTH: <%= EnvConfig.getPasswordMinLength() %> characters
+        - SESSION_TIMEOUT: <%= EnvConfig.getSessionTimeout() %> minutes
+    --%>
+    
     <!-- Include Firebase Configuration -->
-    <%@ include file="firebase_config.jsp" %>    <script type="module">      // Wait for Firebase to be ready before setting up event listeners
+    <%@ include file="firebase_config.jsp" %>
+    
+    <%-- 
+    Application Configuration from Environment Variables:
+    - Login redirect delay: <%= EnvConfig.getInt("LOGIN_REDIRECT_DELAY", 1200) %>ms
+    - Password min length: <%= EnvConfig.getPasswordMinLength() %> characters
+    - Session timeout: <%= EnvConfig.getSessionTimeout() %> minutes
+    --%>
+    
+    <script type="module">// Wait for Firebase to be ready before setting up event listeners
       const setupEventListeners = () => {
         console.log('Setting up event listeners...');
         
@@ -339,12 +359,11 @@
               // Show success message before redirect
               const formSection = document.querySelector('.form-section');
               const successDiv = document.createElement('div');
-              successDiv.className = 'alert alert-success mt-3';
-              successDiv.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Login successful! Redirecting...';
+              successDiv.className = 'alert alert-success mt-3';              successDiv.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Login successful! Redirecting...';
               formSection.appendChild(successDiv);
               setTimeout(() => {
                 window.location.href = 'main.jsp';
-              }, 1200);
+              }, 1200); // TODO: Use EnvConfig.getInt("LOGIN_REDIRECT_DELAY", 1200)
             } else {
               alert('Firebase login failed: ' + result.error);
             }

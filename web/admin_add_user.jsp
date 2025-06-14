@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*" %>
+<%@page import="util.DatabaseUtil"%>
 
 <%
     // Check if user is logged in (in a real app, check for admin role)
@@ -35,15 +36,8 @@
     ResultSet rs = null;
     
     try {
-        // Register JDBC driver
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        
-        // Open a connection
-        String url = "jdbc:mysql://localhost:3306/web_enterprise";
-        String dbUser = "root";
-        String dbPassword = "";
-        
-        conn = DriverManager.getConnection(url, dbUser, dbPassword);
+        // Register JDBC driver        // Connect to the database using environment configuration
+        conn = util.DatabaseUtil.getConnection();
         
         // Check if email already exists
         String checkSql = "SELECT COUNT(*) AS count FROM user WHERE email = ?";

@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.sql.*"%>
 <%@page import="java.util.*"%>
+<%@page import="util.DatabaseUtil"%>
 <%-- Admin Order Management Page --%>
 <%
     Boolean isLoggedIn = (Boolean) session.getAttribute("loggedIn");
@@ -270,14 +271,9 @@
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        
-        try {
-            // Connect to database for better security and flexibility
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String url = "jdbc:mysql://localhost:3306/web_enterprise";
-            String dbUser = "root";
-            String dbPassword = "";
-            conn = DriverManager.getConnection(url, dbUser, dbPassword);
+          try {
+            // Connect to database using environment configuration
+            conn = util.DatabaseUtil.getConnection();
         } catch (Exception e) {
             out.println("Database connection error: " + e.getMessage());
         }
@@ -290,15 +286,18 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="dashboard.jsp"><i class="bi bi-house me-2"></i>Home</a></li>
-            <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>            <li><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
+            <li><a href="account_list.jsp"><i class="bi bi-person-lines-fill me-2"></i>User</a></li>            
+            <li><a href="item_list.jsp"><i class="bi bi-box-seam me-2"></i>Item</a></li>
             <li class="active"><a href="admin_orders.jsp"><i class="bi bi-receipt me-2"></i>Orders</a></li>
             <li><a href="logout.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>
-    
-    <!-- Main Content -->    <div class="main-content">
+
+    <!-- Main Content -->
+    <div class="main-content">
         <div class="data-table">
-            <h1 class="neon-text">Manajemen Pesanan</h1>            <table class="table table-striped">
+            <h1 class="neon-text">Manajemen Pesanan</h1>
+            <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>ID Checkout</th>
