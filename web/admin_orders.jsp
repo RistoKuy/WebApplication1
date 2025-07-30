@@ -215,6 +215,42 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(3, 218, 198, 0.3);
         }
+        
+        .btn-export-pdf {
+            background-color: transparent;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-export-pdf:hover {
+            background-color: #ff6b6b;
+            color: #121212;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-export-json {
+            background-color: transparent;
+            color: #ffd93d;
+            border: 1px solid #ffd93d;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-export-json:hover {
+            background-color: #ffd93d;
+            color: #121212;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 217, 61, 0.3);
+        }
           .status-select {
             min-width: 120px;
             background-color: var(--dark-light);
@@ -341,6 +377,12 @@
                             <button class="btn btn-delete btn-sm delete-btn" data-checkout-id="<%= checkoutId %>" title="Hapus Order">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
+                            <a href="export_order_true_pdf.jsp?id_checkout=<%= checkoutId %>" class="btn btn-export-pdf btn-sm ms-1" title="Download PDF File" target="_blank">
+                                <i class="bi bi-file-pdf"></i> PDF
+                            </a>
+                            <a href="export_order.jsp?action=json&id_checkout=<%= checkoutId %>" class="btn btn-export-json btn-sm ms-1" title="Export to JSON" target="_blank">
+                                <i class="bi bi-file-code"></i> JSON
+                            </a>
                         </td>
                     </tr>
                     <% }
