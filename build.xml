@@ -14,6 +14,15 @@
     <!-- Add custom build target to support command-line builds -->
     <target name="build" depends="default" description="Alias for the default target to support command-line builds"/>
     
+    <!-- Add buildant target to fix build errors -->
+    <target name="buildant" depends="dist" description="Build the web application using Ant"/>
+    
+    <!-- Add additional common build targets -->
+    <target name="all" depends="clean,dist" description="Clean and build the entire project"/>
+    <target name="war" depends="dist" description="Build WAR file"/>
+    <target name="deploy" depends="dist" description="Deploy the web application"/>
+    <target name="rebuild" depends="clean,dist" description="Clean and rebuild the project"/>
+    
     <!-- Add custom build-and-open target -->
     <target name="run" depends="clean,build" description="Build and open the application in browser">
         <property name="app.url" value="http://localhost:8080/WebApplication1/"/>
