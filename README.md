@@ -1,10 +1,10 @@
 # WebApplication1 - JSP Enterprise Web Application
 
-A modern JSP-based web application with Firebase authentication, user management, and e-commerce functionality. **Fully configured with environment variables for secure deployment.**
+A modern JSP-based web application with Firebase authentication, user management, e-commerce functionality, and **comprehensive export capabilities**. **Fully configured with environment variables for secure deployment.**
 
 ## 🌟 Overview
 
-WebApplication1 is a full-featured enterprise web application built with JSP, Firebase, and MySQL. It provides authentication, user management, shopping cart functionality, and admin controls with a modern, responsive UI.
+WebApplication1 is a full-featured enterprise web application built with JSP, Firebase, and MySQL. It provides authentication, user management, shopping cart functionality, admin controls, and advanced export features with a modern, responsive UI.
 
 ### Tech Stack
 - **Backend**: JSP, Java Servlets
@@ -13,6 +13,7 @@ WebApplication1 is a full-featured enterprise web application built with JSP, Fi
 - **Database**: Firebase Realtime Database + MySQL
 - **Server**: Apache Tomcat
 - **Build Tool**: Apache Ant
+- **Export Formats**: PDF, JSON, DOCX, XLSX
 
 ## ✨ Features
 
@@ -42,6 +43,17 @@ WebApplication1 is a full-featured enterprise web application built with JSP, Fi
 - ✅ Order cancellation with automatic stock restoration
 - ✅ Admin order management and status updates
 - ✅ Detailed order history and tracking
+
+### 🆕 Export & Reporting Features
+- ✅ **PDF Order Export**: True PDF generation for order invoices
+- ✅ **JSON Order Export**: Structured data export for integration
+- ✅ **DOCX Item Export**: Microsoft Word format item reports  
+- ✅ **XLSX Item Export**: Excel format item reports with summaries
+- ✅ **Multi-format Support**: Export orders in PDF and JSON formats
+- ✅ **Professional Formatting**: Invoice-style PDF reports with branding
+- ✅ **Automated File Naming**: Timestamped export files
+- ✅ **Admin Export Controls**: Export functionality integrated into admin panels
+
 ### Security Features
 - ✅ Client-side re-authentication
 - ✅ Server-side validation
@@ -58,7 +70,30 @@ WebApplication1 is a full-featured enterprise web application built with JSP, Fi
 - ✅ Sidebar navigation for admin panel
 - ✅ Neon text effects and gradient backgrounds
 
-## 📁 Project Structure
+## � API Documentation
+
+### 🆕 Export API Endpoints
+
+#### Order Export Endpoints
+
+| Endpoint | Method | Parameters | Returns | Description |
+|----------|--------|------------|---------|-------------|
+| `export_order_true_pdf.jsp` | GET | `id_checkout` | PDF File | True PDF generation for orders |
+| `export_order.jsp` | GET | `action=json, id_checkout` | JSON File | Structured JSON order data |
+
+#### Item Export Endpoints
+
+| Endpoint | Method | Parameters | Returns | Description |
+|----------|--------|------------|---------|-------------|
+| `export_items_docx.jsp` | GET | none | DOCX File | Microsoft Word item report |
+| `export_items_excel.jsp` | GET | none | XLSX File | Excel item report with analytics |
+
+#### Export Response Formats
+
+**PDF Export**: Returns `application/pdf` content type with binary PDF data
+**JSON Export**: Returns `application/json` with structured order data
+**DOCX Export**: Returns Word document with professional formatting
+**XLSX Export**: Returns Excel file with formulas and summaries
 
 ```
 WebApplication1/
@@ -69,7 +104,7 @@ WebApplication1/
 ├── web_enterprise.sql         # Database schema
 ├── build/                     # Compiled output
 ├── web/                       # Web application root
-│   ├── *.jsp                  # JSP pages (30+ pages)
+│   ├── *.jsp                  # JSP pages (35+ pages)
 │   │   ├── account_*.jsp      # User account management
 │   │   ├── admin_*.jsp        # Admin management pages
 │   │   ├── cart.jsp           # Shopping cart
@@ -77,6 +112,12 @@ WebApplication1/
 │   │   ├── *_orders.jsp       # Order management
 │   │   ├── *_order_detail.jsp # Order details
 │   │   ├── *_order_actions.jsp # Order CRUD operations
+│   │   ├── export_*.jsp       # 🆕 Export functionality
+│   │   │   ├── export_order.jsp        # Multi-format order export
+│   │   │   ├── export_order_pdf.jsp    # Enhanced PDF export
+│   │   │   ├── export_order_true_pdf.jsp # True PDF generation
+│   │   │   ├── export_items_docx.jsp   # Word format item export
+│   │   │   └── export_items_excel.jsp  # Excel format item export
 │   │   ├── firebase_config.jsp # Firebase configuration
 │   │   ├── test_environment.jsp # Environment testing
 │   │   └── debug_env.jsp      # Debug environment vars
@@ -510,12 +551,19 @@ After deployment: http://localhost:8080/WebApplication1
 - `admin_update_user.jsp` - Edit user information
 - `admin_delete_user.jsp` - Remove users
 - `admin_update_role.jsp` - Role management
-- `item_list.jsp` - Product management
+- `item_list.jsp` - Product management with export options
 - `admin_add_item.jsp` - Add new products
 - `admin_update_item.jsp` - Edit products
 - `admin_delete_item.jsp` - Remove products
-- `admin_orders.jsp` - Order management dashboard
+- `admin_orders.jsp` - Order management dashboard with export features
 - `admin_order_detail.jsp` - Detailed order management
+
+#### 🆕 Export Pages
+- `export_order.jsp` - Multi-format order export (PDF/JSON)
+- `export_order_pdf.jsp` - Enhanced PDF order export
+- `export_order_true_pdf.jsp` - True PDF generation for orders
+- `export_items_docx.jsp` - Microsoft Word format item reports
+- `export_items_excel.jsp` - Excel format item reports
 
 #### Action Handlers
 - `user_order_actions.jsp` - User order operations
@@ -561,12 +609,127 @@ After deployment: http://localhost:8080/WebApplication1
    - Cancel pending orders (with automatic stock restoration)
 
 #### For Admins:
-1. **Order Management Dashboard**: View all customer orders
+1. **Order Management Dashboard**: View all customer orders with export options
 2. **Status Updates**: Change order status (pending → completed/cancelled)
 3. **Order Details**: Access complete order information and customer data
 4. **Order Deletion**: Remove orders with automatic stock restoration
+5. **🆕 Export Functionality**:
+   - **PDF Export**: Generate professional invoice-style PDF reports for individual orders
+   - **JSON Export**: Export order data in structured JSON format for integration
+   - **Item Reports**: Export complete item catalog in DOCX or XLSX formats
+   - **Bulk Export**: Generate comprehensive reports with summaries and analytics
 
-## 📚 API Documentation
+## � Export & Reporting System
+
+### 🆕 Export Features Overview
+
+The application includes a comprehensive export system with multiple formats and professional presentation:
+
+#### Order Export Capabilities
+- **PDF Orders**: True PDF generation with professional invoice formatting
+- **JSON Orders**: Structured data export for API integration and data processing
+- **Multi-format Support**: Single interface for multiple export options
+- **Professional Styling**: Company branding and invoice-style layouts
+
+#### Item Management Reports
+- **DOCX Reports**: Microsoft Word format with tables and professional formatting
+- **XLSX Reports**: Excel format with formulas, summaries, and data analysis
+- **Comprehensive Data**: Complete item information including stock and pricing
+- **Summary Analytics**: Automated calculations for inventory value and statistics
+
+### Export File Locations and Usage
+
+#### Order Exports (Admin Panel)
+**Location**: `admin_orders.jsp` → Export buttons for each order
+- **PDF Button**: Downloads true PDF file (`Order_[ID]_[DateTime].pdf`)
+- **JSON Button**: Downloads structured JSON file (`Order_[ID]_[DateTime].json`)
+
+#### Item Exports (Item Management)
+**Location**: `item_list.jsp` → Export buttons in admin interface
+- **DOCX Button**: Downloads Word document (`Items_Report_[DateTime].docx`)
+- **XLSX Button**: Downloads Excel spreadsheet (`Items_Report_[DateTime].xlsx`)
+
+### Export File Formats and Content
+
+#### PDF Order Export
+```
+ORDER INVOICE
+===========================================
+Order ID: #[ID]
+Generated: [DateTime]
+===========================================
+
+ORDER INFORMATION:
+Order Date: [Date]
+Status: [STATUS]
+Recipient: [Name]
+Phone: [Phone]
+Address: [Address]
+
+ORDER ITEMS:
+-------------------------------------------
+1. [Item Name]
+   Description: [Description]
+   Unit Price: Rp [Price]
+   Quantity: [Qty]
+   Total: Rp [Total]
+-------------------------------------------
+
+GRAND TOTAL: Rp [Total]
+Total Items: [Count] items
+
+Thank you for your order!
+JSP Order Management System
+Report by: [Admin Name]
+```
+
+#### JSON Order Export
+```json
+{
+  "order_id": 123,
+  "order_date": "2025-07-30 14:30:09",
+  "status": "pending",
+  "recipient_info": {
+    "name": "Customer Name",
+    "address": "Customer Address",
+    "phone": "Phone Number"
+  },
+  "items": [
+    {
+      "item_id": 1,
+      "item_name": "Product Name",
+      "description": "Product Description",
+      "unit_price": 15000,
+      "quantity": 2,
+      "total_price": 30000
+    }
+  ],
+  "grand_total": 30000,
+  "export_timestamp": "2025-07-30 14:35:12",
+  "export_by": "admin"
+}
+```
+
+#### DOCX/XLSX Item Reports Include:
+- Complete item catalog with images references
+- Stock levels and pricing information
+- Inventory value calculations
+- Summary statistics (total items, total value, average price)
+- Professional formatting with company branding
+
+### Export Integration
+
+#### Admin Interface Integration
+- Export buttons seamlessly integrated into existing admin panels
+- Consistent styling with application theme
+- Hover effects and visual feedback
+- Professional icon usage (Bootstrap Icons)
+
+#### Security and Access Control
+- Admin-only access to export functionality
+- Session validation before export generation
+- Secure file generation and download
+- No sensitive data exposure in export URLs
 
 ### Firebase Utils API
 
@@ -765,7 +928,11 @@ All Firebase utility functions return consistent response objects:
 | **Product Management** | ❌ Read Only | ✅ CRUD Operations | Add, edit, delete products |
 | **Stock Management** | ❌ View Only | ✅ Full Control | Inventory tracking and updates |
 | **Image Upload** | ❌ Not Available | ✅ Product Images | File upload for product catalog |
-| **Reports & Analytics** | ✅ Personal Stats | ✅ System-wide | Order and user analytics |
+| **🆕 PDF Export** | ❌ Not Available | ✅ Order Invoices | Professional PDF generation |
+| **🆕 JSON Export** | ❌ Not Available | ✅ Order Data | Structured data export |
+| **🆕 DOCX Export** | ❌ Not Available | ✅ Item Reports | Word format reports |
+| **🆕 XLSX Export** | ❌ Not Available | ✅ Item Analytics | Excel format with formulas |
+| **Reports & Analytics** | ✅ Personal Stats | ✅ System-wide + Export | Order and user analytics |
 
 ## 🔧 Advanced Configuration
 
@@ -804,7 +971,17 @@ This project is licensed under the MIT License. See LICENSE file for details.
 ---
 
 **Project Status**: ✅ Active Development  
-**Last Updated**: June 14, 2025  
-**Version**: 2.2.0  
+**Last Updated**: July 30, 2025  
+**Version**: 2.3.0  
+**Latest Features**: PDF/JSON Order Export, DOCX/XLSX Item Reports
+
+### 🆕 Recent Updates (v2.3.0)
+- ✅ **True PDF Export**: Real PDF file generation for order invoices
+- ✅ **JSON Data Export**: Structured order data for API integration  
+- ✅ **Microsoft Word Reports**: Professional DOCX format item reports
+- ✅ **Excel Analytics**: XLSX reports with formulas and summaries
+- ✅ **Enhanced Admin Panel**: Export buttons integrated into order management
+- ✅ **Professional Formatting**: Invoice-style layouts with company branding
+- ✅ **Multi-format Support**: Single interface for multiple export options
 
 For questions or support, please open an issue in the repository.
