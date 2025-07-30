@@ -237,12 +237,49 @@
             padding: 8px 20px;
             font-size: 0.875rem;
             transition: all 0.3s ease;
+            margin-left: 10px;
         }
         
         .btn-add:hover {
             background-color: #018786;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(3, 218, 198, 0.3);
+        }
+        
+        .btn-export-docx {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .btn-export-docx:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.3);
+            color: white;
+        }
+        
+        .btn-export-excel {
+            background-color: #34a853;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .btn-export-excel:hover {
+            background-color: #2d7a3d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 168, 83, 0.3);
+            color: white;
         }
         
         /* Modal styling */
@@ -376,9 +413,17 @@
         <div class="data-table">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0 neon-text">Item Management</h2>
-                <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                    <i class="bi bi-plus-circle me-2"></i>Add New Item
-                </button>
+                <div class="d-flex">
+                    <a href="export_items_docx.jsp" class="btn btn-export-docx" onclick="showExportLoading(this, 'Word (.docx)')">
+                        <i class="bi bi-file-earmark-word me-2"></i>Export to Word (.docx)
+                    </a>
+                    <a href="export_items_excel.jsp" class="btn btn-export-excel" onclick="showExportLoading(this, 'Excel (.xlsx)')">
+                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export to Excel (.xlsx)
+                    </a>
+                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                        <i class="bi bi-plus-circle me-2"></i>Add New Item
+                    </button>
+                </div>
             </div>
             
             <% if (request.getParameter("success") != null) { %>
@@ -728,7 +773,7 @@
                 
                 // Reset zoom for new image
                 currentZoom = 1;
-                fullSizeImage.style.transform = `scale(${currentZoom})`;
+                fullSizeImage.style.transform = 'scale(' + currentZoom + ')';
                 
                 // Set the image source and update modal title
                 fullSizeImage.src = imgSrc;
@@ -747,14 +792,14 @@
         document.getElementById('zoomIn').addEventListener('click', function() {
             if (currentZoom < 3) {
                 currentZoom += zoomStep;
-                document.getElementById('fullSizeImage').style.transform = `scale(${currentZoom})`;
+                document.getElementById('fullSizeImage').style.transform = 'scale(' + currentZoom + ')';
             }
         });
         
         document.getElementById('zoomOut').addEventListener('click', function() {
             if (currentZoom > 0.5) {
                 currentZoom -= zoomStep;
-                document.getElementById('fullSizeImage').style.transform = `scale(${currentZoom})`;
+                document.getElementById('fullSizeImage').style.transform = 'scale(' + currentZoom + ')';
             }
         });
         
@@ -797,7 +842,7 @@
             if (isDragging && currentZoom > 1) {
                 translateX = e.clientX - startX;
                 translateY = e.clientY - startY;
-                fullSizeImage.style.transform = `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`;
+                fullSizeImage.style.transform = 'scale(' + currentZoom + ') translate(' + (translateX/currentZoom) + 'px, ' + (translateY/currentZoom) + 'px)';
             }
         });
         
@@ -819,7 +864,56 @@
             translateX = 0;
             translateY = 0;
         });
+        
+        // Export loading function
+        function showExportLoading(button, format) {
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-arrow-clockwise me-2" style="animation: spin 1s linear infinite;"></i>Exporting ' + format + '...';
+            button.style.pointerEvents = 'none';
+            
+            // Reset button after 3 seconds
+            setTimeout(function() {
+                button.innerHTML = originalContent;
+                button.style.pointerEvents = 'auto';
+                
+                // Show success notification
+                showNotification('Export completed! Check your downloads folder for the ' + format + ' file.', 'success');
+            }, 3000);
+        }
+        
+        // Notification function
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            
+            // Determine icon based on type
+            const icon = (type === 'success') ? 'check-circle-fill' : 'exclamation-triangle-fill';
+            
+            notification.innerHTML = 
+                '<i class="bi bi-' + icon + ' me-2"></i>' +
+                message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            
+            // Add to body
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(function() {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
     </script>
+    
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
     
     <%
         // Close the database resources
